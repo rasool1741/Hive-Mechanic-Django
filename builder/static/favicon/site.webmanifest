@@ -1,6 +1,6 @@
 {
-	"name": "",
-	"short_name": "",
+	"name": "بازی‌های شهری Hive Mechanic",
+	"short_name": "بازی‌های شهری",
 	"icons": [{
 		"src": "static/favicon/android-chrome-192x192.png",
 		"sizes": "192x192",
@@ -10,7 +10,10 @@
 		"sizes": "512x512",
 		"type": "image/png"
 	}],
-	"theme_color": "#ffffff",
+	"theme_color": "#263238",
 	"background_color": "#ffffff",
-	"display": "standalone"
+	"display": "standalone",
+	"start_url": "/builder/",
+	"dir": "rtl",
+	"lang": "fa-IR"
 }
