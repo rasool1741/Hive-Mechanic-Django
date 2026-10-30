@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.db import IntegrityError, transaction
 from django.db.models import Sum
 from django.test import TestCase
+from django.urls import reverse
 
 from ..models import City, Game, GameVersion, Hint, Player, ScoreLedger, Session, SessionEvent
 from ..urban_tools import create_qr_token, inside_radius, validate_location_sample, verify_qr_token
@@ -66,3 +67,21 @@ class BackendGameFlowTests(TestCase):
         session.refresh_from_db()
         self.assertIsNotNone(session.completed)
         self.assertEqual(version, session.game_version)
+
+    def test_invalid_location_and_qr_are_rejected(self):
+        self.assertTrue(validate_location_sample(91, 51.4, 8))
+        self.assertFalse(inside_radius(35.7, 51.4, 35.8, 51.5, 100))
+        token = create_qr_token('game', 'stage', 'nonce', 'secret', time.time() - 1)
+        self.assertIsNone(verify_qr_token(token, 'secret'))
+        self.assertIsNone(verify_qr_token(token + 'tampered', 'secret'))
+
+    def test_public_access_rejects_unpublished_games_and_inactive_cities(self):
+        city = City.objects.create(slug='inactive-city', name='Inactive', is_active=False)
+        game = Game.objects.create(name='Draft Game', slug='draft-game', city=city)
+        GameVersion.objects.create(
+            game=game,
+            created='2026-01-01T00:00:00Z',
+            definition=json.dumps({'sequences': [{'id': 'main', 'items': [{'id': 'start'}]}]}),
+        )
+        self.assertEqual(404, self.client.get(reverse('public_game_detail', args=[game.slug])).status_code)
+        self.assertEqual(404, self.client.get(reverse('public_city_games', args=[city.slug])).status_code)
