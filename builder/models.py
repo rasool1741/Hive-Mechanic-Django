@@ -1737,6 +1737,22 @@ class Session(models.Model): # pylint: disable=too-many-public-methods
         self.advance_to(terms_interrupt)
 
 @python_2_unicode_compatible
+class SessionEvent(models.Model):
+    session = models.ForeignKey(Session, related_name='events', on_delete=models.CASCADE)
+    event_id = models.CharField(max_length=128)
+    event_type = models.CharField(max_length=128)
+    payload = JSONField(default=dict, blank=True)
+    result = JSONField(default=dict, blank=True)
+    accepted = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['session', 'event_id'], name='builder_session_event_unique'),
+        ]
+        ordering = ['created']
+
+
 class DataProcessor(models.Model):
     name = models.CharField(max_length=4096, unique=True)
     identifier = models.SlugField(max_length=4096, unique=True)
