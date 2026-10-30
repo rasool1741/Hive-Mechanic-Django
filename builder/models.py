@@ -1779,6 +1779,31 @@ class ScoreLedger(models.Model):
         ordering = ['created']
 
 
+class Team(models.Model):
+    game = models.ForeignKey(Game, related_name='teams', on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    invite_code = models.CharField(max_length=64, unique=True)
+    leader = models.ForeignKey(Player, related_name='led_teams', on_delete=models.PROTECT)
+    created = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=True)
+
+
+class TeamMembership(models.Model):
+    team = models.ForeignKey(Team, related_name='memberships', on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, related_name='team_memberships', on_delete=models.CASCADE)
+    joined = models.DateTimeField(auto_now_add=True)
+    accepted = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['team', 'player'], name='builder_team_player_unique')]
+
+
+class TeamSession(models.Model):
+    team = models.ForeignKey(Team, related_name='sessions', on_delete=models.CASCADE)
+    session = models.OneToOneField(Session, related_name='team_session', on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+
+
 class DataProcessor(models.Model):
     name = models.CharField(max_length=4096, unique=True)
     identifier = models.SlugField(max_length=4096, unique=True)
