@@ -13,6 +13,7 @@
 - فاز ۳: Commit `c7268a3` ثبت شد؛ اتصال اختیاری User به Player و endpoint جزئیات Game اضافه شدند.
 - فاز ۴: Commit `8eee327` ثبت شد؛ مدل `SessionEvent` با یکتایی `(session, event_id)` و نتیجه قابل ثبت اضافه شد. اتصال کامل endpoint رویداد پس از تثبیت محیط Django انجام می‌شود.
 - فاز ۵: ابزارهای اعتبارسنجی GPS/Geofence و QR امضاشده در `builder/urban_tools.py` اضافه شدند؛ تست مستقل افزوده شد و در انتظار Commit است.
+- فاز ۶: مدل‌های `Hint` و `ScoreLedger` و Migration افزایشی اضافه شدند؛ تست ORM به‌دلیل نبود Django قابل اجرا نیست و در وضعیت محیط ثبت می‌شود.
 - محدودیت محیط: نصب وابستگی‌ها در `.venv` به‌دلیل timeout/خطای Windows در pip کامل نشده است؛ Check، Migration و تست ORM همچنان باید در محیط دارای وابستگی اجرا شوند.
 
 ## اصول اجرایی

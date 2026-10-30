@@ -1753,6 +1753,32 @@ class SessionEvent(models.Model):
         ordering = ['created']
 
 
+class Hint(models.Model):
+    game_version = models.ForeignKey(GameVersion, related_name='hints', on_delete=models.CASCADE)
+    stage_id = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    unlock_after_seconds = models.PositiveIntegerField(default=0)
+    unlock_after_attempts = models.PositiveIntegerField(default=0)
+    score_cost = models.IntegerField(default=0)
+    position = models.PositiveIntegerField(default=0)
+    enabled = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['stage_id', 'position']
+
+
+class ScoreLedger(models.Model):
+    session = models.ForeignKey(Session, related_name='score_entries', on_delete=models.CASCADE)
+    event = models.ForeignKey(SessionEvent, null=True, blank=True, related_name='score_entries', on_delete=models.SET_NULL)
+    reason = models.CharField(max_length=255)
+    amount = models.IntegerField()
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created']
+
+
 class DataProcessor(models.Model):
     name = models.CharField(max_length=4096, unique=True)
     identifier = models.SlugField(max_length=4096, unique=True)
