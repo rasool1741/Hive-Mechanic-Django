@@ -1314,6 +1314,7 @@ def reset_game_version_metadata(sender, instance, *args, **kwargs): # pylint: di
 @python_2_unicode_compatible
 class Player(models.Model):
     identifier = models.CharField(max_length=4096, unique=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, blank=True, related_name='hive_player', on_delete=models.SET_NULL)
 
     player_state = JSONField(default=dict, blank=True)
 

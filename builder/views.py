@@ -80,6 +80,25 @@ def public_city_games(request, city_slug):
     } for game in games]
     return JsonResponse({'city': city.slug, 'games': payload})
 
+
+def public_game_detail(request, game_slug):
+    game = get_object_or_404(
+        Game,
+        slug=game_slug,
+        status=Game.STATUS_PUBLISHED,
+        archived=None,
+        versions__status=GameVersion.STATUS_PUBLISHED,
+    )
+    return JsonResponse({
+        'slug': game.slug,
+        'name': game.name,
+        'description': game.description,
+        'difficulty': game.difficulty,
+        'estimated_minutes': game.estimated_minutes,
+        'is_team_game': game.is_team_game,
+        'city': game.city.slug if game.city else None,
+    })
+
 @login_required
 @user_accepted_all_terms
 def builder_home(request): # pylint: disable=unused-argument

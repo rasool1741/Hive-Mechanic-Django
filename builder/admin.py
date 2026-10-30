@@ -106,9 +106,9 @@ class CityAdmin(ModelAdmin):
 
 @admin.register(GameVersion)
 class GameVersionAdmin(admin.GISModelAdmin):
-    list_display = ('game', 'created', 'creator')
+    list_display = ('game', 'created', 'creator', 'status', 'published')
     search_fields = ['definition']
-    list_filter = ('created', 'creator',)
+    list_filter = ('created', 'creator', 'status',)
 
     readonly_fields = ['game']
 
