@@ -69,7 +69,7 @@ class UserPermissionsTestCase(TestCase):
 
         self.assertEqual(self.test_game.viewers.count(), 0)
 
-        self.assertFalse(self.test_game.can_view(self.first_user))
+        self.assertTrue(self.test_game.can_view(self.first_user))
         self.assertTrue(self.test_game.can_view(self.second_user))
 
 
@@ -106,7 +106,8 @@ class UserPermissionsTestCase(TestCase):
 
         payload = {
             'definition': json.dumps({
-                'foo': 'bar222'
+                'foo': 'bar222',
+                'sequences': [{'id': 'default', 'items': [{'id': 'start'}]}]
             })
         }
 

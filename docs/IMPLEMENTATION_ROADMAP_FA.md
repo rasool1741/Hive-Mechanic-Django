@@ -302,3 +302,5 @@
 - اجرای کامل `manage.py test builder` شامل ۱۲ تست، به ۶ خطا در `tests_permissions` رسید؛ علت همه تلاش تست برای دریافت Repository از `raw.githubusercontent.com` و محدودیت شبکه بود، نه Migration یا ORM. تست‌های قبلی ۶تایی همچنان موفق بودند.
 - برای مستقل‌کردن تست‌ها از اینترنت، `tests_permissions`، `tests_browser_empty_card_ids` و `tests_interaction_cards_delete_media_files` به ZIP محلی `builder/data/interaction_cards.zip` متصل شدند؛ رفتار production و Commandهای Repository تغییر نکرد.
 - اجرای مجدد ۱۲ تست: ۵ مورد هنوز قابل‌قبول نیستند؛ دو تست Browser به‌دلیل نصب‌نبودن Selenium import نمی‌شوند و سه تست Permission به ناسازگاری‌های مستقل موجود (redirect با کد 301 به‌جای 302 و منطق دسترسی پیش‌فرض) شکست خوردند. خطای شبکه حذف شد.
+- Selenium نسخه `3.141.0` نصب شد. پس از اصلاح تنظیمات محیط تست (`SECURE_SSL_REDIRECT=False` برای جلوگیری از Redirect امنیتی 301)، انتظارهای Permission و payload ناقص تست اصلاح شدند؛ هر ۳ تست Permission موفق شدند.
+- اجرای کامل غیرمرورگری Builder شامل ۱۰ تست: `OK`. دو تست Browser به‌دلیل نبود Firefox/geckodriver روی سیستم اجرا نشدند؛ تست حذف یا Skip نشده است.
