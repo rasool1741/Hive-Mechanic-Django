@@ -2,8 +2,8 @@
 
 import io
 import json
-
-import sh
+import shutil
+import subprocess
 
 # from py_mini_racer import MiniRacer
 
@@ -90,14 +90,21 @@ def fetch_cytoscape_node(definition, simplify=False): # pylint: disable=too-many
 
     full_script += '\n'
 
-    result_io = io.StringIO()
-
-    try:
-        sh.nodejs(_in=full_script, _out=result_io)
-    except sh.ErrorReturnCode_1:
+    nodejs = shutil.which('nodejs') or shutil.which('node')
+    if not nodejs:
         return None
 
-    return json.loads(result_io.getvalue())
+    result = subprocess.run(
+        [nodejs],
+        input=full_script,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+
+    return json.loads(result.stdout)
 
 def obfuscate_player_id(raw_identifier):
     obfuscated = ''
