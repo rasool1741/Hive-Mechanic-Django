@@ -21,7 +21,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.db.models.functions import Lower
-from django.http import HttpResponse, Http404, FileResponse
+from django.http import HttpResponse, Http404, FileResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
@@ -35,7 +35,50 @@ from activity_logger.models import LogItem, LogTag
 from integrations.models import Integration
 from user_creation.decorators import user_accepted_all_terms
 
-from .models import Game, GameVersion, InteractionCard, Player, Session, DataProcessor, SiteSettings, StateVariable
+from .models import City, Game, GameVersion, InteractionCard, Player, Session, DataProcessor, SiteSettings, StateVariable
+
+
+def public_city_catalog(request):
+    cities = City.objects.filter(
+        is_active=True,
+        games__status=Game.STATUS_PUBLISHED,
+        games__archived=None,
+        games__versions__status=GameVersion.STATUS_PUBLISHED,
+    ).distinct().order_by('name')
+    payload = []
+    for city in cities:
+        payload.append({
+            'slug': city.slug,
+            'name': city.name,
+            'country': city.country,
+            'region': city.region,
+            'description': city.description,
+            'games_count': city.games.filter(
+                status=Game.STATUS_PUBLISHED,
+                archived=None,
+                versions__status=GameVersion.STATUS_PUBLISHED,
+            ).distinct().count(),
+        })
+    return JsonResponse({'cities': payload})
+
+
+def public_city_games(request, city_slug):
+    city = get_object_or_404(City, slug=city_slug, is_active=True)
+    games = Game.objects.filter(
+        city=city,
+        status=Game.STATUS_PUBLISHED,
+        archived=None,
+        versions__status=GameVersion.STATUS_PUBLISHED,
+    ).distinct().order_by('name')
+    payload = [{
+        'slug': game.slug,
+        'name': game.name,
+        'description': game.description,
+        'difficulty': game.difficulty,
+        'estimated_minutes': game.estimated_minutes,
+        'is_team_game': game.is_team_game,
+    } for game in games]
+    return JsonResponse({'city': city.slug, 'games': payload})
 
 @login_required
 @user_accepted_all_terms

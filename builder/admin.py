@@ -19,7 +19,7 @@ try:
 except ImportError:
     from django.contrib.admin import ModelAdmin as ModelAdmin # pylint: disable=useless-import-alias
 
-from .models import Game, GameVersion, InteractionCard, InteractionCardCategory, Player, \
+from .models import City, Game, GameVersion, InteractionCard, InteractionCardCategory, Player, \
                     Session, RemoteRepository, DataProcessor, DataProcessorLog, SiteSettings, \
                     CachedFile, StateVariable
 
@@ -59,8 +59,8 @@ class GameVersionInline(admin.TabularInline):
 
 @admin.register(Game)
 class GameAdmin(ModelAdmin):
-    list_display = ('name', 'slug', 'is_template', 'archived',)
-    list_filter = ('is_template', 'archived',)
+    list_display = ('name', 'city', 'status', 'slug', 'is_template', 'archived',)
+    list_filter = ('city', 'status', 'is_template', 'archived',)
 
     formfield_overrides = {
         JSONField: {'widget': PrettyJSONWidgetFixed(attrs={'initial': 'parsed'})}
@@ -96,6 +96,13 @@ class GameAdmin(ModelAdmin):
             self.message_user(request, '%s activities restored.' % updated, messages.SUCCESS)
 
     restore_activity.short_description = "Restore activities"
+
+
+@admin.register(City)
+class CityAdmin(ModelAdmin):
+    list_display = ('name', 'country', 'region', 'is_active', 'updated')
+    list_filter = ('is_active', 'country', 'region')
+    search_fields = ('name', 'slug', 'country', 'region')
 
 @admin.register(GameVersion)
 class GameVersionAdmin(admin.GISModelAdmin):

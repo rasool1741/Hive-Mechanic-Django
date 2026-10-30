@@ -340,6 +340,28 @@ class InteractionCardCategory(models.Model):
     def __str__(self):
         return '%s (%d)' % (self.name, int(self.priority))
 
+
+@python_2_unicode_compatible
+class City(models.Model):
+    slug = models.SlugField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
+    country = models.CharField(max_length=255, blank=True)
+    region = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True)
+    center_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    center_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    timezone = models.CharField(max_length=64, default='UTC')
+    language = models.CharField(max_length=16, default='fa')
+    is_active = models.BooleanField(default=True, db_index=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
 @python_2_unicode_compatible
 class InteractionCard(models.Model):
     name = models.CharField(max_length=4096, unique=True)
@@ -516,11 +538,31 @@ def reset_game_metadata(sender, instance, *args, **kwargs): # pylint: disable=un
 
 @python_2_unicode_compatible  # pylint: disable=too-many-public-methods
 class Game(models.Model):  # pylint: disable=too-many-public-methods
+    STATUS_DRAFT = 'draft'
+    STATUS_DESIGNING = 'designing'
+    STATUS_TESTING = 'testing'
+    STATUS_PUBLISHED = 'published'
+    STATUS_PAUSED = 'paused'
+    STATUS_ARCHIVED = 'archived'
+    STATUS_CHOICES = (
+        (STATUS_DRAFT, 'Draft'),
+        (STATUS_DESIGNING, 'Designing'),
+        (STATUS_TESTING, 'Testing'),
+        (STATUS_PUBLISHED, 'Published'),
+        (STATUS_PAUSED, 'Paused'),
+        (STATUS_ARCHIVED, 'Archived'),
+    )
     class Meta: # pylint: disable=too-few-public-methods
         ordering = ['name']
 
     name = models.CharField(max_length=1024, db_index=True)
     slug = models.SlugField(max_length=1024, db_index=True, unique=True)
+    city = models.ForeignKey('builder.City', null=True, blank=True, related_name='games', on_delete=models.SET_NULL)
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_DRAFT, db_index=True)
+    description = models.TextField(blank=True)
+    difficulty = models.CharField(max_length=32, blank=True)
+    estimated_minutes = models.PositiveIntegerField(null=True, blank=True)
+    is_team_game = models.BooleanField(default=False)
 
     cards = models.ManyToManyField(InteractionCard, related_name='games')
 
