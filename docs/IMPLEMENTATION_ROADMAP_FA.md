@@ -304,3 +304,7 @@
 - اجرای مجدد ۱۲ تست: ۵ مورد هنوز قابل‌قبول نیستند؛ دو تست Browser به‌دلیل نصب‌نبودن Selenium import نمی‌شوند و سه تست Permission به ناسازگاری‌های مستقل موجود (redirect با کد 301 به‌جای 302 و منطق دسترسی پیش‌فرض) شکست خوردند. خطای شبکه حذف شد.
 - Selenium نسخه `3.141.0` نصب شد. پس از اصلاح تنظیمات محیط تست (`SECURE_SSL_REDIRECT=False` برای جلوگیری از Redirect امنیتی 301)، انتظارهای Permission و payload ناقص تست اصلاح شدند؛ هر ۳ تست Permission موفق شدند.
 - اجرای کامل غیرمرورگری Builder شامل ۱۰ تست: `OK`. دو تست Browser به‌دلیل نبود Firefox/geckodriver روی سیستم اجرا نشدند؛ تست حذف یا Skip نشده است.
+- تست یکپارچه Backend در `builder/tests/tests_backend_e2e.py` اضافه شد و مسیر شهر فعال، Game/نسخه Draft، انتشار، User/Player، Session، GPS/Geofence، QR معتبر/نامعتبر/منقضی، جلوگیری از Replay رویداد، Hint، ScoreLedger و تکمیل Session را پوشش می‌دهد.
+- تست E2E مستقل: `1` تست موفق. مجموعه ترکیبی E2E به‌همراه GameVersion، City، Urban Tools و Permission: `10` تست موفق.
+- برای duplicate event از `transaction.atomic()` در تست استفاده شد تا IntegrityError عمداً rollback شود و تست بتواند ادامه گردش را بررسی کند؛ منطق Production تضعیف نشد.
+- Browser E2E همچنان نیازمند نصب Firefox و `geckodriver` است؛ نبود آن مانع Backend API نیست.
