@@ -360,6 +360,17 @@ class InteractionCard(models.Model):
 
     version = models.FloatField(default=0.0)
 
+    def definition_metadata(self):
+        if not self.metadata:
+            return {}
+
+        try:
+            value = json.loads(self.metadata)
+        except (TypeError, ValueError):
+            return {}
+
+        return value if isinstance(value, dict) else {}
+
     def __str__(self):
         return self.name + ' (' + self.identifier + ')'
 
@@ -857,11 +868,26 @@ pre_save.connect(reset_game_metadata, sender=Game, dispatch_uid='builder.game.re
 
 @python_2_unicode_compatible
 class GameVersion(models.Model):
+    STATUS_DRAFT = 'draft'
+    STATUS_TESTING = 'testing'
+    STATUS_PUBLISHED = 'published'
+    STATUS_ARCHIVED = 'archived'
+    STATUS_CHOICES = (
+        (STATUS_DRAFT, 'Draft'),
+        (STATUS_TESTING, 'Testing'),
+        (STATUS_PUBLISHED, 'Published'),
+        (STATUS_ARCHIVED, 'Archived'),
+    )
+
     game = models.ForeignKey(Game, related_name='versions', on_delete=models.CASCADE)
     created = models.DateTimeField()
 
     definition = models.TextField(max_length=(1024 * 1024 * 1024), null=True, blank=True)
     cached_cytoscape = models.TextField(max_length=(1024 * 1024 * 1024), null=True, blank=True)
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_DRAFT, db_index=True)
+    definition_checksum = models.CharField(max_length=128, null=True, blank=True, editable=False)
+    published = models.DateTimeField(null=True, blank=True)
+    validation_errors = JSONField(default=list, blank=True)
 
     creator = models.ForeignKey(get_user_model(), null=True, blank=True, on_delete=models.SET_NULL)
 
@@ -870,6 +896,80 @@ class GameVersion(models.Model):
 
     def __str__(self):
         return self.game.name + ' (' + str(self.created) + ')'
+
+    def validate_definition(self):
+        errors = []
+
+        try:
+            definition = json.loads(self.definition or '{}')
+        except (TypeError, ValueError):
+            errors.append('Game definition is not valid JSON.')
+            self.validation_errors = errors
+            return errors
+
+        if isinstance(definition, list):
+            sequences = definition
+        elif isinstance(definition, dict):
+            sequences = definition.get('sequences', [])
+        else:
+            sequences = []
+        if not isinstance(sequences, list) or not sequences:
+            errors.append('At least one sequence is required.')
+            sequences = []
+
+        item_ids = set()
+        card_identifiers = set()
+        for card in self.game.cards.filter(enabled=True):
+            card_identifiers.add(card.identifier)
+
+        for sequence in sequences:
+            sequence_id = sequence.get('id') if isinstance(sequence, dict) else None
+            if not sequence_id:
+                errors.append('Every sequence requires an id.')
+                continue
+
+            for item in sequence.get('items', []):
+                item_id = item.get('id')
+                item_type = item.get('type')
+                qualified_id = '%s#%s' % (sequence_id, item_id) if item_id else None
+                if not item_id:
+                    errors.append('Sequence %s contains an item without an id.' % sequence_id)
+                elif qualified_id in item_ids:
+                    errors.append('Duplicate item id: %s.' % qualified_id)
+                else:
+                    item_ids.add(qualified_id)
+
+                if item_type and item_type not in card_identifiers:
+                    errors.append('Card is missing or disabled: %s.' % item_type)
+
+        initial_card = definition.get('initial-card') if isinstance(definition, dict) else None
+        if not initial_card and sequences and sequences[0].get('items'):
+            initial_card = '%s#%s' % (sequences[0].get('id'), sequences[0]['items'][0].get('id'))
+        if not initial_card:
+            errors.append('An initial card is required.')
+        elif initial_card not in item_ids:
+            errors.append('Initial card does not exist: %s.' % initial_card)
+
+        self.validation_errors = errors
+        return errors
+
+    def calculate_checksum(self):
+        return hashlib.sha512((self.definition or '').encode('utf-8')).hexdigest()
+
+    def save(self, *args, **kwargs):
+        self.definition_checksum = self.calculate_checksum()
+        super(GameVersion, self).save(*args, **kwargs)
+
+    def publish(self):
+        errors = self.validate_definition()
+        if errors:
+            self.save(update_fields=['validation_errors', 'definition_checksum'])
+            return False, errors
+
+        self.status = self.STATUS_PUBLISHED
+        self.published = timezone.now()
+        self.save()
+        return True, []
 
     def process_incoming(self, session, payload, extras=None): # pylint: disable=too-many-branches
         if extras is None:
