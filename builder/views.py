@@ -19,6 +19,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db import transaction
 from django.db.models import Q
 from django.db.models.functions import Lower
 from django.http import HttpResponse, Http404, FileResponse, JsonResponse
@@ -35,7 +36,8 @@ from activity_logger.models import LogItem, LogTag
 from integrations.models import Integration
 from user_creation.decorators import user_accepted_all_terms
 
-from .models import City, Game, GameVersion, InteractionCard, Player, Session, DataProcessor, SiteSettings, StateVariable
+from .models import City, Game, GameVersion, InteractionCard, Player, Session, SessionEvent, ScoreLedger, DataProcessor, SiteSettings, StateVariable
+from .urban_tools import inside_radius, validate_location_sample, verify_qr_token
 
 
 def public_city_catalog(request):
@@ -98,6 +100,86 @@ def public_game_detail(request, game_slug):
         'is_team_game': game.is_team_game,
         'city': game.city.slug if game.city else None,
     })
+
+
+@login_required
+@user_accepted_all_terms
+@transaction.atomic
+def game_action(request, session_id):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required.'}, status=405)
+
+    session = Session.objects.select_for_update().select_related(
+        'player', 'game_version', 'game_version__game', 'game_version__game__city',
+    ).filter(pk=session_id, player__user=request.user).first()
+    if session is None:
+        return JsonResponse({'error': 'Session not found.'}, status=404)
+    if session.completed is not None:
+        return JsonResponse({'error': 'Session is already completed.'}, status=409)
+    if session.game_version.status != GameVersion.STATUS_PUBLISHED:
+        return JsonResponse({'error': 'Game version is not published.'}, status=409)
+    if session.game_version.game.city is not None and not session.game_version.game.city.is_active:
+        return JsonResponse({'error': 'City is inactive.'}, status=409)
+
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+    except (TypeError, ValueError, UnicodeDecodeError):
+        return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+
+    event_id = payload.get('event_id')
+    stage_id = payload.get('stage_id')
+    if not event_id or not stage_id:
+        return JsonResponse({'error': 'event_id and stage_id are required.'}, status=400)
+
+    previous = SessionEvent.objects.filter(session=session, event_id=event_id).first()
+    if previous is not None:
+        return JsonResponse(previous.result, status=200)
+
+    definition = json.loads(session.game_version.definition or '{}')
+    sequences = definition if isinstance(definition, list) else definition.get('sequences', [])
+    stages = [
+        '%s#%s' % (sequence.get('id'), item.get('id'))
+        for sequence in sequences
+        for item in sequence.get('items', [])
+        if sequence.get('id') and item.get('id')
+    ]
+    current_index = session.session_state.get('stage_index', 0)
+    if current_index >= len(stages) or stage_id != stages[current_index]:
+        return JsonResponse({'error': 'Stage is not the current server stage.'}, status=409)
+
+    gps = payload.get('gps')
+    city = session.game_version.game.city
+    if gps is not None:
+        errors = validate_location_sample(gps.get('latitude'), gps.get('longitude'), gps.get('accuracy', 0))
+        if errors or city is None or city.center_latitude is None or not inside_radius(
+                gps['latitude'], gps['longitude'], city.center_latitude, city.center_longitude, 100):
+            return JsonResponse({'error': 'GPS validation failed.'}, status=403)
+
+    qr_token = payload.get('qr_token')
+    if qr_token is not None:
+        qr = verify_qr_token(qr_token, getattr(settings, 'GAME_ACTION_QR_SECRET', settings.SECRET_KEY))
+        if qr is None or qr.get('game') != session.game_version.game.slug or qr.get('stage') != stage_id:
+            return JsonResponse({'error': 'QR validation failed.'}, status=403)
+
+    next_index = current_index + 1
+    completed = next_index >= len(stages)
+    result = {
+        'accepted': True,
+        'score': 100,
+        'stage_id': stage_id,
+        'next_stage_id': None if completed else stages[next_index],
+        'completed': completed,
+    }
+    event = SessionEvent.objects.create(
+        session=session, event_id=event_id, event_type='complete-stage',
+        payload={'stage_id': stage_id}, result=result, accepted=True,
+    )
+    ScoreLedger.objects.create(session=session, event=event, reason='stage-complete', amount=100)
+    session.session_state = dict(session.session_state, stage_index=next_index)
+    if completed:
+        session.completed = timezone.now()
+    session.save(update_fields=['session_state', 'completed'])
+    return JsonResponse(result)
 
 @login_required
 @user_accepted_all_terms

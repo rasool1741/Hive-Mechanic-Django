@@ -8,7 +8,7 @@ if sys.version_info[0] > 2:
 else:
     from django.conf.urls import url
 
-from .views import public_city_catalog, public_city_games, public_game_detail, builder_game, builder_game_definition_json, builder_interaction_card, \
+from .views import public_city_catalog, public_city_games, public_game_detail, game_action, builder_game, builder_game_definition_json, builder_interaction_card, \
                    builder_home, builder_activities, builder_players, builder_sessions, \
                    builder_add_game, builder_data_processor_options, builder_activity_archive, \
                    builder_update_icon, builder_media, builder_media_upload, builder_game_templates, \
@@ -21,6 +21,7 @@ urlpatterns = [
     url(r'^api/v1/cities$', public_city_catalog, name='public_city_catalog'),
     url(r'^api/v1/cities/(?P<city_slug>[-\w]+)/games$', public_city_games, name='public_city_games'),
     url(r'^api/v1/games/(?P<game_slug>[-\w]+)$', public_game_detail, name='public_game_detail'),
+    url(r'^api/v1/sessions/(?P<session_id>\d+)/actions$', game_action, name='game_action'),
     url(r'add-game.json$', builder_add_game, name='builder_add_game'),
     # url(r'log$', builder_activity_logger, name='builder_activity_logger'),
     url(r'log$', builder_activity_logger, name='builder_activity_logger'),

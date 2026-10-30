@@ -12,6 +12,51 @@ from ..urban_tools import create_qr_token, inside_radius, validate_location_samp
 
 
 class BackendGameFlowTests(TestCase):
+    def test_server_authoritative_game_action_api(self):
+        user = get_user_model().objects.create_user(username='api-player', password='secret')
+        other_user = get_user_model().objects.create_user(username='other-player', password='secret')
+        city = City.objects.create(slug='api-city', name='API City', center_latitude=35.7, center_longitude=51.4)
+        game = Game.objects.create(name='API Game', slug='api-game', city=city)
+        definition = {'sequences': [{'id': 'main', 'items': [{'id': 'one'}, {'id': 'two'}]}]}
+        version = GameVersion.objects.create(game=game, created='2026-01-01T00:00:00Z', definition=json.dumps(definition))
+        self.assertTrue(version.publish()[0])
+        player = Player.objects.create(identifier='user:api-player', user=user)
+        other_player = Player.objects.create(identifier='user:other-player', user=other_user)
+        session = Session.objects.create(player=player, game_version=version, started='2026-01-01T00:00:00Z')
+        other_session = Session.objects.create(player=other_player, game_version=version, started='2026-01-01T00:00:00Z')
+        endpoint = reverse('game_action', args=[session.pk])
+
+        self.assertEqual(302, self.client.post(endpoint, content_type='application/json').status_code)
+        self.client.login(username='other-player', password='secret')
+        self.assertEqual(404, self.client.post(endpoint, {'event_id': 'x', 'stage_id': 'main#one'}).status_code)
+        self.client.login(username='api-player', password='secret')
+        self.assertEqual(409, self.client.post(endpoint, data=json.dumps({
+            'event_id': 'skip', 'stage_id': 'main#two', 'score': 9999,
+        }), content_type='application/json').status_code)
+        self.assertEqual(403, self.client.post(endpoint, data=json.dumps({
+            'event_id': 'bad-gps', 'stage_id': 'main#one',
+            'gps': {'latitude': 36.7, 'longitude': 52.4, 'accuracy': 5},
+        }), content_type='application/json').status_code)
+        response = self.client.post(endpoint, data=json.dumps({
+            'event_id': 'valid-one', 'stage_id': 'main#one', 'score': 9999,
+            'completed': True, 'next_stage_id': 'main#two',
+        }), content_type='application/json')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(100, response.json()['score'])
+        self.assertEqual('main#two', response.json()['next_stage_id'])
+        self.assertEqual(1, SessionEvent.objects.filter(session=session).count())
+        self.assertEqual(100, ScoreLedger.objects.get(session=session).amount)
+        replay = self.client.post(endpoint, data=json.dumps({
+            'event_id': 'valid-one', 'stage_id': 'main#one', 'score': 1,
+        }), content_type='application/json')
+        self.assertEqual(200, replay.status_code)
+        self.assertEqual(1, SessionEvent.objects.filter(session=session).count())
+        final = self.client.post(endpoint, data=json.dumps({'event_id': 'valid-two', 'stage_id': 'main#two'}), content_type='application/json')
+        self.assertEqual(True, final.json()['completed'])
+        self.assertIsNotNone(Session.objects.get(pk=session.pk).completed)
+        self.assertEqual(409, self.client.post(endpoint, data=json.dumps({'event_id': 'after', 'stage_id': 'main#two'}), content_type='application/json').status_code)
+        self.assertEqual(404, other_session.game_version_id and self.client.post(reverse('game_action', args=[other_session.pk]), data=json.dumps({'event_id': 'x', 'stage_id': 'main#one'}), content_type='application/json').status_code)
+
     def test_complete_server_side_game_flow(self):
         user = get_user_model().objects.create_user(username='e2e-player', password='secret')
         city = City.objects.create(
