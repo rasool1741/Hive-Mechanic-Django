@@ -54,3 +54,33 @@ class GameVersionValidationTests(TestCase):
         self.assertTrue(any('missing or disabled' in error for error in errors))
         version.refresh_from_db()
         self.assertEqual(GameVersion.STATUS_DRAFT, version.status)
+
+    def test_invalid_graph_prevents_publication(self):
+        version = self.make_version({
+            'sequences': [{'id': 'main', 'items': [{'id': 'start'}]}],
+            'initial-card': 'main#start',
+            'graph': {
+                'nodes': [{'id': 'start'}, {'id': 'orphan'}, {'id': 'end'}],
+                'edges': [{'source': 'start', 'target': 'end'}],
+                'start': 'start',
+                'end': 'end',
+            },
+        })
+        published, errors = version.publish()
+        self.assertFalse(published)
+        self.assertTrue(any('unreachable' in error for error in errors))
+
+    def test_valid_graph_can_be_published(self):
+        version = self.make_version({
+            'sequences': [{'id': 'main', 'items': [{'id': 'start'}]}],
+            'initial-card': 'main#start',
+            'graph': {
+                'nodes': [{'id': 'start'}, {'id': 'end'}],
+                'edges': [{'source': 'start', 'target': 'end'}],
+                'start': 'start',
+                'end': 'end',
+            },
+        })
+        published, errors = version.publish()
+        self.assertTrue(published)
+        self.assertEqual([], errors)

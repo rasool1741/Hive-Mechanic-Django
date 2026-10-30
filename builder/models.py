@@ -992,7 +992,69 @@ class GameVersion(models.Model):
         elif initial_card not in item_ids:
             errors.append('Initial card does not exist: %s.' % initial_card)
 
+        errors.extend(self.validate_graph(definition))
+
         self.validation_errors = errors
+        return errors
+
+    @staticmethod
+    def validate_graph(definition):
+        graph = definition.get('graph') if isinstance(definition, dict) else None
+        if graph is None:
+            return []
+        if not isinstance(graph, dict):
+            return ['Graph must be an object.']
+
+        node_ids = {node.get('id') for node in graph.get('nodes', []) if isinstance(node, dict)}
+        node_ids.discard(None)
+        edges = graph.get('edges', [])
+        errors = []
+        start = graph.get('start')
+        end = graph.get('end')
+        if not start or start not in node_ids:
+            errors.append('Graph requires a valid start node.')
+        if not end or end not in node_ids:
+            errors.append('Graph requires a valid end node.')
+
+        adjacency = {node_id: [] for node_id in node_ids}
+        for edge in edges:
+            source = edge.get('source') if isinstance(edge, dict) else None
+            target = edge.get('target') if isinstance(edge, dict) else None
+            if source not in node_ids or target not in node_ids:
+                errors.append('Graph contains an edge referencing an unknown node.')
+                continue
+            adjacency[source].append(target)
+
+        if start in adjacency:
+            reachable = set()
+            stack = [start]
+            while stack:
+                current = stack.pop()
+                if current in reachable:
+                    continue
+                reachable.add(current)
+                stack.extend(adjacency[current])
+            if end in node_ids and end not in reachable:
+                errors.append('Graph end node is unreachable.')
+            if reachable != node_ids:
+                errors.append('Graph contains unreachable nodes.')
+
+        visiting = set()
+        visited = set()
+
+        def visit(node_id):
+            if node_id in visiting:
+                return True
+            if node_id in visited:
+                return False
+            visiting.add(node_id)
+            has_cycle = any(visit(child) for child in adjacency[node_id])
+            visiting.remove(node_id)
+            visited.add(node_id)
+            return has_cycle
+
+        if any(visit(node_id) for node_id in node_ids):
+            errors.append('Graph contains a cycle.')
         return errors
 
     def calculate_checksum(self):
