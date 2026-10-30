@@ -297,3 +297,6 @@
 - روی دیتابیس خالی، `migrate --plan` و `migrate --noinput --skip-checks` موفق شدند؛ `builder.0036`، `0037` و همه Migrationهای Builder تا `0055` با وضعیت `OK` اجرا شدند.
 - `makemigrations --check --dry-run --skip-checks` ناموفق است و Migration پیشنهادی `builder.0056_alter_game_options` را برای اختلاف موجود `Game.Meta` گزارش می‌کند؛ این Migration عمداً در این مرحله ساخته نشد.
 - تست‌های `builder.tests.tests_game_version_validation`، `builder.tests.tests_city_catalog` و `builder.tests.tests_urban_tools`: شش تست، همگی موفق. فقط هشدارهای محیطی مربوط به گروه‌ها، Site، کانال‌های پیام‌رسان و taskهای Quicksilver باقی است.
+- اختلاف `Game.Meta` عمدی و موجود در مدل فعلی بود؛ Migration `builder.0056_alter_game_options` با `ordering=['name']` ایجاد شد. اجرای دیتابیس خالی تا `0056` و ارتقای دیتابیس از `0055` تا `0056` هر دو موفق شدند.
+- پس از ایجاد `0056`، `makemigrations --check --dry-run --skip-checks` خروجی `No changes detected` داد.
+- اجرای کامل `manage.py test builder` شامل ۱۲ تست، به ۶ خطا در `tests_permissions` رسید؛ علت همه تلاش تست برای دریافت Repository از `raw.githubusercontent.com` و محدودیت شبکه بود، نه Migration یا ORM. تست‌های قبلی ۶تایی همچنان موفق بودند.
