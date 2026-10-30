@@ -293,3 +293,7 @@
 - دیتابیس آزمایشی مستقل در `.test-runtime` ساخته شد. پیش‌بارگذاری DLL با `os.add_dll_directory` لازم بود؛ سپس Migration با `--skip-checks` تا `builder.0036` پیش رفت.
 - Migration در `builder.0036` با `InvalidBasesError` برای مدل `CachedFile` متوقف شد؛ بنابراین Migrationهای 0050 تا 0055 و تست‌های ORM هنوز قابل تأیید نیستند.
 - `Django Check` پس از Migration ناقص به‌دلیل نبود جدول `django_site` قابل موفقیت نیست؛ ابتدا باید زنجیره Migration قدیمی اصلاح یا مسیر مهاجرت سازگار طراحی شود.
+- وابستگی `builder.0036_auto_20240205_1106` به `filer.0001_initial` اصلاح شد؛ این همان Migration واقعی ایجادکننده‌ی `filer.File` در نصب فعلی `django-filer 3.3.1` است. inheritance چندجدولی و `file_ptr` حفظ شدند.
+- روی دیتابیس خالی، `migrate --plan` و `migrate --noinput --skip-checks` موفق شدند؛ `builder.0036`، `0037` و همه Migrationهای Builder تا `0055` با وضعیت `OK` اجرا شدند.
+- `makemigrations --check --dry-run --skip-checks` ناموفق است و Migration پیشنهادی `builder.0056_alter_game_options` را برای اختلاف موجود `Game.Meta` گزارش می‌کند؛ این Migration عمداً در این مرحله ساخته نشد.
+- تست‌های `builder.tests.tests_game_version_validation`، `builder.tests.tests_city_catalog` و `builder.tests.tests_urban_tools`: شش تست، همگی موفق. فقط هشدارهای محیطی مربوط به گروه‌ها، Site، کانال‌های پیام‌رسان و taskهای Quicksilver باقی است.
