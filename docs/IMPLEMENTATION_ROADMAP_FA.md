@@ -16,6 +16,9 @@
 - فاز ۶: مدل‌های `Hint` و `ScoreLedger` و Migration افزایشی اضافه شدند؛ تست ORM به‌دلیل نبود Django قابل اجرا نیست و در وضعیت محیط ثبت می‌شود.
 - فاز ۷: manifest فارسی/RTL، Service Worker محدود به assetهای عمومی و ثبت PWA به قالب Builder اضافه شدند؛ تست مرورگر/نصب هنوز اجرا نشده است.
 - فاز ۸: مدل‌های افزایشی `Team`، `TeamMembership` و `TeamSession` اضافه شدند؛ تست ORM و جریان دعوت تیمی هنوز به محیط Django نیاز دارند.
+- مرور Bug Fixing: syntax تمام Pythonهای `builder`، تست مستقل ابزارهای شهری، syntax فایل‌های JavaScript و JSON manifest موفق شدند. `python manage.py check`، تمام Migrationها و تست‌های ORM/Builder/موبایل به‌دلیل نبود Django اجرا نشدند و موفق اعلام نمی‌شوند.
+- آخرین Commit: `baf30f6` (`Add extensible team session models`).
+- گام بعدی دقیق: فراهم‌کردن محیط Python/Django سالم، اجرای Migrationهای `0050` تا `0055` روی دیتابیس آزمایشی، سپس اجرای تست‌های ORM و رفع خطاهای واقعی قبل از هر انتشار.
 - محدودیت محیط: نصب وابستگی‌ها در `.venv` به‌دلیل timeout/خطای Windows در pip کامل نشده است؛ Check، Migration و تست ORM همچنان باید در محیط دارای وابستگی اجرا شوند.
 
 ## اصول اجرایی
