@@ -675,6 +675,33 @@
         </div>
 -->
 
+        {% if editable %}
+        <section id="urban-graph-editor" style="margin:16px;padding:16px;border:1px solid #ddd;border-radius:8px;">
+            <h2 class="mdc-typography--headline6">ویرایشگر گراف مراحل</h2>
+            <div id="urban-graph-canvas" style="height:360px;border:1px solid #bbb;background:#fafafa;"></div>
+            <p class="mdc-typography--caption">برای افزودن مرحله، اتصال، شروع/پایان و ابزارها از کنترل‌های زیر استفاده کنید. این بخش فقط نسخه Draft را ذخیره می‌کند.</p>
+            <button type="button" id="urban-graph-add-node">افزودن مرحله</button>
+            <button type="button" id="urban-graph-edit-node">ویرایش مرحله</button>
+            <button type="button" id="urban-graph-delete">حذف انتخاب</button>
+            <button type="button" id="urban-graph-connect">اتصال دو مرحله</button>
+            <button type="button" id="urban-graph-start">شروع</button>
+            <button type="button" id="urban-graph-end">پایان</button>
+            <button type="button" id="urban-graph-save">ذخیره Draft</button>
+            <div style="margin-top:12px;">
+                <label for="urban-graph-tool">ابزار مرحله انتخاب‌شده:</label>
+                <select id="urban-graph-tool">
+                    <option value="gps">GPS / Geofence</option><option value="qr">QR</option>
+                    <option value="hint">Hint</option><option value="timer">Timer</option>
+                    <option value="quiz">Quiz</option><option value="text_input">Text Input</option>
+                    <option value="camera">Camera / Image</option><option value="audio_video">Audio / Video</option>
+                </select>
+                <button type="button" id="urban-graph-add-tool">افزودن ابزار</button>
+            </div>
+            <pre id="urban-graph-preview" style="white-space:pre-wrap;background:#f3f3f3;padding:8px;"></pre>
+            <div id="urban-graph-status" role="status"></div>
+        </section>
+        {% endif %}
+
 
     </body>
     <script>
@@ -708,4 +735,11 @@
     </script>
 
     <script data-main="{% static 'builder-js/js/app/main.js' %}" src="{% static 'builder-js/vendor/require.js' %}"></script>
+    {% if editable %}
+    <script src="{% static 'builder-js/vendor/cytoscape-3.19.1.min.js' %}"></script>
+    <script>
+        window.urbanGraphConfig = {url: "{% url 'builder_graph_api' game.slug %}", editable: true};
+    </script>
+    <script src="{% static 'builder-js/js/app/urban_graph.js' %}"></script>
+    {% endif %}
 </html>

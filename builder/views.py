@@ -535,6 +535,71 @@ def builder_game(request, game): # pylint: disable=unused-argument
 
 @login_required
 @user_accepted_all_terms
+def builder_graph_api(request, game):
+    """Read and persist the optional graph metadata for a draft definition."""
+    if not request.user.has_perm('builder.builder_login'):
+        raise PermissionDenied('View permission required.')
+
+    matched_game = get_object_or_404(Game, slug=game)
+    if not matched_game.can_view(request.user):
+        raise PermissionDenied('View permission required.')
+
+    latest = matched_game.versions.order_by('-created').first()
+    if latest is None:
+        return JsonResponse({'error': 'Game has no definition.'}, status=404)
+
+    try:
+        definition = json.loads(latest.definition or '{}')
+    except (TypeError, ValueError):
+        return JsonResponse({'error': 'Game definition is not valid JSON.'}, status=409)
+    if isinstance(definition, list):
+        definition = {'sequences': definition}
+    if not isinstance(definition, dict):
+        return JsonResponse({'error': 'Game definition must be an object.'}, status=409)
+
+    if request.method == 'GET':
+        return JsonResponse({
+            'graph': definition.get('graph', {'nodes': [], 'edges': [], 'start': None, 'end': None}),
+            'editable': matched_game.can_edit(request.user),
+            'runtime': 'sequence-interaction-card',
+        })
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required.'}, status=405)
+    if not matched_game.can_edit(request.user):
+        raise PermissionDenied('Edit permission required.')
+
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+        graph = payload.get('graph', payload) if isinstance(payload, dict) else None
+    except (TypeError, ValueError, UnicodeDecodeError):
+        graph = None
+    if not isinstance(graph, dict):
+        return JsonResponse({'error': 'Graph must be a JSON object.'}, status=400)
+
+    candidate = dict(definition)
+    candidate['graph'] = graph
+    draft = GameVersion(
+        game=matched_game,
+        created=timezone.now(),
+        definition=json.dumps(candidate, indent=2),
+        creator=request.user,
+        status=GameVersion.STATUS_DRAFT,
+    )
+    draft.validate_definition()
+    with transaction.atomic():
+        draft.save()
+    return JsonResponse({
+        'success': True,
+        'version_id': draft.pk,
+        'graph': graph,
+        'validation_errors': draft.validation_errors,
+        'runtime': 'Graph is currently editor and publication metadata; runtime follows sequences.',
+    })
+
+
+@login_required
+@user_accepted_all_terms
 def builder_game_definition_json(request, game): # pylint: disable=unused-argument
     if request.user.has_perm('builder.builder_login') is False:
         raise PermissionDenied('View permission required.')

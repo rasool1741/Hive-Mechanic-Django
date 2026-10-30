@@ -316,3 +316,8 @@
 - فاز اتصال گراف به موتور: Definition فعلی Sequence و InteractionCard حفظ شد و قرارداد اختیاری `definition.graph` برای nodes/edges/start/end اضافه شد. `GameVersion.publish()` اکنون گراف را از نظر start/end معتبر، یال‌های معلق، دسترسی‌پذیری و حلقه بررسی می‌کند.
 - تست‌های گراف معتبر و نامعتبر به تست GameVersion اضافه شدند؛ تست ترکیبی Backend و GameVersion شامل ۸ تست موفق است و `makemigrations --check --dry-run` خروجی `No changes detected` دارد.
 - مدیر همچنان می‌تواند از ویرایشگر فعلی Sequence/Cytoscape کارت‌ها را ایجاد، ویرایش و به مسیرهای موتور متصل کند؛ پیش‌نمایش و ذخیره Draft موجود حفظ شده‌اند. فرم اختصاصی گراف برای مدیریت nodes/edges و پیکربندی اختصاصی همه ابزارها هنوز نیازمند توسعه UI بعدی است.
+- فاز رابط گراف Draft آغاز شد: API `builder/api/v1/games/<slug>/graph` فقط برای کاربر مجاز و نسخه قابل ویرایش، گراف را می‌خواند و به‌صورت نسخه Draft ذخیره می‌کند؛ نسخه‌های Published تغییر داده نمی‌شوند.
+- پنل Cytoscape جدید امکان افزودن/حذف/ویرایش Node، اتصال و حذف Edge، تعیین شروع/پایان، مسیر شرطی، افزودن ابزارهای GPS، QR، Hint، Timer، Quiz، Text Input، Camera/Image و Audio/Video و پیش‌نمایش JSON را فراهم می‌کند.
+- ابزارها به‌صورت metadata توسعه‌پذیر داخل `definition.graph.nodes[].tools` ذخیره می‌شوند و Preview هیچ رکورد Session یا امتیازی ایجاد نمی‌کند.
+- وضعیت اتصال اجرایی صریح است: موتور فعلی همچنان مرحله بعد را از Sequence و InteractionCard تعیین می‌کند؛ `definition.graph` در این فاز برای ویرایش، Preview و اعتبارسنجی انتشار است و هنوز منبع runtime نیست. هماهنگ‌سازی گراف با اجرای Session فاز بعدی است.
+- بررسی سریع: `py_compile` و `git diff --check` موفق شدند. `manage.py check` در دیتابیس آزمایشی تازه‌ساخته به‌دلیل نبود جدول‌های Migration اجرا نشد؛ این شکست محیطی ثبت شده و موفق اعلام نمی‌شود.

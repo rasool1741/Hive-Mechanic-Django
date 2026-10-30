@@ -1005,9 +1005,13 @@ class GameVersion(models.Model):
         if not isinstance(graph, dict):
             return ['Graph must be an object.']
 
-        node_ids = {node.get('id') for node in graph.get('nodes', []) if isinstance(node, dict)}
-        node_ids.discard(None)
+        nodes = graph.get('nodes', [])
         edges = graph.get('edges', [])
+        if not isinstance(nodes, list) or not isinstance(edges, list):
+            return ['Graph nodes and edges must be arrays.']
+
+        node_ids = {node.get('id') for node in nodes if isinstance(node, dict)}
+        node_ids.discard(None)
         errors = []
         start = graph.get('start')
         end = graph.get('end')
