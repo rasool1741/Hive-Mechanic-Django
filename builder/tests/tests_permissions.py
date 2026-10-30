@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import os
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -28,7 +29,7 @@ class UserPermissionsTestCase(TestCase):
         self.manager_group = Group.objects.get(name='Hive Mechanic Manager')
 
         call_command('initialize_permissions')
-        call_command('install_default_repository', silent=True)
+        call_command('load_interaction_cards', os.path.join('builder', 'data', 'interaction_cards.zip'))
 
         InteractionCard.objects.all().update(enabled=True)
 

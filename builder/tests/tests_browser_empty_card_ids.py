@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import os
 import sys
 
 import six
@@ -36,7 +37,7 @@ class BrowserEmptyCardIdTests(StaticLiveServerTestCase):
 
         get_user_model().objects.create_user(username='selenium', email='selenium@example.com', password='browsertesting', is_superuser=True) # nosec
 
-        call_command('install_default_repository', silent=True)
+        call_command('load_interaction_cards', os.path.join('builder', 'data', 'interaction_cards.zip'))
 
         InteractionCard.objects.all().update(enabled=True)
 

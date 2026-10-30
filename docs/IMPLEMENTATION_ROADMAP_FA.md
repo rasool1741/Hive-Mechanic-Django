@@ -300,3 +300,5 @@
 - اختلاف `Game.Meta` عمدی و موجود در مدل فعلی بود؛ Migration `builder.0056_alter_game_options` با `ordering=['name']` ایجاد شد. اجرای دیتابیس خالی تا `0056` و ارتقای دیتابیس از `0055` تا `0056` هر دو موفق شدند.
 - پس از ایجاد `0056`، `makemigrations --check --dry-run --skip-checks` خروجی `No changes detected` داد.
 - اجرای کامل `manage.py test builder` شامل ۱۲ تست، به ۶ خطا در `tests_permissions` رسید؛ علت همه تلاش تست برای دریافت Repository از `raw.githubusercontent.com` و محدودیت شبکه بود، نه Migration یا ORM. تست‌های قبلی ۶تایی همچنان موفق بودند.
+- برای مستقل‌کردن تست‌ها از اینترنت، `tests_permissions`، `tests_browser_empty_card_ids` و `tests_interaction_cards_delete_media_files` به ZIP محلی `builder/data/interaction_cards.zip` متصل شدند؛ رفتار production و Commandهای Repository تغییر نکرد.
+- اجرای مجدد ۱۲ تست: ۵ مورد هنوز قابل‌قبول نیستند؛ دو تست Browser به‌دلیل نصب‌نبودن Selenium import نمی‌شوند و سه تست Permission به ناسازگاری‌های مستقل موجود (redirect با کد 301 به‌جای 302 و منطق دسترسی پیش‌فرض) شکست خوردند. خطای شبکه حذف شد.

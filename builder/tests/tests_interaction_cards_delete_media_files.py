@@ -12,7 +12,7 @@ from ..models import InteractionCard
 # Verifies that client implementation files are deleted
 class InteractionCardsMediaFilesDeletedTestCase(TestCase):
     def setUp(self):
-        call_command('install_default_repository', silent=True)
+        call_command('load_interaction_cards', os.path.join('builder', 'data', 'interaction_cards.zip'))
 
         InteractionCard.objects.all().update(enabled=True)
 
