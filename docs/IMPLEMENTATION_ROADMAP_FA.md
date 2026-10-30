@@ -19,6 +19,18 @@
 - مرور Bug Fixing: syntax تمام Pythonهای `builder`، تست مستقل ابزارهای شهری، syntax فایل‌های JavaScript و JSON manifest موفق شدند. `python manage.py check`، تمام Migrationها و تست‌های ORM/Builder/موبایل به‌دلیل نبود Django اجرا نشدند و موفق اعلام نمی‌شوند.
 - آخرین Commit: `baf30f6` (`Add extensible team session models`).
 - گام بعدی دقیق: فراهم‌کردن محیط Python/Django سالم، اجرای Migrationهای `0050` تا `0055` روی دیتابیس آزمایشی، سپس اجرای تست‌های ORM و رفع خطاهای واقعی قبل از هر انتشار.
+
+## گزارش تثبیت و اعتبارسنجی نهایی
+
+- Python محیط اصلی: `3.11.0`؛ `.venv` ساخته شده اما فقط pip/setuptools دارد.
+- نصب Django با `pip` و timeout محدود چندبار timeout شد؛ cache wheel محلی هم وجود ندارد.
+- Docker و Docker Compose روی سیستم نصب/در PATH نیستند؛ مسیر Docker قابل اجرا نبود.
+- برای تولید، PostgreSQL + PostGIS انتخاب مناسب است؛ برای تست مستقل Windows، SQLite معمولی عملی‌تر است، اما Django Check واقعی هنوز اجرا نشده است.
+- compileall برای `builder` و Migrationهای `0050` تا `0055`: موفق.
+- تست مستقل `builder.tests.tests_urban_tools`: موفق، ۲ تست.
+- تست discovery کامل Builder: ناموفق؛ علت‌ها نبود Django، selenium و six و اجرای مستقیم یک تست relative-import خارج از package است.
+- `manage.py check`، Migrationها، تست‌های ORM، Selenium، PWA، PostgreSQL/PostGIS و End-to-End اجرا نشده‌اند و موفق اعلام نمی‌شوند.
+- هیچ دیتابیس واقعی یا اطلاعات کاربر لمس نشده است.
 - محدودیت محیط: نصب وابستگی‌ها در `.venv` به‌دلیل timeout/خطای Windows در pip کامل نشده است؛ Check، Migration و تست ORM همچنان باید در محیط دارای وابستگی اجرا شوند.
 
 ## اصول اجرایی
