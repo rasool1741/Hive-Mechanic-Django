@@ -31,6 +31,18 @@
 - تست discovery کامل Builder: ناموفق؛ علت‌ها نبود Django، selenium و six و اجرای مستقیم یک تست relative-import خارج از package است.
 - `manage.py check`، Migrationها، تست‌های ORM، Selenium، PWA، PostgreSQL/PostGIS و End-to-End اجرا نشده‌اند و موفق اعلام نمی‌شوند.
 - هیچ دیتابیس واقعی یا اطلاعات کاربر لمس نشده است.
+
+## به‌روزرسانی محیط Python 3.11
+
+- محیط مجازی در `D:\github\Hive-Mechanic-Django\.venv` نگه‌داری می‌شود.
+- `PIP_CACHE_DIR` روی `D:\pip-cache` و `TEMP/TMP` روی `D:\temp` تنظیم شد.
+- نصب مرحله‌ای موفق: Django `5.2.18`، django-db-logger، django-prettyjson، django-filter، six، requests، easy-thumbnails، django-filer، Pillow، lxml، reportlab، svglib و psycopg2-binary.
+- فضای آزاد پیش از نصب: C حدود `3.90GB`، D حدود `57.37GB`.
+- فضای آزاد پس از نصب: C حدود `2.20GB`، D حدود `57.25GB`.
+- `manage.py check` اکنون تا مرحله بارگذاری GIS پیش می‌رود اما به‌علت نبود DLL native کتابخانه GDAL در Windows متوقف می‌شود: `Could not find the GDAL library`.
+- Docker Desktop نصب نشد و فرمان `docker` در سیستم موجود نیست.
+- تست مستقل ابزارهای شهری با محیط `.venv`: ۲ تست موفق.
+- Migration، تست ORM و End-to-End همچنان اجرا نشده‌اند؛ علت معتبر و مشخص آن نبود GDAL/Docker جایگزین است.
 - محدودیت محیط: نصب وابستگی‌ها در `.venv` به‌دلیل timeout/خطای Windows در pip کامل نشده است؛ Check، Migration و تست ORM همچنان باید در محیط دارای وابستگی اجرا شوند.
 
 ## اصول اجرایی
