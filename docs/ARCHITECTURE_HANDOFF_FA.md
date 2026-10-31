@@ -45,4 +45,6 @@ Endpoint عملیات اکنون برای نسخه‌های دارای Graph م�
 
 برای اجرای واقعی تست‌ها باید Test Runner پیش‌فرض `NoDbTestRunner` با `django.test.runner.DiscoverRunner` جایگزین شود؛ در غیر این صورت جدول‌های تست ساخته نمی‌شوند. با Runner استاندارد، تست Graph و ۱۱ تست Backend/GameVersion/Urban Tools موفق شدند. Browser به Firefox/geckodriver نیاز دارد.
 
-قرارداد ابزارها در همان `nodes[].tools` باقی مانده است. `operation=hint` برای Hint اجرا می‌شود؛ عملیات تکمیل Node ابزارهای Timer، Quiz و Text را با داده Published و زمان سرور بررسی می‌کند. مقدار امتیاز و نتیجه از کلاینت معتبر نیست. Media و ابزارهای تصویری هنوز Runtime ندارند.
+قرارداد ابزارها در همان `nodes[].tools` باقی مانده است. `operation=hint` برای Hint اجرا می‌شود؛ عملیات تکمیل Node ابزارهای Timer، Quiz و Text را با داده Published و زمان سرور بررسی می‌کند. مقدار امتیاز و نتیجه از کلاینت معتبر نیست.
+
+Media محتوایی اکنون با `operation=media` از `django-filer.File` خوانده می‌شود؛ تنظیمات Node فقط `file_id` و `media_type` دارد و نوع MIME فایل سمت سرور بررسی می‌شود. این قابلیت پخش/نمایش محتوای مدیر است، نه آپلود مدرک بازیکن؛ آپلود بازیکن هنوز انجام نشده است.

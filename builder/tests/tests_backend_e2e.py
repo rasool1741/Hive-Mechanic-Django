@@ -2,12 +2,14 @@ import json
 import time
 
 from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
 from django.db import IntegrityError, transaction
 from django.db.models import Sum
 from django.test import TestCase
 from django.urls import reverse
 
 from ..models import City, Game, GameVersion, Hint, Player, ScoreLedger, Session, SessionEvent
+from filer.models import filemodels
 from ..urban_tools import create_qr_token, inside_radius, validate_location_sample, verify_qr_token
 
 
@@ -85,6 +87,30 @@ class BackendGameFlowTests(TestCase):
         self.assertEqual(200, valid.status_code)
         self.assertEqual(100, valid.json()['score'])
         self.assertEqual(-5, ScoreLedger.objects.filter(session=session, reason='hint-cost').first().amount)
+
+    def test_graph_media_reference_is_server_bound_and_type_checked(self):
+        user = get_user_model().objects.create_user(username='media-player', password='secret')
+        city = City.objects.create(slug='media-city', name='Media City')
+        game = Game.objects.create(name='Media Game', slug='media-game', city=city)
+        media_file = filemodels.File.objects.create(
+            file=ContentFile(b'fake-png-content', name='server-image.png'),
+            original_filename='server-image.png', name='server-image', mime_type='image/png',
+            has_all_mandatory_data=True, is_public=False,
+        )
+        definition = {'sequences': [{'id': 'legacy', 'items': [{'id': 'fallback'}]}], 'initial-card': 'legacy#fallback', 'graph': {
+            'nodes': [{'id': 'media-start', 'tools': [{'type': 'image', 'settings': {'file_id': media_file.pk, 'media_type': 'image'}}]}, {'id': 'media-end'}],
+            'edges': [{'id': 'media-edge', 'source': 'media-start', 'target': 'media-end'}], 'start': 'media-start', 'end': 'media-end'}}
+        version = GameVersion.objects.create(game=game, created='2026-01-01T00:00:00Z', definition=json.dumps(definition))
+        self.assertTrue(version.publish()[0])
+        player = Player.objects.create(identifier='user:media-player', user=user)
+        session = Session.objects.create(player=player, game_version=version, started='2026-01-01T00:00:00Z')
+        self.client.login(username='media-player', password='secret')
+        endpoint = reverse('game_action', args=[session.pk])
+        response = self.client.post(endpoint, data=json.dumps({'event_id': 'media-1', 'stage_id': 'media-start', 'operation': 'media'}), content_type='application/json')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(media_file.pk, response.json()['file_id'])
+        self.assertNotIn('fake-png-content', response.content.decode())
+        self.assertEqual(409, self.client.post(endpoint, data=json.dumps({'event_id': 'media-2', 'stage_id': 'media-end', 'operation': 'media'}), content_type='application/json').status_code)
 
     def test_server_authoritative_game_action_api(self):
         user = get_user_model().objects.create_user(username='api-player', password='secret')

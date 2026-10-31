@@ -63,3 +63,5 @@
 - `makemigrations --check --dry-run --skip-checks`: `No changes detected`.
 - Django Check در زمان تست Error ندارد، اما ۲۸ هشدار محیطی/پیکربندی ثبت می‌کند.
 - تست ابزارهای Graph برای Hint، Timer، Quiz و Text: `1` تست موفق؛ Replay Hint، هزینه سروری، Timer زودهنگام، پاسخ غلط، طول متن و امتیاز جعلی پوشش داده شد.
+- Media Runtime: Image/Audio/Video با reference امن `django-filer.File` برای Node جاری پیاده‌سازی و تست شد. تست Media: `1` موفق. URL یا مسیر فایل از کلاینت پذیرفته نمی‌شود؛ فایل ناموجود و MIME نامجاز رد می‌شوند.
+- آپلود تصویر/مدرک توسط بازیکن عمداً پیاده‌سازی نشد؛ مسیر امن اتصال فایل به Session/Node و بررسی واقعی محتوای MIME نیازمند طراحی و تست مستقل است.

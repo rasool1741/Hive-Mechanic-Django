@@ -14,6 +14,8 @@ Endpoint موجود `POST /builder/api/v1/sessions/<id>/actions` حفظ شده �
 
 Hint از مدل Hint یا تنظیمات Node خوانده و هزینه‌اش سروری ثبت می‌شود؛ Timer زمان Unix سرور را در Session نگه می‌دارد؛ Quiz و Text با تنظیمات Published مقایسه می‌شوند. ابزار ناشناخته fail closed است.
 
+Media محتوایی با `operation=media` و تنظیمات Published شامل `file_id` و `media_type` اجرا می‌شود. سرور فایل را از `django-filer.File` می‌خواند، MIME ثبت‌شده را با نوع مورد انتظار تطبیق می‌دهد و URL ارسالی کلاینت را هرگز قبول نمی‌کند. آپلود مدرک توسط بازیکن در این فاز فعال نشده است.
+
 ## انتخاب Edge
 
 Edgeها فقط از `source` برابر Node جاری بررسی می‌شوند. شرط امن فعلی فقط فرم `{variable|key, equals}` را می‌پذیرد و مقدار متغیر را از `Session.session_state` می‌خواند؛ نتیجه شرط از کلاینت گرفته نمی‌شود. وجود بیش از یک Edge قابل انتخاب رد می‌شود. Node بعدی، امتیاز، تکمیل و `graph_node_id` همگی توسط سرور تعیین می‌شوند.

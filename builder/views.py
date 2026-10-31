@@ -214,10 +214,29 @@ def _graph_game_action(session, payload, event_id, stage_id, graph):
     node = nodes[current]
     tools = [tool for tool in node.get('tools', []) if isinstance(tool, dict) and tool.get('type')]
     tool_types = {tool.get('type') for tool in tools}
-    supported_tools = {'gps', 'qr', 'hint', 'timer', 'quiz', 'text', 'text_input'}
+    supported_tools = {'gps', 'qr', 'hint', 'timer', 'quiz', 'text', 'text_input', 'image', 'audio', 'video', 'camera', 'audio_video'}
     if tool_types - supported_tools:
         return JsonResponse({'error': 'Node contains an unsupported tool.'}, status=409)
     operation = payload.get('operation', 'complete')
+    media_tool = next((tool for tool in tools if tool.get('type') in ('image', 'audio', 'video', 'camera', 'audio_video')), None)
+    if operation == 'media':
+        if media_tool is None:
+            return JsonResponse({'error': 'Media is not available for this node.'}, status=403)
+        media_settings = media_tool.get('settings') or {}
+        try:
+            file_id = int(media_settings.get('file_id'))
+        except (TypeError, ValueError):
+            return JsonResponse({'error': 'Media configuration is incomplete.'}, status=409)
+        media_file = filemodels.File.objects.filter(pk=file_id).first()
+        if media_file is None or not media_file.file or not media_file.has_all_mandatory_data:
+            return JsonResponse({'error': 'Media file is unavailable.'}, status=404)
+        media_kind = media_settings.get('media_type', media_tool.get('type'))
+        allowed_prefix = {'image': 'image/', 'audio': 'audio/', 'video': 'video/'}.get(media_kind)
+        if allowed_prefix is None or not (media_file.mime_type or '').lower().startswith(allowed_prefix):
+            return JsonResponse({'error': 'Media type is not allowed.'}, status=403)
+        return JsonResponse({'accepted': True, 'tool': media_kind, 'stage_id': current,
+                             'file_id': media_file.pk, 'filename': media_file.original_filename,
+                             'url': media_file.file.url})
     if operation == 'hint':
         hint_tool = next((tool for tool in tools if tool.get('type') == 'hint'), None)
         if hint_tool is None:

@@ -325,5 +325,7 @@
 - Graph Runtime کنترل GPS/QR موجود، مالکیت Session، قفل تراکنشی، Replay، ScoreLedger و تکمیل Session را حفظ می‌کند. شرط Edge فعلاً فقط متغیرهای Session با عملگر `equals` را پشتیبانی می‌کند و Edge مبهم رد می‌شود.
 - تست Graph E2E اضافه شد، اما اجرای آن در این محیط پس از Migration به‌علت Checkهای دیتابیس/تنظیم Test Runner با موفقیت قابل اعلام نیست؛ `py_compile` موفق است. Browser همچنان نیازمند Firefox/geckodriver است.
 - ابزارهای Graph اولویت‌دار تکمیل شدند: Hint با هزینه و Replay سروری، Timer با زمان سرور، Quiz با پاسخ Published و Text با محدودیت طول/تطبیق سروری. تست ابزارها `1` مورد موفق است؛ Media همچنان باقی‌مانده است.
+- Media Runtime محتوایی تکمیل شد: Image/Audio/Video با `django-filer.File`، reference نسخه Published، کنترل Node جاری و تطبیق MIME سمت سرور اجرا شد؛ تست Media موفق است. آپلود مدرک بازیکن و اعتبارسنجی واقعی بایت فایل باقی‌مانده است.
+- اجرای نهایی این فاز: مجموعه Backend/Graph/GameVersion/Urban Tools شامل `13` تست موفق. هیچ Migration جدیدی ایجاد نشد.
 - تثبیت فاز Graph Runtime: با `django.test.runner.DiscoverRunner` و دیتابیس تست مستقل، تست Graph E2E با ۱ تست موفق و مجموعه Backend E2E/GameVersion/Urban Tools با ۱۱ تست موفق اجرا شدند. هشدارهای Check باقی هستند ولی Error عملکردی ندارند.
 - `makemigrations --check --dry-run --skip-checks` خروجی `No changes detected` داد. Test Runner پیش‌فرض `NoDbTestRunner` برای اجرای توسعه‌ای بدون دیتابیس است و نباید به‌عنوان تست واقعی استفاده شود.
