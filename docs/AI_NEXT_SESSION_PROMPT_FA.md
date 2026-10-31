@@ -56,4 +56,4 @@ Browser tests فقط با Firefox/geckodriver قابل اجرا هستند؛ ن�
 
 ## وضعیت آخرین فاز
 
-Graph Runtime در `builder/views.py` به‌صورت حداقلی و سرورمحور پیاده‌سازی شده است. ابتدا `docs/GRAPH_RUNTIME_DESIGN_FA.md` را بخوان. تست E2E گراف در `builder/tests/tests_backend_e2e.py` اضافه شده، اما اجرای کامل آن نیازمند دیتابیس تست Migrated و رفع محدودیت Test Runner/Check محیط است. کار بعدی: اجرای تست Graph و Legacy روی دیتابیس تست سالم، سپس تکمیل شرط‌های گراف و نگاشت Graph به InteractionCard بدون پذیرش داده حساس از کلاینت.
+Graph Runtime در `builder/views.py` به‌صورت حداقلی و سرورمحور پیاده‌سازی شده است. ابتدا `docs/GRAPH_RUNTIME_DESIGN_FA.md` را بخوان. برای تست واقعی از `--testrunner django.test.runner.DiscoverRunner` استفاده کن؛ تست Graph و مجموعه ۱۱تایی Backend/GameVersion/Urban Tools موفق شده‌اند. کار بعدی: افزودن تست شاخه شرطی و تکمیل نگاشت Graph به InteractionCard بدون پذیرش داده حساس از کلاینت.

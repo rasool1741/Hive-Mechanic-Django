@@ -42,3 +42,5 @@ Migrationهای `0050` تا `0056` برای Release metadata، City/catalog، Pl
 ## تغییر فاز Graph Runtime
 
 Endpoint عملیات اکنون برای نسخه‌های دارای Graph مسیر جداگانه دارد. تابع `_graph_game_action` Node جاری را از Session می‌خواند، ابزارهای GPS/QR را بررسی می‌کند، Edge معتبر را فقط سرور انتخاب می‌کند و نتیجه را در SessionEvent/ScoreLedger ثبت می‌کند. نسخه‌های فاقد Graph همچنان مسیر Legacy را طی می‌کنند. جزئیات قرارداد در `docs/GRAPH_RUNTIME_DESIGN_FA.md` آمده است.
+
+برای اجرای واقعی تست‌ها باید Test Runner پیش‌فرض `NoDbTestRunner` با `django.test.runner.DiscoverRunner` جایگزین شود؛ در غیر این صورت جدول‌های تست ساخته نمی‌شوند. با Runner استاندارد، تست Graph و ۱۱ تست Backend/GameVersion/Urban Tools موفق شدند. Browser به Firefox/geckodriver نیاز دارد.

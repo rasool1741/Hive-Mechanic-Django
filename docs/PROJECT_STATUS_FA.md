@@ -58,4 +58,7 @@
 - Graph Runtime در API عملیات Session فعال شده است؛ Sessionهای نسخه Published دارای Graph از `graph.start` و Edgeهای همان Graph استفاده می‌کنند.
 - Node جاری در `Session.session_state['graph_node_id']` نگهداری می‌شود و Stage دلخواه، پرش مسیر، GPS/QR نامعتبر و Edge مبهم رد می‌شوند.
 - ابزارهای GPS و QR در Graph Runtime واقعاً بررسی می‌شوند؛ Hint، Timer، Quiz، Text و Media هنوز فقط metadata هستند.
-- تست Graph جدید به `tests_backend_e2e.py` اضافه شد، اما اجرای آن در این محیط به‌دلیل تنظیم Test Runner/Check و دیتابیس آزمایشی قابل اعلام موفقیت نیست.
+- Test Runner پیش‌فرض پروژه دیتابیس را ایجاد نمی‌کند؛ برای تست واقعی از `--testrunner django.test.runner.DiscoverRunner` استفاده شد.
+- تست Graph E2E: `1` تست موفق. مجموعه Backend E2E، GameVersion و Urban Tools: `11` تست موفق.
+- `makemigrations --check --dry-run --skip-checks`: `No changes detected`.
+- Django Check در زمان تست Error ندارد، اما ۲۸ هشدار محیطی/پیکربندی ثبت می‌کند.
