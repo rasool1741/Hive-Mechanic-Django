@@ -1850,6 +1850,14 @@ class SessionMediaSubmission(models.Model):
         constraints = [models.UniqueConstraint(fields=['session', 'event_id'], name='builder_submission_session_event_unique')]
         ordering = ['created']
 
+    def delete(self, *args, **kwargs):
+        stored_file = self.file.name
+        storage = self.file.storage
+        result = super().delete(*args, **kwargs)
+        if stored_file and storage.exists(stored_file):
+            storage.delete(stored_file)
+        return result
+
 
 class Hint(models.Model):
     game_version = models.ForeignKey(GameVersion, related_name='hints', on_delete=models.CASCADE)

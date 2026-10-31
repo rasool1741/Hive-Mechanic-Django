@@ -8,7 +8,7 @@ if sys.version_info[0] > 2:
 else:
     from django.conf.urls import url
 
-from .views import public_city_catalog, public_city_games, public_game_detail, game_action, player_media_upload, builder_game, builder_graph_api, builder_game_definition_json, builder_interaction_card, \
+from .views import public_city_catalog, public_city_games, public_game_detail, game_action, player_media_upload, player_media_download, builder_game, builder_graph_api, builder_game_definition_json, builder_interaction_card, \
                    builder_home, builder_activities, builder_players, builder_sessions, \
                    builder_add_game, builder_data_processor_options, builder_activity_archive, \
                    builder_update_icon, builder_media, builder_media_upload, builder_game_templates, \
@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^api/v1/games/(?P<game_slug>[-\w]+)$', public_game_detail, name='public_game_detail'),
     url(r'^api/v1/sessions/(?P<session_id>\d+)/actions$', game_action, name='game_action'),
     url(r'^api/v1/sessions/(?P<session_id>\d+)/media$', player_media_upload, name='player_media_upload'),
+    url(r'^api/v1/player-media/(?P<submission_id>\d+)$', player_media_download, name='player_media_download'),
     url(r'^api/v1/games/(?P<game>[-\w]+)/graph$', builder_graph_api, name='builder_graph_api'),
     url(r'add-game.json$', builder_add_game, name='builder_add_game'),
     # url(r'log$', builder_activity_logger, name='builder_activity_logger'),

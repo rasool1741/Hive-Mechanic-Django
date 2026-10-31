@@ -329,5 +329,6 @@
 - اجرای نهایی این فاز: مجموعه Backend/Graph/GameVersion/Urban Tools شامل `13` تست موفق. هیچ Migration جدیدی ایجاد نشد.
 - فاز Secure Player Media: مدل مستقل `SessionMediaSubmission` و Migration `0057` ایجاد شد. Image multipart با Storage خصوصی، بررسی واقعی byte، Pillow verify، hash، مالکیت Session/Node و اتصال امن به تکمیل Graph تست شد.
 - تست نهایی این فاز: مجموعه Backend/Graph/GameVersion/Urban Tools شامل `14` تست موفق. `makemigrations --check --dry-run --skip-checks` بدون اختلاف است. Audio/Video فقط در سطح کد و امضای اولیه پشتیبانی شده‌اند و هنوز تست ساختاری کامل ندارند.
+- Hardening Player Media: دریافت خصوصی مالک‌محور، headerهای امن، حذف فایل هنگام حذف Submission و دستور dry-run/`--apply` برای orphan cleanup اضافه شد. تست دریافت و حذف فایل در تست Image upload موفق است.
 - تثبیت فاز Graph Runtime: با `django.test.runner.DiscoverRunner` و دیتابیس تست مستقل، تست Graph E2E با ۱ تست موفق و مجموعه Backend E2E/GameVersion/Urban Tools با ۱۱ تست موفق اجرا شدند. هشدارهای Check باقی هستند ولی Error عملکردی ندارند.
 - `makemigrations --check --dry-run --skip-checks` خروجی `No changes detected` داد. Test Runner پیش‌فرض `NoDbTestRunner` برای اجرای توسعه‌ای بدون دیتابیس است و نباید به‌عنوان تست واقعی استفاده شود.

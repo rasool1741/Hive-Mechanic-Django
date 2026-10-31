@@ -67,3 +67,5 @@
 - آپلود مدرک بازیکن برای Image پیاده‌سازی و تست شد: multipart، مالکیت Session، Node جاری، `event_id`، محدودیت byte واقعی، decode/verify تصویر با Pillow، SHA-256 و Storage خصوصی.
 - مدل مستقل `SessionMediaSubmission` در Migration `0057` اضافه شد؛ فایل‌های بازیکن با Filer محتوایی مدیر مخلوط نمی‌شوند و URL عمومی برگردانده نمی‌شود.
 - Audio و Video در همان مسیر با امضای محدود `ID3/RIFF/OggS` و `ftyp/WebM` پذیرفته می‌شوند، اما تست انتهابه‌انتها و اعتبارسنجی ساختاری کامل آن‌ها هنوز انجام نشده است.
+- Endpoint دریافت خصوصی `GET /builder/api/v1/player-media/<id>` فقط برای مالک Session فعال است و `nosniff`، `private/no-store` و نام فایل غیرقابل‌افشا برمی‌گرداند.
+- حذف `SessionMediaSubmission` فایل خصوصی را نیز حذف می‌کند. دستور `clean_player_media` به‌صورت پیش‌فرض dry-run است و فقط با `--apply` فایل یتیم را حذف می‌کند.

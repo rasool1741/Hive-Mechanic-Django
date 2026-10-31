@@ -142,13 +142,23 @@ class BackendGameFlowTests(TestCase):
         self.assertEqual(session, submission.session)
         self.assertEqual('upload-start', submission.node_id)
         self.assertTrue(submission.file.name.startswith('submissions/'))
+        download = self.client.get(reverse('player_media_download', args=[submission_id]))
+        self.assertEqual(200, download.status_code)
+        self.assertEqual('nosniff', download['X-Content-Type-Options'])
+        self.assertNotIn('ignored-name.png', download.get('Content-Disposition', ''))
+        download.close()
         action = reverse('game_action', args=[session.pk])
         completed = self.client.post(action, data=json.dumps({'event_id': 'complete-upload', 'stage_id': 'upload-start', 'submission_id': submission_id}), content_type='application/json')
         self.assertEqual(200, completed.status_code)
         self.assertTrue(completed.json()['accepted'])
+        stored_name = submission.file.name
+        storage = submission.file.storage
+        submission.delete()
+        self.assertFalse(storage.exists(stored_name))
         self.client.logout()
         self.client.login(username='other-uploader', password='secret')
         self.assertEqual(404, self.client.post(endpoint, {'event_id': 'other', 'file': SimpleUploadedFile('x.png', image, content_type='image/png')}).status_code)
+        self.assertEqual(404, self.client.get(reverse('player_media_download', args=[submission_id])).status_code)
 
     def test_server_authoritative_game_action_api(self):
         user = get_user_model().objects.create_user(username='api-player', password='secret')

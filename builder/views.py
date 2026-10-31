@@ -278,6 +278,22 @@ def player_media_upload(request, session_id):
                          'media_type': media_type, 'size': total, 'detected_mime': detected})
 
 
+@login_required
+@user_accepted_all_terms
+def player_media_download(request, submission_id):
+    submission = SessionMediaSubmission.objects.select_related('session', 'player').filter(
+        pk=submission_id, session__player__user=request.user,
+        status=SessionMediaSubmission.STATUS_VALID,
+    ).first()
+    if submission is None or not submission.file or not submission.file.storage.exists(submission.file.name):
+        raise Http404('Media submission not found.')
+    response = FileResponse(submission.file.open('rb'), content_type=submission.detected_mime)
+    response['X-Content-Type-Options'] = 'nosniff'
+    response['Cache-Control'] = 'private, no-store'
+    response['Content-Disposition'] = 'attachment; filename="submission-%s"' % submission.pk
+    return response
+
+
 def _graph_condition_matches(condition, session_state):
     """Evaluate the small, server-owned condition contract for graph edges."""
     if not condition:
