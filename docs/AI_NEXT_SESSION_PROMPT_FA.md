@@ -61,3 +61,5 @@ Graph Runtime در `builder/views.py` به‌صورت حداقلی و سرورم
 Hint، Timer، Quiz و Text اکنون در Graph Runtime تست‌شده‌اند. از تغییر رفتار Legacy و نصب وابستگی سنگین خودداری کن.
 
 Media محتوایی Image/Audio/Video اکنون با `django-filer.File` و `operation=media` اجرا و تست شده است. آپلود بازیکن هنوز پیاده‌سازی نشده؛ قبل از آن باید Storage خصوصی، محدودیت اندازه/MIME واقعی و مالکیت فایل طراحی شود.
+
+آپلود خصوصی Player Media اکنون برای Image در `POST /builder/api/v1/sessions/<id>/media` پیاده‌سازی و تست شده است. Migration `0057_sessionmediasubmission` را روی دیتابیس تست اجرا کن. Audio/Video کد مسیر و امضای اولیه دارند ولی باید با فایل‌های واقعی تست ساختاری شوند؛ مسیر Filer محتوایی مدیر را تغییر نده.

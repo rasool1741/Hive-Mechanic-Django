@@ -47,4 +47,6 @@ Endpoint عملیات اکنون برای نسخه‌های دارای Graph م�
 
 قرارداد ابزارها در همان `nodes[].tools` باقی مانده است. `operation=hint` برای Hint اجرا می‌شود؛ عملیات تکمیل Node ابزارهای Timer، Quiz و Text را با داده Published و زمان سرور بررسی می‌کند. مقدار امتیاز و نتیجه از کلاینت معتبر نیست.
 
-Media محتوایی اکنون با `operation=media` از `django-filer.File` خوانده می‌شود؛ تنظیمات Node فقط `file_id` و `media_type` دارد و نوع MIME فایل سمت سرور بررسی می‌شود. این قابلیت پخش/نمایش محتوای مدیر است، نه آپلود مدرک بازیکن؛ آپلود بازیکن هنوز انجام نشده است.
+Media محتوایی اکنون با `operation=media` از `django-filer.File` خوانده می‌شود؛ تنظیمات Node فقط `file_id` و `media_type` دارد و نوع MIME فایل سمت سرور بررسی می‌شود. این قابلیت پخش/نمایش محتوای مدیر از آپلود مدرک بازیکن جدا است.
+
+آپلود مدرک بازیکن از مسیر جداگانه `POST /builder/api/v1/sessions/<id>/media` انجام می‌شود. مدل `SessionMediaSubmission` مالک Session/Player، Node، نوع، اندازه، SHA-256 و کلید Storage خصوصی را نگه می‌دارد. مسیر فقط multipart است، نام فایل ورودی نادیده گرفته می‌شود و پاسخ هیچ URL یا مسیر Storage ندارد. تکمیل Graph با `submission_id` فقط پس از کنترل مالکیت و Node جاری ممکن است.

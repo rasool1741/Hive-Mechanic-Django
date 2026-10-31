@@ -6,6 +6,9 @@ import json
 import math
 import mimetypes
 import os
+import hashlib
+import mimetypes
+import tempfile
 import urllib
 
 from urllib.parse import urlparse
@@ -36,7 +39,7 @@ from activity_logger.models import LogItem, LogTag
 from integrations.models import Integration
 from user_creation.decorators import user_accepted_all_terms
 
-from .models import City, Game, GameVersion, InteractionCard, Player, Session, SessionEvent, ScoreLedger, DataProcessor, SiteSettings, StateVariable
+from .models import City, Game, GameVersion, InteractionCard, Player, Session, SessionEvent, ScoreLedger, DataProcessor, SiteSettings, StateVariable, SessionMediaSubmission
 from .urban_tools import inside_radius, validate_location_sample, verify_qr_token
 
 
@@ -186,6 +189,95 @@ def game_action(request, session_id):
     return JsonResponse(result)
 
 
+@login_required
+@user_accepted_all_terms
+@transaction.atomic
+def player_media_upload(request, session_id):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required.'}, status=405)
+    session = Session.objects.select_for_update().select_related('player', 'game_version').filter(
+        pk=session_id, player__user=request.user, completed__isnull=True,
+    ).first()
+    if session is None:
+        return JsonResponse({'error': 'Session not found or inactive.'}, status=404)
+    if session.game_version.status != GameVersion.STATUS_PUBLISHED:
+        return JsonResponse({'error': 'Game version is not published.'}, status=409)
+    try:
+        definition = json.loads(session.game_version.definition or '{}')
+        graph = definition.get('graph', {})
+        state = dict(session.session_state or {})
+        node_id = state.get('graph_node_id', graph.get('start'))
+        node = next(node for node in graph.get('nodes', []) if node.get('id') == node_id)
+    except (TypeError, ValueError, StopIteration):
+        return JsonResponse({'error': 'Graph node is invalid.'}, status=409)
+    tools = [tool for tool in node.get('tools', []) if isinstance(tool, dict)]
+    tool = next((item for item in tools if item.get('type') in ('camera', 'image', 'audio', 'video', 'audio_video') and
+                 (item.get('settings') or {}).get('allow_upload')), None)
+    if tool is None:
+        return JsonResponse({'error': 'Player media upload is not enabled for this node.'}, status=403)
+    uploaded = request.FILES.get('file')
+    event_id = request.POST.get('event_id')
+    if uploaded is None or not event_id:
+        return JsonResponse({'error': 'file and event_id are required.'}, status=400)
+    if SessionMediaSubmission.objects.filter(session=session, event_id=event_id).exists():
+        return JsonResponse({'error': 'event_id already used.'}, status=409)
+    settings_data = tool.get('settings') or {}
+    media_type = settings_data.get('media_type', 'image')
+    limits = {'image': (getattr(settings, 'PLAYER_IMAGE_MAX_BYTES', 10 * 1024 * 1024), ('image/jpeg', 'image/png', 'image/webp')),
+              'audio': (getattr(settings, 'PLAYER_AUDIO_MAX_BYTES', 25 * 1024 * 1024), ('audio/mpeg', 'audio/wav', 'audio/ogg')),
+              'video': (getattr(settings, 'PLAYER_VIDEO_MAX_BYTES', 50 * 1024 * 1024), ('video/mp4', 'video/webm'))}
+    if media_type not in limits:
+        return JsonResponse({'error': 'Unsupported upload type.'}, status=403)
+    maximum, allowed_mimes = limits[media_type]
+    total = 0
+    digest = hashlib.sha256()
+    oversized = False
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.upload') as temporary:
+        temporary_path = temporary.name
+        for chunk in uploaded.chunks():
+            total += len(chunk)
+            if total > maximum:
+                oversized = True
+                break
+            digest.update(chunk)
+            temporary.write(chunk)
+    if oversized:
+        if os.path.exists(temporary_path):
+            os.unlink(temporary_path)
+        return JsonResponse({'error': 'File is too large.'}, status=413)
+    detected = None
+    try:
+        with open(temporary_path, 'rb') as stream:
+            header = stream.read(16)
+        if media_type == 'image':
+            from PIL import Image
+            with Image.open(temporary_path) as image:
+                image.verify()
+                detected = Image.MIME.get(image.format)
+        elif media_type == 'audio' and header.startswith((b'ID3', b'\xff\xfb', b'OggS', b'RIFF')):
+            detected = 'audio/mpeg' if header.startswith((b'ID3', b'\xff\xfb')) else 'audio/ogg'
+        elif media_type == 'video' and (header[4:8] == b'ftyp' or header.startswith(b'\x1a\x45\xdf\xa3')):
+            detected = 'video/mp4' if header[4:8] == b'ftyp' else 'video/webm'
+    except (OSError, ValueError):
+        detected = None
+    if detected not in allowed_mimes:
+        os.unlink(temporary_path)
+        return JsonResponse({'error': 'File content is invalid.'}, status=415)
+    try:
+        with open(temporary_path, 'rb') as stream:
+            submission = SessionMediaSubmission(
+                session=session, player=session.player, node_id=node_id, event_id=event_id,
+                media_type=media_type, detected_mime=detected, size=total, sha256=digest.hexdigest(),
+            )
+            submission.file.save('submission-%s' % digest.hexdigest(), stream, save=False)
+            submission.save()
+    finally:
+        if os.path.exists(temporary_path):
+            os.unlink(temporary_path)
+    return JsonResponse({'accepted': True, 'submission_id': submission.pk, 'node_id': node_id,
+                         'media_type': media_type, 'size': total, 'detected_mime': detected})
+
+
 def _graph_condition_matches(condition, session_state):
     """Evaluate the small, server-owned condition contract for graph edges."""
     if not condition:
@@ -237,6 +329,16 @@ def _graph_game_action(session, payload, event_id, stage_id, graph):
         return JsonResponse({'accepted': True, 'tool': media_kind, 'stage_id': current,
                              'file_id': media_file.pk, 'filename': media_file.original_filename,
                              'url': media_file.file.url})
+    upload_tools = [tool for tool in tools if (tool.get('settings') or {}).get('allow_upload')]
+    required_upload = next((tool for tool in upload_tools if (tool.get('settings') or {}).get('required')), None)
+    submission_id = payload.get('submission_id')
+    if required_upload is not None:
+        submission = SessionMediaSubmission.objects.filter(
+            pk=submission_id, session=session, player=session.player, node_id=current,
+            status=SessionMediaSubmission.STATUS_VALID,
+        ).first()
+        if submission is None:
+            return JsonResponse({'error': 'A valid media submission is required.'}, status=403)
     if operation == 'hint':
         hint_tool = next((tool for tool in tools if tool.get('type') == 'hint'), None)
         if hint_tool is None:

@@ -327,5 +327,7 @@
 - ابزارهای Graph اولویت‌دار تکمیل شدند: Hint با هزینه و Replay سروری، Timer با زمان سرور، Quiz با پاسخ Published و Text با محدودیت طول/تطبیق سروری. تست ابزارها `1` مورد موفق است؛ Media همچنان باقی‌مانده است.
 - Media Runtime محتوایی تکمیل شد: Image/Audio/Video با `django-filer.File`، reference نسخه Published، کنترل Node جاری و تطبیق MIME سمت سرور اجرا شد؛ تست Media موفق است. آپلود مدرک بازیکن و اعتبارسنجی واقعی بایت فایل باقی‌مانده است.
 - اجرای نهایی این فاز: مجموعه Backend/Graph/GameVersion/Urban Tools شامل `13` تست موفق. هیچ Migration جدیدی ایجاد نشد.
+- فاز Secure Player Media: مدل مستقل `SessionMediaSubmission` و Migration `0057` ایجاد شد. Image multipart با Storage خصوصی، بررسی واقعی byte، Pillow verify، hash، مالکیت Session/Node و اتصال امن به تکمیل Graph تست شد.
+- تست نهایی این فاز: مجموعه Backend/Graph/GameVersion/Urban Tools شامل `14` تست موفق. `makemigrations --check --dry-run --skip-checks` بدون اختلاف است. Audio/Video فقط در سطح کد و امضای اولیه پشتیبانی شده‌اند و هنوز تست ساختاری کامل ندارند.
 - تثبیت فاز Graph Runtime: با `django.test.runner.DiscoverRunner` و دیتابیس تست مستقل، تست Graph E2E با ۱ تست موفق و مجموعه Backend E2E/GameVersion/Urban Tools با ۱۱ تست موفق اجرا شدند. هشدارهای Check باقی هستند ولی Error عملکردی ندارند.
 - `makemigrations --check --dry-run --skip-checks` خروجی `No changes detected` داد. Test Runner پیش‌فرض `NoDbTestRunner` برای اجرای توسعه‌ای بدون دیتابیس است و نباید به‌عنوان تست واقعی استفاده شود.

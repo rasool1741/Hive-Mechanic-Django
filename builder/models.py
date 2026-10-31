@@ -27,6 +27,7 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models, transaction
+from django.core.files.storage import FileSystemStorage
 from django.db.models.signals import post_delete, pre_save
 from django.db.utils import ProgrammingError
 from django.dispatch import receiver
@@ -1816,6 +1817,37 @@ class SessionEvent(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['session', 'event_id'], name='builder_session_event_unique'),
         ]
+        ordering = ['created']
+
+
+private_player_media_storage = FileSystemStorage(
+    location=os.path.join(settings.BASE_DIR, 'private_player_media'),
+    base_url=None,
+)
+
+
+class SessionMediaSubmission(models.Model):
+    TYPE_IMAGE = 'image'
+    TYPE_AUDIO = 'audio'
+    TYPE_VIDEO = 'video'
+    TYPE_CHOICES = ((TYPE_IMAGE, 'Image'), (TYPE_AUDIO, 'Audio'), (TYPE_VIDEO, 'Video'))
+    STATUS_VALID = 'valid'
+    STATUS_CHOICES = ((STATUS_VALID, 'Valid'), ('rejected', 'Rejected'))
+
+    session = models.ForeignKey(Session, related_name='media_submissions', on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, related_name='media_submissions', on_delete=models.CASCADE)
+    node_id = models.CharField(max_length=255)
+    event_id = models.CharField(max_length=128)
+    media_type = models.CharField(max_length=16, choices=TYPE_CHOICES)
+    file = models.FileField(storage=private_player_media_storage, upload_to='submissions/')
+    detected_mime = models.CharField(max_length=128)
+    size = models.PositiveBigIntegerField()
+    sha256 = models.CharField(max_length=64)
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_VALID)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['session', 'event_id'], name='builder_submission_session_event_unique')]
         ordering = ['created']
 
 

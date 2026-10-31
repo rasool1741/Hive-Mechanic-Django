@@ -1,14 +1,16 @@
 import json
 import time
+import base64
 
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, transaction
 from django.db.models import Sum
 from django.test import TestCase
 from django.urls import reverse
 
-from ..models import City, Game, GameVersion, Hint, Player, ScoreLedger, Session, SessionEvent
+from ..models import City, Game, GameVersion, Hint, Player, ScoreLedger, Session, SessionEvent, SessionMediaSubmission
 from filer.models import filemodels
 from ..urban_tools import create_qr_token, inside_radius, validate_location_sample, verify_qr_token
 
@@ -111,6 +113,42 @@ class BackendGameFlowTests(TestCase):
         self.assertEqual(media_file.pk, response.json()['file_id'])
         self.assertNotIn('fake-png-content', response.content.decode())
         self.assertEqual(409, self.client.post(endpoint, data=json.dumps({'event_id': 'media-2', 'stage_id': 'media-end', 'operation': 'media'}), content_type='application/json').status_code)
+
+    def test_private_player_image_upload_and_required_submission(self):
+        user = get_user_model().objects.create_user(username='uploader', password='secret')
+        other = get_user_model().objects.create_user(username='other-uploader', password='secret')
+        city = City.objects.create(slug='upload-city', name='Upload City')
+        game = Game.objects.create(name='Upload Game', slug='upload-game', city=city)
+        definition = {'sequences': [{'id': 'legacy', 'items': [{'id': 'fallback'}]}], 'initial-card': 'legacy#fallback', 'graph': {
+            'nodes': [{'id': 'upload-start', 'tools': [{'type': 'image', 'settings': {'allow_upload': True, 'required': True, 'media_type': 'image'}}]}, {'id': 'upload-end'}],
+            'edges': [{'id': 'upload-edge', 'source': 'upload-start', 'target': 'upload-end'}], 'start': 'upload-start', 'end': 'upload-end'}}
+        version = GameVersion.objects.create(game=game, created='2026-01-01T00:00:00Z', definition=json.dumps(definition))
+        self.assertTrue(version.publish()[0])
+        player = Player.objects.create(identifier='user:uploader', user=user)
+        session = Session.objects.create(player=player, game_version=version, started='2026-01-01T00:00:00Z')
+        endpoint = reverse('player_media_upload', args=[session.pk])
+        image = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')
+        self.client.login(username='uploader', password='secret')
+        empty = self.client.post(endpoint, {'event_id': 'empty', 'file': SimpleUploadedFile('x.png', b'', content_type='image/png')})
+        self.assertEqual(415, empty.status_code)
+        invalid = self.client.post(endpoint, {'event_id': 'html', 'file': SimpleUploadedFile('x.png', b'<html>bad</html>', content_type='image/png')})
+        self.assertEqual(415, invalid.status_code)
+        oversized = self.client.post(endpoint, {'event_id': 'large', 'file': SimpleUploadedFile('x.png', b'0' * (10 * 1024 * 1024 + 1), content_type='image/png')})
+        self.assertEqual(413, oversized.status_code)
+        uploaded = self.client.post(endpoint, {'event_id': 'upload-1', 'file': SimpleUploadedFile('ignored-name.png', image, content_type='text/html')})
+        self.assertEqual(200, uploaded.status_code)
+        submission_id = uploaded.json()['submission_id']
+        submission = SessionMediaSubmission.objects.get(pk=submission_id)
+        self.assertEqual(session, submission.session)
+        self.assertEqual('upload-start', submission.node_id)
+        self.assertTrue(submission.file.name.startswith('submissions/'))
+        action = reverse('game_action', args=[session.pk])
+        completed = self.client.post(action, data=json.dumps({'event_id': 'complete-upload', 'stage_id': 'upload-start', 'submission_id': submission_id}), content_type='application/json')
+        self.assertEqual(200, completed.status_code)
+        self.assertTrue(completed.json()['accepted'])
+        self.client.logout()
+        self.client.login(username='other-uploader', password='secret')
+        self.assertEqual(404, self.client.post(endpoint, {'event_id': 'other', 'file': SimpleUploadedFile('x.png', image, content_type='image/png')}).status_code)
 
     def test_server_authoritative_game_action_api(self):
         user = get_user_model().objects.create_user(username='api-player', password='secret')
