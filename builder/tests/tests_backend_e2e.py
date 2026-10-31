@@ -12,6 +12,42 @@ from ..urban_tools import create_qr_token, inside_radius, validate_location_samp
 
 
 class BackendGameFlowTests(TestCase):
+    def test_graph_runtime_uses_server_selected_nodes(self):
+        user = get_user_model().objects.create_user(username='graph-player', password='secret')
+        city = City.objects.create(slug='graph-city', name='Graph City', center_latitude=35.7, center_longitude=51.4)
+        game = Game.objects.create(name='Graph Game', slug='graph-game', city=city)
+        definition = {
+            'sequences': [{'id': 'legacy', 'items': [{'id': 'fallback'}]}],
+            'initial-card': 'legacy#fallback',
+            'graph': {
+                'nodes': [
+                    {'id': 'start', 'title': 'Start'},
+                    {'id': 'finish', 'title': 'Finish'},
+                ],
+                'edges': [{'id': 'start-finish', 'source': 'start', 'target': 'finish'}],
+                'start': 'start', 'end': 'finish',
+            },
+        }
+        version = GameVersion.objects.create(game=game, created='2026-01-01T00:00:00Z', definition=json.dumps(definition))
+        published, errors = version.publish()
+        self.assertTrue(published, errors)
+        player = Player.objects.create(identifier='user:graph-player', user=user)
+        session = Session.objects.create(player=player, game_version=version, started='2026-01-01T00:00:00Z')
+        self.client.login(username='graph-player', password='secret')
+        endpoint = reverse('game_action', args=[session.pk])
+
+        response = self.client.post(endpoint, data=json.dumps({'event_id': 'graph-1', 'stage_id': 'start'}), content_type='application/json')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('finish', response.json()['next_stage_id'])
+        session.refresh_from_db()
+        self.assertEqual('finish', session.session_state['graph_node_id'])
+        self.assertEqual(409, self.client.post(endpoint, data=json.dumps({'event_id': 'graph-skip', 'stage_id': 'start'}), content_type='application/json').status_code)
+
+        response = self.client.post(endpoint, data=json.dumps({'event_id': 'graph-2', 'stage_id': 'finish', 'score': 9999}), content_type='application/json')
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(response.json()['completed'])
+        self.assertEqual(2, ScoreLedger.objects.filter(session=session).count())
+
     def test_server_authoritative_game_action_api(self):
         user = get_user_model().objects.create_user(username='api-player', password='secret')
         other_user = get_user_model().objects.create_user(username='other-player', password='secret')

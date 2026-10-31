@@ -53,3 +53,7 @@ Browser tests فقط با Firefox/geckodriver قابل اجرا هستند؛ ن�
 - امتیاز، مرحله بعد، GPS، QR و وضعیت Session را از کلاینت معتبر ندان.
 - هر فاز را تست کن، Roadmap را با نتیجه واقعی به‌روز کن و Commit محلی مستقل بساز.
 - تست اجرا نشده را موفق اعلام نکن و محدودیت محیط را در مستندات ثبت کن.
+
+## وضعیت آخرین فاز
+
+Graph Runtime در `builder/views.py` به‌صورت حداقلی و سرورمحور پیاده‌سازی شده است. ابتدا `docs/GRAPH_RUNTIME_DESIGN_FA.md` را بخوان. تست E2E گراف در `builder/tests/tests_backend_e2e.py` اضافه شده، اما اجرای کامل آن نیازمند دیتابیس تست Migrated و رفع محدودیت Test Runner/Check محیط است. کار بعدی: اجرای تست Graph و Legacy روی دیتابیس تست سالم، سپس تکمیل شرط‌های گراف و نگاشت Graph به InteractionCard بدون پذیرش داده حساس از کلاینت.

@@ -52,3 +52,10 @@
 - Cache و Temp نصب روی درایو D تنظیم شده‌اند.
 - اجرای تست و Check به دیتابیس آزمایشی Migrated و متغیرهای GDAL/GEOS/PROJ نیاز دارد.
 - Docker نصب نشده و نباید برای این تحویل نصب شود.
+
+## وضعیت Graph Runtime
+
+- Graph Runtime در API عملیات Session فعال شده است؛ Sessionهای نسخه Published دارای Graph از `graph.start` و Edgeهای همان Graph استفاده می‌کنند.
+- Node جاری در `Session.session_state['graph_node_id']` نگهداری می‌شود و Stage دلخواه، پرش مسیر، GPS/QR نامعتبر و Edge مبهم رد می‌شوند.
+- ابزارهای GPS و QR در Graph Runtime واقعاً بررسی می‌شوند؛ Hint، Timer، Quiz، Text و Media هنوز فقط metadata هستند.
+- تست Graph جدید به `tests_backend_e2e.py` اضافه شد، اما اجرای آن در این محیط به‌دلیل تنظیم Test Runner/Check و دیتابیس آزمایشی قابل اعلام موفقیت نیست.

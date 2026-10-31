@@ -321,3 +321,6 @@
 - ابزارها به‌صورت metadata توسعه‌پذیر داخل `definition.graph.nodes[].tools` ذخیره می‌شوند و Preview هیچ رکورد Session یا امتیازی ایجاد نمی‌کند.
 - وضعیت اتصال اجرایی صریح است: موتور فعلی همچنان مرحله بعد را از Sequence و InteractionCard تعیین می‌کند؛ `definition.graph` در این فاز برای ویرایش، Preview و اعتبارسنجی انتشار است و هنوز منبع runtime نیست. هماهنگ‌سازی گراف با اجرای Session فاز بعدی است.
 - بررسی سریع: `py_compile` و `git diff --check` موفق شدند. `manage.py check` در دیتابیس آزمایشی تازه‌ساخته به‌دلیل نبود جدول‌های Migration اجرا نشد؛ این شکست محیطی ثبت شده و موفق اعلام نمی‌شود.
+- فاز اتصال Graph به Runtime آغاز شد: نسخه Published دارای Graph اکنون در `game_action` از `graph.start`، Node جاری ذخیره‌شده و Edgeهای سروری استفاده می‌کند؛ نسخه‌های فاقد Graph همچنان Legacy هستند.
+- Graph Runtime کنترل GPS/QR موجود، مالکیت Session، قفل تراکنشی، Replay، ScoreLedger و تکمیل Session را حفظ می‌کند. شرط Edge فعلاً فقط متغیرهای Session با عملگر `equals` را پشتیبانی می‌کند و Edge مبهم رد می‌شود.
+- تست Graph E2E اضافه شد، اما اجرای آن در این محیط پس از Migration به‌علت Checkهای دیتابیس/تنظیم Test Runner با موفقیت قابل اعلام نیست؛ `py_compile` موفق است. Browser همچنان نیازمند Firefox/geckodriver است.

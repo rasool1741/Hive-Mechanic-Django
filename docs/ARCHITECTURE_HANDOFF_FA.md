@@ -38,3 +38,7 @@ Migrationهای `0050` تا `0056` برای Release metadata، City/catalog، Pl
 - نسخه‌های قدیمی تعریف بازی که Graph ندارند؛ fallback فعلی باید حفظ شود.
 - تفاوت SQLite مکانی با Production PostGIS/SpatiaLite.
 - نبود Browser toolchain در محیط فعلی.
+
+## تغییر فاز Graph Runtime
+
+Endpoint عملیات اکنون برای نسخه‌های دارای Graph مسیر جداگانه دارد. تابع `_graph_game_action` Node جاری را از Session می‌خواند، ابزارهای GPS/QR را بررسی می‌کند، Edge معتبر را فقط سرور انتخاب می‌کند و نتیجه را در SessionEvent/ScoreLedger ثبت می‌کند. نسخه‌های فاقد Graph همچنان مسیر Legacy را طی می‌کنند. جزئیات قرارداد در `docs/GRAPH_RUNTIME_DESIGN_FA.md` آمده است.

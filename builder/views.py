@@ -136,6 +136,10 @@ def game_action(request, session_id):
         return JsonResponse(previous.result, status=200)
 
     definition = json.loads(session.game_version.definition or '{}')
+    graph = definition.get('graph') if isinstance(definition, dict) else None
+    if isinstance(graph, dict) and graph.get('nodes'):
+        return _graph_game_action(session, payload, event_id, stage_id, graph)
+
     sequences = definition if isinstance(definition, list) else definition.get('sequences', [])
     stages = [
         '%s#%s' % (sequence.get('id'), item.get('id'))
@@ -176,6 +180,81 @@ def game_action(request, session_id):
     )
     ScoreLedger.objects.create(session=session, event=event, reason='stage-complete', amount=100)
     session.session_state = dict(session.session_state, stage_index=next_index)
+    if completed:
+        session.completed = timezone.now()
+    session.save(update_fields=['session_state', 'completed'])
+    return JsonResponse(result)
+
+
+def _graph_condition_matches(condition, session_state):
+    """Evaluate the small, server-owned condition contract for graph edges."""
+    if not condition:
+        return True
+    if not isinstance(condition, dict):
+        return False
+    variable = condition.get('variable', condition.get('key'))
+    if not variable or 'equals' not in condition:
+        return False
+    return session_state.get(variable) == condition['equals']
+
+
+def _graph_game_action(session, payload, event_id, stage_id, graph):
+    nodes = {node.get('id'): node for node in graph.get('nodes', []) if isinstance(node, dict) and node.get('id')}
+    edges = [edge for edge in graph.get('edges', []) if isinstance(edge, dict)]
+    start = graph.get('start')
+    end = graph.get('end')
+    if start not in nodes or end not in nodes:
+        return JsonResponse({'error': 'Published graph is invalid.'}, status=409)
+
+    state = dict(session.session_state or {})
+    current = state.get('graph_node_id', start)
+    if current not in nodes or stage_id != current:
+        return JsonResponse({'error': 'Stage is not the current graph node.'}, status=409)
+
+    node = nodes[current]
+    tool_types = {tool.get('type') for tool in node.get('tools', []) if isinstance(tool, dict)}
+    city = session.game_version.game.city
+    gps = payload.get('gps')
+    if 'gps' in tool_types:
+        if not isinstance(gps, dict):
+            return JsonResponse({'error': 'GPS input is required.'}, status=403)
+    if gps is not None:
+        errors = validate_location_sample(gps.get('latitude'), gps.get('longitude'), gps.get('accuracy', 0))
+        if errors or city is None or city.center_latitude is None or not inside_radius(
+                gps['latitude'], gps['longitude'], city.center_latitude, city.center_longitude, 100):
+            return JsonResponse({'error': 'GPS validation failed.'}, status=403)
+
+    qr_token = payload.get('qr_token')
+    if 'qr' in tool_types and not qr_token:
+        return JsonResponse({'error': 'QR input is required.'}, status=403)
+    if qr_token is not None:
+        qr = verify_qr_token(qr_token, getattr(settings, 'GAME_ACTION_QR_SECRET', settings.SECRET_KEY))
+        if qr is None or qr.get('game') != session.game_version.game.slug or qr.get('stage') != current:
+            return JsonResponse({'error': 'QR validation failed.'}, status=403)
+
+    candidates = [edge for edge in edges if edge.get('source') == current and
+                  _graph_condition_matches(edge.get('condition'), state)]
+    if len(candidates) > 1:
+        return JsonResponse({'error': 'Graph has ambiguous outgoing conditions.'}, status=409)
+    next_node = candidates[0].get('target') if candidates else None
+    if next_node is not None and next_node not in nodes:
+        return JsonResponse({'error': 'Graph edge targets an unknown node.'}, status=409)
+    completed = current == end or next_node is None and current == end
+    if next_node is None and not completed:
+        return JsonResponse({'error': 'Current graph node has no valid outgoing edge.'}, status=409)
+
+    result = {
+        'accepted': True, 'score': 100, 'stage_id': current,
+        'next_stage_id': None if completed else next_node, 'completed': completed,
+    }
+    event = SessionEvent.objects.create(
+        session=session, event_id=event_id, event_type='complete-graph-node',
+        payload={'stage_id': current}, result=result, accepted=True,
+    )
+    ScoreLedger.objects.create(session=session, event=event, reason='graph-node-complete', amount=100)
+    state['graph_node_id'] = None if completed else next_node
+    state['runtime'] = 'graph'
+    session.session_state = state
     if completed:
         session.completed = timezone.now()
     session.save(update_fields=['session_state', 'completed'])
