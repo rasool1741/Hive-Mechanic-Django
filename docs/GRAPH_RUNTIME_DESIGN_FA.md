@@ -10,7 +10,9 @@
 
 ## عملیات و ابزارها
 
-Endpoint موجود `POST /builder/api/v1/sessions/<id>/actions` حفظ شده است. Graph Runtime همان کنترل‌های احراز هویت، مالکیت Session، شهر فعال، نسخه Published، قفل تراکنشی، Replay و ScoreLedger را استفاده می‌کند. ابزارهای `gps` و `qr` در metadata Node به‌ترتیب اعتبارسنجی GPS/Geofence و QR امضاشده را اجباری می‌کنند. ابزارهای Hint، Timer، Quiz، Text و Media در این مرحله فقط metadata هستند و اجرای واقعی مستقل ندارند.
+Endpoint موجود `POST /builder/api/v1/sessions/<id>/actions` حفظ شده است. Graph Runtime همان کنترل‌های احراز هویت، مالکیت Session، شهر فعال، نسخه Published، قفل تراکنشی، Replay و ScoreLedger را استفاده می‌کند. ابزارهای `gps` و `qr` در metadata Node به‌ترتیب اعتبارسنجی GPS/Geofence و QR امضاشده را اجباری می‌کنند. ابزارهای `hint`، `timer`، `quiz` و `text_input` نیز در همین Endpoint با زمان و تنظیمات Published اجرا می‌شوند؛ Media هنوز metadata است.
+
+Hint از مدل Hint یا تنظیمات Node خوانده و هزینه‌اش سروری ثبت می‌شود؛ Timer زمان Unix سرور را در Session نگه می‌دارد؛ Quiz و Text با تنظیمات Published مقایسه می‌شوند. ابزار ناشناخته fail closed است.
 
 ## انتخاب Edge
 

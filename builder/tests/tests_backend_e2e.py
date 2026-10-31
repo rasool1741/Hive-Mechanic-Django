@@ -48,6 +48,44 @@ class BackendGameFlowTests(TestCase):
         self.assertTrue(response.json()['completed'])
         self.assertEqual(2, ScoreLedger.objects.filter(session=session).count())
 
+    def test_graph_tools_hint_timer_quiz_and_text_are_server_validated(self):
+        user = get_user_model().objects.create_user(username='tools-player', password='secret')
+        city = City.objects.create(slug='tools-city', name='Tools City', center_latitude=35.7, center_longitude=51.4)
+        game = Game.objects.create(name='Tools Game', slug='tools-game', city=city)
+        definition = {'sequences': [{'id': 'legacy', 'items': [{'id': 'fallback'}]}], 'initial-card': 'legacy#fallback', 'graph': {
+            'nodes': [{'id': 'tool-start', 'tools': [
+                {'type': 'hint', 'settings': {'content': 'Look behind the sign', 'score_cost': 5}},
+                {'type': 'timer', 'settings': {'minimum_seconds': 5}},
+                {'type': 'quiz', 'settings': {'answer': '42', 'score': 25}},
+                {'type': 'text_input', 'settings': {'exact': 'urban', 'max_length': 20}},
+            ]}, {'id': 'tool-end'}],
+            'edges': [{'id': 'tool-edge', 'source': 'tool-start', 'target': 'tool-end'}], 'start': 'tool-start', 'end': 'tool-end'}}
+        version = GameVersion.objects.create(game=game, created='2026-01-01T00:00:00Z', definition=json.dumps(definition))
+        self.assertTrue(version.publish()[0])
+        player = Player.objects.create(identifier='user:tools-player', user=user)
+        session = Session.objects.create(player=player, game_version=version, started='2026-01-01T00:00:00Z')
+        self.client.login(username='tools-player', password='secret')
+        endpoint = reverse('game_action', args=[session.pk])
+
+        hint = self.client.post(endpoint, data=json.dumps({'event_id': 'hint-1', 'stage_id': 'tool-start', 'operation': 'hint'}), content_type='application/json')
+        self.assertEqual(200, hint.status_code)
+        self.assertEqual('Look behind the sign', hint.json()['content'])
+        self.assertNotIn('42', json.dumps(hint.json()))
+        replay = self.client.post(endpoint, data=json.dumps({'event_id': 'hint-1', 'stage_id': 'tool-start', 'operation': 'hint'}), content_type='application/json')
+        self.assertEqual(hint.json(), replay.json())
+        early = self.client.post(endpoint, data=json.dumps({'event_id': 'tool-early', 'stage_id': 'tool-start', 'answer': '42', 'text': 'urban'}), content_type='application/json')
+        self.assertEqual(409, early.status_code)
+
+        session.refresh_from_db()
+        session.session_state['graph_timer_started_at:tool-start'] = time.time() - 10
+        session.save(update_fields=['session_state'])
+        wrong = self.client.post(endpoint, data=json.dumps({'event_id': 'tool-wrong', 'stage_id': 'tool-start', 'answer': 'wrong', 'text': 'urban'}), content_type='application/json')
+        self.assertEqual(403, wrong.status_code)
+        valid = self.client.post(endpoint, data=json.dumps({'event_id': 'tool-valid', 'stage_id': 'tool-start', 'answer': '42', 'text': 'urban', 'score': 9999}), content_type='application/json')
+        self.assertEqual(200, valid.status_code)
+        self.assertEqual(100, valid.json()['score'])
+        self.assertEqual(-5, ScoreLedger.objects.filter(session=session, reason='hint-cost').first().amount)
+
     def test_server_authoritative_game_action_api(self):
         user = get_user_model().objects.create_user(username='api-player', password='secret')
         other_user = get_user_model().objects.create_user(username='other-player', password='secret')

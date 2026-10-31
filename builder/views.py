@@ -212,7 +212,59 @@ def _graph_game_action(session, payload, event_id, stage_id, graph):
         return JsonResponse({'error': 'Stage is not the current graph node.'}, status=409)
 
     node = nodes[current]
-    tool_types = {tool.get('type') for tool in node.get('tools', []) if isinstance(tool, dict)}
+    tools = [tool for tool in node.get('tools', []) if isinstance(tool, dict) and tool.get('type')]
+    tool_types = {tool.get('type') for tool in tools}
+    supported_tools = {'gps', 'qr', 'hint', 'timer', 'quiz', 'text', 'text_input'}
+    if tool_types - supported_tools:
+        return JsonResponse({'error': 'Node contains an unsupported tool.'}, status=409)
+    operation = payload.get('operation', 'complete')
+    if operation == 'hint':
+        hint_tool = next((tool for tool in tools if tool.get('type') == 'hint'), None)
+        if hint_tool is None:
+            return JsonResponse({'error': 'Hint is not available for this node.'}, status=403)
+        settings_data = hint_tool.get('settings') or {}
+        hint = session.game_version.hints.filter(stage_id=current, enabled=True).order_by('position').first()
+        content = hint.content if hint is not None else settings_data.get('content')
+        if not content:
+            return JsonResponse({'error': 'Hint configuration is incomplete.'}, status=409)
+        cost = hint.score_cost if hint is not None else int(settings_data.get('score_cost', 0) or 0)
+        result = {'accepted': True, 'tool': 'hint', 'stage_id': current, 'content': content, 'cost': cost}
+        event = SessionEvent.objects.create(session=session, event_id=event_id, event_type='use-hint',
+                                            payload={'stage_id': current}, result=result, accepted=True)
+        if cost:
+            ScoreLedger.objects.create(session=session, event=event, reason='hint-cost', amount=-cost)
+        return JsonResponse(result)
+
+    timer_tools = [tool for tool in tools if tool.get('type') == 'timer']
+    if timer_tools:
+        timer_settings = timer_tools[0].get('settings') or {}
+        timer_key = 'graph_timer_started_at:%s' % current
+        started_at = state.get(timer_key)
+        if started_at is None:
+            state[timer_key] = timezone.now().timestamp()
+            session.session_state = state
+            session.save(update_fields=['session_state'])
+            started_at = state[timer_key]
+        minimum = float(timer_settings.get('minimum_seconds', timer_settings.get('duration_seconds', 0)) or 0)
+        if operation == 'complete' and timezone.now().timestamp() - float(started_at) < minimum:
+            return JsonResponse({'error': 'Timer has not elapsed.'}, status=409)
+
+    for tool in tools:
+        settings_data = tool.get('settings') or {}
+        if tool.get('type') == 'quiz' and operation == 'complete':
+            if 'answer' not in payload or 'answer' not in settings_data:
+                return JsonResponse({'error': 'Quiz answer is required.'}, status=400)
+            if str(payload['answer']).strip().casefold() != str(settings_data['answer']).strip().casefold():
+                return JsonResponse({'error': 'Quiz answer is incorrect.'}, status=403)
+        if tool.get('type') in ('text', 'text_input') and operation == 'complete':
+            value = payload.get('text')
+            if not isinstance(value, str) or not value.strip():
+                return JsonResponse({'error': 'Text input is required.'}, status=400)
+            maximum = int(settings_data.get('max_length', 1000) or 1000)
+            if len(value) > maximum:
+                return JsonResponse({'error': 'Text input is too long.'}, status=400)
+            if 'exact' in settings_data and value.strip() != str(settings_data['exact']):
+                return JsonResponse({'error': 'Text input is incorrect.'}, status=403)
     city = session.game_version.game.city
     gps = payload.get('gps')
     if 'gps' in tool_types:

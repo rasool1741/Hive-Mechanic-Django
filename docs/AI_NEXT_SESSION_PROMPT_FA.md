@@ -57,3 +57,5 @@ Browser tests فقط با Firefox/geckodriver قابل اجرا هستند؛ ن�
 ## وضعیت آخرین فاز
 
 Graph Runtime در `builder/views.py` به‌صورت حداقلی و سرورمحور پیاده‌سازی شده است. ابتدا `docs/GRAPH_RUNTIME_DESIGN_FA.md` را بخوان. برای تست واقعی از `--testrunner django.test.runner.DiscoverRunner` استفاده کن؛ تست Graph و مجموعه ۱۱تایی Backend/GameVersion/Urban Tools موفق شده‌اند. کار بعدی: افزودن تست شاخه شرطی و تکمیل نگاشت Graph به InteractionCard بدون پذیرش داده حساس از کلاینت.
+
+Hint، Timer، Quiz و Text اکنون در Graph Runtime تست‌شده‌اند. Media هنوز تکمیل نشده است. از تغییر رفتار Legacy و نصب وابستگی سنگین خودداری کن.
