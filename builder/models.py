@@ -890,6 +890,19 @@ class Game(models.Model):  # pylint: disable=too-many-public-methods
     def latest_version(self):
         return self.versions.order_by('-created').first()
 
+    def published_version(self):
+        """Return the one version that players may start, or None.
+
+        Rule: among Published versions the most recently published wins; ties
+        fall back to the newest ``created`` and then the highest ``pk``.
+        Versions never published (``published`` empty) sort last. The rule
+        must not depend on publish() having archived older versions, because
+        status can also be changed directly in the admin.
+        """
+        return self.versions.filter(status=GameVersion.STATUS_PUBLISHED).order_by(
+            models.F('published').desc(nulls_last=True), '-created', '-pk',
+        ).first()
+
     def creator_name(self):
         first_version = self.versions.exclude(creator=None).order_by('created').first()
 
@@ -1075,10 +1088,26 @@ class GameVersion(models.Model):
             self.save(update_fields=['validation_errors', 'definition_checksum'])
             return False, errors
 
-        self.status = self.STATUS_PUBLISHED
-        self.published = timezone.now()
-        self.save()
+        with transaction.atomic():
+            self.status = self.STATUS_PUBLISHED
+            self.published = timezone.now()
+            self.save()
+            self.archive_superseded_versions()
+
         return True, []
+
+    def archive_superseded_versions(self):
+        """Archive the other Published versions of this game.
+
+        A superseded version that still has an unfinished session stays
+        Published so those players can finish; Game.published_version()
+        already ensures new sessions only use the newest Published version.
+        It is archived by a later publish once its sessions are finished.
+        """
+        for other in self.game.versions.filter(status=self.STATUS_PUBLISHED).exclude(pk=self.pk):
+            if not other.sessions.filter(completed=None).exists():
+                other.status = self.STATUS_ARCHIVED
+                other.save(update_fields=['status'])
 
     def process_incoming(self, session, payload, extras=None): # pylint: disable=too-many-branches
         if extras is None:

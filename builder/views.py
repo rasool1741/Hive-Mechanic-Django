@@ -87,13 +87,13 @@ def public_city_games(request, city_slug):
 
 
 def public_game_detail(request, game_slug):
-    game = get_object_or_404(
-        Game,
-        slug=game_slug,
-        status=Game.STATUS_PUBLISHED,
-        archived=None,
-        versions__status=GameVersion.STATUS_PUBLISHED,
-    )
+    # Do not join on versions here: a game with several Published versions
+    # would match several rows and raise MultipleObjectsReturned.
+    game = get_object_or_404(Game.objects.select_related('city'), slug=game_slug, status=Game.STATUS_PUBLISHED, archived=None)
+    if game.published_version() is None:
+        raise Http404('Game has no published version.')
+    if game.city is not None and not game.city.is_active:
+        raise Http404('City is inactive.')
     return JsonResponse({
         'slug': game.slug,
         'name': game.name,
