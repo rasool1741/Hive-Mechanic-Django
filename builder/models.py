@@ -903,6 +903,50 @@ class Game(models.Model):  # pylint: disable=too-many-public-methods
             models.F('published').desc(nulls_last=True), '-created', '-pk',
         ).first()
 
+    def is_released(self):
+        """True once the game went through the publication workflow.
+
+        Games created before the workflow existed (original Hive Mechanic /
+        Legacy games) only have Draft versions and are never "released";
+        they keep starting sessions on their latest version.
+        """
+        if self.status == self.STATUS_PUBLISHED:
+            return True
+
+        return self.versions.filter(status__in=[GameVersion.STATUS_PUBLISHED, GameVersion.STATUS_ARCHIVED]).exists()
+
+    def version_for_new_session(self):
+        """Version a player's NEW session must use, or None if there is none.
+
+        Released games: only the current Published version (never a Draft or
+        Testing version, even if it is newer). Never-released Legacy games:
+        the latest version, as before. Existing sessions are not affected;
+        they keep the version they started with.
+        """
+        if self.is_released():
+            return self.published_version()
+
+        return self.latest_version()
+
+    def start_session(self, player):
+        """Create a session for a player on version_for_new_session().
+
+        Returns None (and creates nothing) when the game has no startable
+        version. The game row is locked so a concurrent publish() cannot
+        archive the version between choosing it and saving the session. The
+        version is chosen from the locked, freshly read row (not from this
+        possibly stale instance) so the data used matches the locked row.
+        """
+        with transaction.atomic():
+            locked_game = Game.objects.select_for_update().get(pk=self.pk)
+
+            version = locked_game.version_for_new_session()
+
+            if version is None:
+                return None
+
+            return Session.objects.create(game_version=version, player=player, started=timezone.now())
+
     def creator_name(self):
         first_version = self.versions.exclude(creator=None).order_by('created').first()
 
@@ -1083,12 +1127,23 @@ class GameVersion(models.Model):
         super(GameVersion, self).save(*args, **kwargs)
 
     def publish(self):
+        """Validate and publish this version, superseding the others.
+
+        Publishing an older version again is a rollback: its ``published``
+        timestamp is refreshed, so it becomes the version new sessions use,
+        and the version that was current is archived (or, if it still has
+        unfinished sessions, stays Published until they finish). The game row
+        is locked so two concurrent publishes of one game run one after the
+        other and always leave a single, consistent current version.
+        """
         errors = self.validate_definition()
         if errors:
             self.save(update_fields=['validation_errors', 'definition_checksum'])
             return False, errors
 
         with transaction.atomic():
+            Game.objects.select_for_update().get(pk=self.game_id)
+
             self.status = self.STATUS_PUBLISHED
             self.published = timezone.now()
             self.save()

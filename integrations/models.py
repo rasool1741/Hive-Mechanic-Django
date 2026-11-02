@@ -192,8 +192,12 @@ class Integration(models.Model):
             session = self.game.current_active_session(player=player_match)
 
             if session is None:
-                session = Session(game_version=self.game.versions.order_by('-created').first(), player=player_match, started=timezone.now())
-                session.save()
+                session = self.game.start_session(player_match)
+
+                if session is None:
+                    log(self.log_id(), 'No startable game version; session not created.', tags=['integration', 'player'], metadata=payload, player=player_match, session=None, game_version=None)
+
+                    return
 
                 if extras is not None and 'last_message' in extras:
                     del extras['last_message']
@@ -559,12 +563,18 @@ def execute_action(integration, session, action): # pylint: disable=unused-argum
         activity = Game.objects.filter(slug=activity_param).first()
 
         if player is not None and activity is not None:
+            if activity.version_for_new_session() is None:
+                return False
+
             existing_session = activity.current_active_session(player=player)
 
             if existing_session is not None:
                 existing_session.complete()
 
-            new_session = Session.objects.create(game_version=activity.versions.order_by('-created').first(), player=player, started=timezone.now())
+            new_session = activity.start_session(player)
+
+            if new_session is None:
+                return False
 
             if new_player_created:
                 site_settings = SiteSettings.objects.all().first()

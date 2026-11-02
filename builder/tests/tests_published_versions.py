@@ -1,6 +1,8 @@
 import datetime
 import json
+from unittest import mock
 
+from django.db.models.query import QuerySet
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -209,3 +211,90 @@ class PublishSupersedesPreviousVersionTests(TestCase):
         draft.refresh_from_db()
         self.assertEqual(GameVersion.STATUS_TESTING, testing.status)
         self.assertEqual(GameVersion.STATUS_DRAFT, draft.status)
+
+
+class RollbackByRepublishingTests(TestCase):
+    """Publishing an older version again is a rollback."""
+
+    def setUp(self):
+        self.game = make_game('rollback-game')
+        self.now = timezone.now()
+        self.v1 = make_version(self.game, self.now - datetime.timedelta(days=3))
+        self.assertTrue(self.v1.publish()[0])
+        self.v2 = make_version(self.game, self.now - datetime.timedelta(days=2))
+        self.assertTrue(self.v2.publish()[0])
+        self.v1.refresh_from_db()
+        self.assertEqual(GameVersion.STATUS_ARCHIVED, self.v1.status)
+        self.first_published_at = self.v1.published
+
+    def test_republishing_an_archived_older_version_makes_it_current(self):
+        self.assertTrue(self.v1.publish()[0])
+        self.v1.refresh_from_db()
+        self.v2.refresh_from_db()
+        self.assertEqual(GameVersion.STATUS_PUBLISHED, self.v1.status)
+        self.assertEqual(GameVersion.STATUS_ARCHIVED, self.v2.status)
+        self.assertEqual(self.v1, self.game.published_version())
+        self.assertGreater(self.v1.published, self.first_published_at)  # timestamp refreshed
+        player = Player.objects.create(identifier='user:rollback-player')
+        self.assertEqual(self.v1, self.game.start_session(player).game_version)
+
+    def test_rollback_keeps_the_replaced_version_while_its_session_is_unfinished(self):
+        player = Player.objects.create(identifier='user:rollback-old-player')
+        in_flight = Session.objects.create(player=player, game_version=self.v2, started=self.now)
+        self.assertTrue(self.v1.publish()[0])
+        self.v2.refresh_from_db()
+        self.assertEqual(GameVersion.STATUS_PUBLISHED, self.v2.status)  # players can finish
+        self.assertEqual(self.v1, self.game.published_version())  # but new sessions use v1
+        newcomer = Player.objects.create(identifier='user:rollback-new-player')
+        self.assertEqual(self.v1, self.game.start_session(newcomer).game_version)
+        self.assertEqual(in_flight, self.game.current_active_session(player))
+
+    def test_republishing_an_older_version_with_an_invalid_definition_changes_nothing(self):
+        GameVersion.objects.filter(pk=self.v1.pk).update(definition=INVALID_DEFINITION)
+        self.v1.refresh_from_db()
+        published, errors = self.v1.publish()
+        self.assertFalse(published)
+        self.assertTrue(errors)
+        self.v1.refresh_from_db()
+        self.v2.refresh_from_db()
+        self.assertEqual(GameVersion.STATUS_ARCHIVED, self.v1.status)
+        self.assertEqual(GameVersion.STATUS_PUBLISHED, self.v2.status)
+        self.assertEqual(self.v2, self.game.published_version())
+
+
+class GameRowLockTests(TestCase):
+    """publish() and start_session() must lock the game row (SELECT ... FOR UPDATE).
+
+    SQLite ignores row locks, so this checks that the lock is requested on Game.
+    The real concurrent behaviour is verified separately on PostgreSQL.
+    """
+
+    def locked_models(self, action):
+        requested = []
+        original = QuerySet.select_for_update
+
+        def spy(queryset, *args, **kwargs):
+            requested.append(queryset.model)
+            return original(queryset, *args, **kwargs)
+
+        with mock.patch.object(QuerySet, 'select_for_update', spy):
+            action()
+
+        return requested
+
+    def test_publish_locks_the_game_row(self):
+        game = make_game('lock-publish-game')
+        version = make_version(game, timezone.now() - datetime.timedelta(days=1))
+        self.assertIn(Game, self.locked_models(version.publish))
+
+    def test_start_session_locks_the_game_row(self):
+        game = make_game('lock-start-game')
+        version = make_version(game, timezone.now() - datetime.timedelta(days=1))
+        version.publish()
+        player = Player.objects.create(identifier='user:lock-player')
+        self.assertIn(Game, self.locked_models(lambda: game.start_session(player)))
+
+    def test_failed_publish_does_not_take_the_lock(self):
+        game = make_game('lock-invalid-game')
+        version = make_version(game, timezone.now() - datetime.timedelta(days=1), definition=INVALID_DEFINITION)
+        self.assertEqual([], self.locked_models(version.publish))
