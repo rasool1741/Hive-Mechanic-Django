@@ -107,3 +107,68 @@ def tool_variable_name(node_id, tool, kind):
     if isinstance(name, str) and name.strip():
         return name.strip()
     return '%s.%s' % (node_id, kind)
+
+
+# --- One contract for edge conditions, shared by publish validation and the runtime ----
+
+CONDITION_NONE, CONDITION_VALID, CONDITION_INVALID = 'none', 'valid', 'invalid'
+
+
+def parse_condition(condition):
+    """Parse an edge's ``condition`` value. Returns (status, variable, equals).
+
+    * ``None`` (or no condition at all) is the ONLY way to say "no condition".
+    * A valid condition is a dict with ``equals`` and exactly one of ``variable`` / ``key``
+      naming a non-empty string, and no other keys.
+    * Everything else is invalid and must never be treated as "always true": ``{}``,
+      ``[]``, ``''``, ``0``, ``False``, other types, both ``variable`` and ``key``,
+      unknown keys, an empty or non-string variable name, a missing ``equals``.
+    """
+    if condition is None:
+        return CONDITION_NONE, None, None
+    if not isinstance(condition, dict) or set(condition) - {'variable', 'key', 'equals'}:
+        return CONDITION_INVALID, None, None
+    if 'equals' not in condition or ('variable' in condition) == ('key' in condition):
+        return CONDITION_INVALID, None, None
+    variable = condition['variable'] if 'variable' in condition else condition['key']
+    if not isinstance(variable, str) or not variable:
+        return CONDITION_INVALID, None, None
+    return CONDITION_VALID, variable, condition['equals']
+
+
+def graph_dominators(node_ids, edges, start):
+    """Dominator sets of the nodes reachable from ``start``: {node: set of dominating nodes}.
+
+    A node D dominates N when every path from ``start`` to N passes through D (a node
+    dominates itself). Plain iterative algorithm; it also terminates on graphs with cycles.
+    """
+    successors = {node_id: set() for node_id in node_ids}
+    predecessors = {node_id: set() for node_id in node_ids}
+    for edge in edges:
+        if isinstance(edge, dict) and edge.get('source') in successors and edge.get('target') in successors:
+            successors[edge['source']].add(edge['target'])
+            predecessors[edge['target']].add(edge['source'])
+    if start not in successors:
+        return {}
+
+    reachable, stack = set(), [start]
+    while stack:
+        current = stack.pop()
+        if current not in reachable:
+            reachable.add(current)
+            stack.extend(successors[current])
+
+    dominators = {node_id: set(reachable) for node_id in reachable}
+    dominators[start] = {start}
+    changed = True
+    while changed:
+        changed = False
+        for node_id in reachable:
+            if node_id == start:
+                continue
+            parents = [dominators[parent] for parent in predecessors[node_id] if parent in reachable]
+            updated = {node_id} | (set.intersection(*parents) if parents else set())
+            if updated != dominators[node_id]:
+                dominators[node_id] = updated
+                changed = True
+    return dominators

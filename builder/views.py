@@ -40,7 +40,10 @@ from integrations.models import Integration
 from user_creation.decorators import user_accepted_all_terms
 
 from .models import City, Game, GameVersion, InteractionCard, Player, Session, SessionEvent, ScoreLedger, DataProcessor, SiteSettings, StateVariable, SessionMediaSubmission
-from .urban_tools import accepted_answers, inside_radius, match_answer, tool_variable_name, validate_location_sample, verify_qr_token
+from .urban_tools import (
+    CONDITION_INVALID, CONDITION_NONE, accepted_answers, inside_radius, match_answer, parse_condition,
+    tool_variable_name, validate_location_sample, verify_qr_token,
+)
 
 
 def public_city_catalog(request):
@@ -294,21 +297,25 @@ def player_media_download(request, submission_id):
     return response
 
 
-def _graph_condition_matches(condition, graph_vars):
-    """Evaluate the small, server-owned condition contract for graph edges.
+# The only operations a graph node accepts. Anything else is rejected before any tool runs,
+# so an unknown operation can never skip the Quiz/Text/Timer checks that guard a transition.
+GRAPH_OPERATIONS = ('complete', 'hint', 'media')
 
-    Only graph_vars is read: the variables the server wrote after validating a Quiz or
-    Text answer. Nothing else in the session or in the request can satisfy a condition.
-    Anything that is not exactly {variable|key, equals} fails closed.
+
+def _graph_condition_matches(condition, graph_vars):
+    """Evaluate an edge condition under the one contract shared with publish validation.
+
+    No condition (None) always matches. Only graph_vars is read: the variables the server
+    wrote after validating a Quiz or Text answer. Nothing else in the session or the request
+    can satisfy a condition, and an invalid condition (including {}, [], '' or 0) never
+    matches, it is not treated as "no condition".
     """
-    if not condition:
+    status, variable, equals = parse_condition(condition)
+    if status == CONDITION_NONE:
         return True
-    if not isinstance(condition, dict) or set(condition) - {'variable', 'key', 'equals'}:
+    if status == CONDITION_INVALID:
         return False
-    variable = condition.get('variable', condition.get('key'))
-    if not isinstance(variable, str) or 'equals' not in condition:
-        return False
-    return variable in graph_vars and graph_vars[variable] == condition['equals']
+    return variable in graph_vars and graph_vars[variable] == equals
 
 
 def _graph_game_action(session, payload, event_id, stage_id, graph):
@@ -331,6 +338,8 @@ def _graph_game_action(session, payload, event_id, stage_id, graph):
     if tool_types - supported_tools:
         return JsonResponse({'error': 'Node contains an unsupported tool.'}, status=409)
     operation = payload.get('operation', 'complete')
+    if not isinstance(operation, str) or operation not in GRAPH_OPERATIONS:
+        return JsonResponse({'error': 'Unsupported operation.'}, status=400)
     media_tool = next((tool for tool in tools if tool.get('type') in ('image', 'audio', 'video', 'camera', 'audio_video')), None)
     if operation == 'media':
         if media_tool is None:

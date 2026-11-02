@@ -1,11 +1,15 @@
 import json
+import time
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
 from ..models import City, Game, GameVersion, Player, ScoreLedger, Session, SessionEvent
-from ..urban_tools import accepted_answers, answer_key, match_answer, tool_variable_name
+from ..urban_tools import (
+    CONDITION_INVALID, CONDITION_NONE, CONDITION_VALID, accepted_answers, answer_key, graph_dominators, match_answer,
+    parse_condition, tool_variable_name,
+)
 
 # Deliberately unusual answers so a leak is easy to spot in any response body.
 ACCEPTED = ['Crimson Tide', 'Azure Wave']
@@ -385,3 +389,276 @@ class AnswerHelperTests(TestCase):
         self.assertEqual('node-1.text', tool_variable_name('node-1', {'settings': None}, 'text'))
         self.assertEqual('palette', tool_variable_name('node-1', {'settings': {'variable': ' palette '}}, 'quiz'))
         self.assertEqual('node-1.quiz', tool_variable_name('node-1', {'settings': {'variable': '  '}}, 'quiz'))
+
+
+# =============================== Second review round ===============================
+
+
+def chain_graph(condition):
+    """a --(condition)--> b -> c. Used to prove an invalid condition is never 'always true'."""
+    edge = {'id': 'e1', 'source': 'a', 'target': 'b'}
+    if condition is not ABSENT:
+        edge['condition'] = condition
+    return {'nodes': [{'id': 'a'}, {'id': 'b'}, {'id': 'c'}], 'edges': [edge, {'id': 'e2', 'source': 'b', 'target': 'c'}],
+            'start': 'a', 'end': 'c'}
+
+
+ABSENT = object()
+INVALID_CONDITIONS = [
+    {}, [], '', 0, False, 'palette=Crimson Tide', ['variable', 'equals'], 5,
+    {'variable': '', 'equals': 'x'}, {'variable': 5, 'equals': 'x'}, {'variable': None, 'equals': 'x'},
+    {'variable': 'palette'}, {'equals': 'x'}, {'key': 'palette'},
+    {'variable': 'palette', 'key': 'palette', 'equals': 'Crimson Tide'},   # variable AND key together
+    {'variable': 'palette', 'equals': 'x', 'extra': 1}, {'variable': 'palette', 'not_equals': 'x'},
+]
+
+
+class ConditionContractTests(GraphRuntimeBase):
+    """One contract for publish validation and runtime: only None means 'no condition'."""
+
+    def test_parse_condition_classification(self):
+        self.assertEqual((CONDITION_NONE, None, None), parse_condition(None))
+        self.assertEqual((CONDITION_VALID, 'palette', 'x'), parse_condition({'variable': 'palette', 'equals': 'x'}))
+        self.assertEqual((CONDITION_VALID, 'palette', 'x'), parse_condition({'key': 'palette', 'equals': 'x'}))
+        self.assertEqual((CONDITION_VALID, 'palette', None), parse_condition({'variable': 'palette', 'equals': None}))
+        for bad in INVALID_CONDITIONS:
+            self.assertEqual((CONDITION_INVALID, None, None), parse_condition(bad), bad)
+
+    def test_invalid_conditions_are_rejected_at_publish(self):
+        for bad in INVALID_CONDITIONS:
+            errors = GameVersion.validate_graph(definition_with(chain_graph(bad)))
+            self.assertTrue(any('invalid condition' in error for error in errors), (bad, errors))
+
+    def test_invalid_conditions_are_never_treated_as_always_true_at_runtime(self):
+        for bad in INVALID_CONDITIONS:
+            self.start(chain_graph(bad), validate=False)  # unvalidated: the runtime must still fail closed
+            response = self.act('c1', 'a')
+            self.assertEqual(409, response.status_code, (bad, response.content))
+            self.assertNotIn('graph_node_id', self.state(), bad)
+            self.assertEqual(0, ScoreLedger.objects.filter(session=self.session).count(), bad)
+            self.assertEqual(0, SessionEvent.objects.filter(session=self.session).count(), bad)
+
+    def test_no_condition_keeps_working_whether_absent_or_null(self):
+        for graph in (chain_graph(ABSENT), chain_graph(None)):
+            self.assertEqual([], GameVersion.validate_graph(definition_with(graph)))
+            self.start(graph)
+            self.assertEqual('b', self.act('n1', 'a').json()['next_stage_id'])
+            self.assertEqual('c', self.act('n2', 'b').json()['next_stage_id'])
+
+    def test_key_alias_alone_is_valid_and_routes(self):
+        graph = branching_graph()
+        for edge in graph['edges'][:2]:
+            edge['condition'] = {'key': edge['condition']['variable'], 'equals': edge['condition']['equals']}
+        self.assertEqual([], GameVersion.validate_graph(definition_with(graph)))
+        self.start(graph)
+        self.assertEqual('blue-path', self.act('k1', 'pick', answer='Azure Wave').json()['next_stage_id'])
+
+    def test_variable_and_key_together_is_rejected_by_publish_and_runtime(self):
+        graph = branching_graph()
+        for edge in graph['edges'][:2]:
+            edge['condition'] = {'variable': 'palette', 'key': 'palette', 'equals': edge['condition']['equals']}
+        self.assertTrue(any('invalid condition' in error for error in GameVersion.validate_graph(definition_with(graph))))
+        self.start(graph, validate=False)
+        self.assertEqual(409, self.act('vk1', 'pick', answer='Crimson Tide').status_code)
+        self.assertNotIn('graph_node_id', self.state())
+        self.assertNotIn('graph_vars', self.state())
+
+
+class DominatorTests(TestCase):
+    def doms(self, edges, start='s', nodes=None):
+        nodes = nodes or sorted({n for pair in edges for n in pair} | {start})
+        return graph_dominators(set(nodes), [{'source': a, 'target': b} for a, b in edges], start)
+
+    def test_chain(self):
+        self.assertEqual({'s': {'s'}, 'a': {'s', 'a'}, 'b': {'s', 'a', 'b'}}, self.doms([('s', 'a'), ('a', 'b')]))
+
+    def test_diamond_branch_nodes_do_not_dominate_the_merge(self):
+        doms = self.doms([('s', 'a'), ('s', 'b'), ('a', 'm'), ('b', 'm')])
+        self.assertEqual({'s', 'm'}, doms['m'])
+        self.assertEqual({'s', 'a'}, doms['a'])
+
+    def test_unreachable_nodes_are_left_out_and_do_not_weaken_reachable_ones(self):
+        doms = self.doms([('s', 'a'), ('x', 'a')], nodes=['s', 'a', 'x'])
+        self.assertNotIn('x', doms)
+        self.assertEqual({'s', 'a'}, doms['a'])
+
+    def test_cycles_terminate(self):
+        doms = self.doms([('s', 'a'), ('a', 'b'), ('b', 'a')])
+        self.assertEqual({'s', 'a'}, doms['a'])
+        self.assertEqual({'s', 'a', 'b'}, doms['b'])
+
+    def test_unknown_start_gives_nothing(self):
+        self.assertEqual({}, graph_dominators({'a'}, [], 'missing'))
+
+
+class BranchingStructureValidationTests(TestCase):
+    def errors(self, graph):
+        return GameVersion.validate_graph(definition_with(graph))
+
+    @staticmethod
+    def fork_graph(merge_variable='route', declare_extra_on='a'):
+        """fork(route: left|right) -> a | b -> merge -> x | y -> end. 'extra' is set on one branch only."""
+        a_tools = [{'type': 'quiz', 'settings': {'answer': ['p', 'q'], 'variable': 'extra'}}] if declare_extra_on == 'a' else []
+        merge_values = {'route': ('left', 'right'), 'extra': ('p', 'q')}[merge_variable]
+        return {
+            'nodes': [
+                {'id': 'fork', 'tools': [{'type': 'quiz', 'settings': {'answer': ['left', 'right'], 'variable': 'route'}}]},
+                {'id': 'a', 'tools': a_tools}, {'id': 'b'}, {'id': 'merge'}, {'id': 'x'}, {'id': 'y'}, {'id': 'end'},
+            ],
+            'edges': [
+                {'id': 'f-a', 'source': 'fork', 'target': 'a', 'condition': {'variable': 'route', 'equals': 'left'}},
+                {'id': 'f-b', 'source': 'fork', 'target': 'b', 'condition': {'variable': 'route', 'equals': 'right'}},
+                {'id': 'a-m', 'source': 'a', 'target': 'merge'}, {'id': 'b-m', 'source': 'b', 'target': 'merge'},
+                {'id': 'm-x', 'source': 'merge', 'target': 'x', 'condition': {'variable': merge_variable, 'equals': merge_values[0]}},
+                {'id': 'm-y', 'source': 'merge', 'target': 'y', 'condition': {'variable': merge_variable, 'equals': merge_values[1]}},
+                {'id': 'x-e', 'source': 'x', 'target': 'end'}, {'id': 'y-e', 'source': 'y', 'target': 'end'},
+            ],
+            'start': 'fork', 'end': 'end',
+        }
+
+    def test_variable_set_on_only_one_path_to_the_branching_node_is_rejected(self):
+        errors = self.errors(self.fork_graph(merge_variable='extra'))
+        self.assertTrue(any("Node 'merge'" in error and 'not guaranteed to be set' in error for error in errors), errors)
+
+    def test_variable_set_on_every_path_is_accepted_even_when_branching_node_is_further_down(self):
+        # 'route' is set by 'fork', which lies on every path to 'merge' (a dominator), so this is valid.
+        self.assertEqual([], self.errors(self.fork_graph(merge_variable='route', declare_extra_on=None)))
+
+    def test_branching_far_below_the_declaring_node_still_needs_every_answer_covered(self):
+        graph = self.fork_graph(merge_variable='route', declare_extra_on=None)
+        graph['nodes'] = [node for node in graph['nodes'] if node['id'] != 'y']
+        graph['edges'] = [edge for edge in graph['edges'] if edge['id'] not in ('m-y', 'y-e')]
+        errors = self.errors(graph)
+        self.assertTrue(any("Node 'merge' has no outgoing edge for accepted answer 'right'" in error for error in errors), errors)
+
+    def test_next_node_with_an_accepted_answer_that_has_no_edge_is_rejected(self):
+        graph = {
+            'nodes': [{'id': 'pick', 'tools': [{'type': 'quiz', 'settings': {'answer': list(ACCEPTED), 'variable': 'palette'}}]},
+                      {'id': 'story'}, {'id': 'mid'}, {'id': 'finish'}],
+            'edges': [{'id': 'e0', 'source': 'pick', 'target': 'story'},
+                      {'id': 'e1', 'source': 'story', 'target': 'mid', 'condition': {'variable': 'palette', 'equals': 'Crimson Tide'}},
+                      {'id': 'e2', 'source': 'mid', 'target': 'finish'}],
+            'start': 'pick', 'end': 'finish',
+        }
+        errors = self.errors(graph)
+        self.assertTrue(any("Node 'story' has no outgoing edge for accepted answer 'Azure Wave'" in error for error in errors), errors)
+
+    def test_two_variables_on_the_outgoing_edges_of_one_node_are_rejected(self):
+        graph = {
+            'nodes': [{'id': 'n1', 'tools': [{'type': 'quiz', 'settings': {'answer': ['a', 'b'], 'variable': 'v1'}}]},
+                      {'id': 'n2', 'tools': [{'type': 'quiz', 'settings': {'answer': ['c', 'd'], 'variable': 'v2'}}]},
+                      {'id': 'n3'}, {'id': 't1'}, {'id': 't2'}, {'id': 'end'}],
+            'edges': [{'id': 'e1', 'source': 'n1', 'target': 'n2'}, {'id': 'e2', 'source': 'n2', 'target': 'n3'},
+                      {'id': 'e3', 'source': 'n3', 'target': 't1', 'condition': {'variable': 'v1', 'equals': 'a'}},
+                      {'id': 'e4', 'source': 'n3', 'target': 't2', 'condition': {'variable': 'v2', 'equals': 'c'}},
+                      {'id': 'e5', 'source': 't1', 'target': 'end'}, {'id': 'e6', 'source': 't2', 'target': 'end'}],
+            'start': 'n1', 'end': 'end',
+        }
+        errors = self.errors(graph)
+        self.assertTrue(any("Node 'n3' branches on more than one variable (v1, v2)" in error for error in errors), errors)
+
+    def test_branching_variable_must_not_be_undeclared_even_with_a_second_variable(self):
+        graph = branching_graph()
+        graph['edges'][0]['condition']['variable'] = 'nobody-sets-this'
+        errors = self.errors(graph)
+        self.assertTrue(any('no quiz or text tool declares' in error for error in errors), errors)
+        self.assertTrue(any('more than one variable' in error for error in errors), errors)
+
+
+class OverlapRuntimeTests(GraphRuntimeBase):
+    def test_overlapping_two_variable_edges_return_conflict_and_record_nothing(self):
+        graph = {
+            'nodes': [{'id': 'n1', 'tools': [{'type': 'quiz', 'settings': {'answer': ['a', 'b'], 'variable': 'v1'}}]},
+                      {'id': 'n2', 'tools': [{'type': 'quiz', 'settings': {'answer': ['c', 'd'], 'variable': 'v2'}}]},
+                      {'id': 'n3'}, {'id': 't1'}, {'id': 't2'}, {'id': 'end'}],
+            'edges': [{'id': 'e1', 'source': 'n1', 'target': 'n2'}, {'id': 'e2', 'source': 'n2', 'target': 'n3'},
+                      {'id': 'e3', 'source': 'n3', 'target': 't1', 'condition': {'variable': 'v1', 'equals': 'a'}},
+                      {'id': 'e4', 'source': 'n3', 'target': 't2', 'condition': {'variable': 'v2', 'equals': 'c'}},
+                      {'id': 'e5', 'source': 't1', 'target': 'end'}, {'id': 'e6', 'source': 't2', 'target': 'end'}],
+            'start': 'n1', 'end': 'end',
+        }
+        self.start(graph, validate=False)  # publish would reject this graph
+        self.assertEqual('n2', self.act('o1', 'n1', answer='a').json()['next_stage_id'])
+        self.assertEqual('n3', self.act('o2', 'n2', answer='c').json()['next_stage_id'])
+        before = ScoreLedger.objects.filter(session=self.session).count()
+        response = self.act('o3', 'n3')
+        self.assertEqual(409, response.status_code)  # both e3 and e4 match: refuse to guess
+        self.assertEqual('n3', self.state()['graph_node_id'])
+        self.assertEqual(before, ScoreLedger.objects.filter(session=self.session).count())
+
+
+class DiamondRuntimeTests(GraphRuntimeBase):
+    def test_a_branch_taken_early_is_remembered_at_the_merge(self):
+        graph = BranchingStructureValidationTests.fork_graph(merge_variable='route', declare_extra_on=None)
+        self.assertEqual([], GameVersion.validate_graph(definition_with(graph)))
+        self.start(graph)
+        self.assertEqual('b', self.act('d1', 'fork', answer='right').json()['next_stage_id'])
+        self.assertEqual('merge', self.act('d2', 'b').json()['next_stage_id'])
+        self.assertEqual('y', self.act('d3', 'merge').json()['next_stage_id'])
+
+
+class UnknownOperationTests(GraphRuntimeBase):
+    """An unknown operation must never skip the Quiz/Text/Timer checks that guard a transition."""
+
+    def gate_graph(self):
+        return {
+            'nodes': [{'id': 'gate', 'tools': [
+                {'type': 'hint', 'settings': {'content': 'Say the magic words', 'score_cost': 2}},
+                {'type': 'timer', 'settings': {'minimum_seconds': 60}},
+                {'type': 'quiz', 'settings': {'answer': 'open sesame', 'variable': 'word'}},
+            ]}, {'id': 'end'}],
+            'edges': [{'id': 'e', 'source': 'gate', 'target': 'end'}], 'start': 'gate', 'end': 'end',
+        }
+
+    BYPASS_ATTEMPTS = ['skip', 'finish', 'next', 'advance', 'COMPLETE', 'Complete', 'complete ', ' complete', '', 'completed',
+                       'complete_node', 'pass', None, 5, True, ['complete'], {'op': 'complete'}]
+
+    def test_unknown_operations_cannot_skip_quiz_or_timer(self):
+        self.start(self.gate_graph())
+        for index, operation in enumerate(self.BYPASS_ATTEMPTS):
+            for extra in ({}, {'answer': 'wrong'}, {'answer': 'open sesame'}):
+                response = self.act('bypass-%d-%d' % (index, len(extra)), 'gate', operation=operation, **extra)
+                self.assertEqual(400, response.status_code, (operation, extra, response.content))
+        state = self.state()
+        self.assertEqual({}, state)  # nothing moved, no timer started, no variable stored
+        self.assertEqual(0, ScoreLedger.objects.filter(session=self.session).count())
+        self.assertEqual(0, SessionEvent.objects.filter(session=self.session).count())
+
+    def test_unknown_operation_cannot_skip_a_conditional_branch_either(self):
+        self.start(branching_graph())
+        for index, operation in enumerate(['skip', 'finish', None, ['complete']]):
+            self.assertEqual(400, self.act('b%d' % index, 'pick', operation=operation, answer='Crimson Tide').status_code)
+        self.assertEqual({}, self.state())
+
+    def test_complete_still_requires_the_answer_and_the_timer(self):
+        self.start(self.gate_graph())
+        # The timer is checked first (existing order): until it has elapsed nothing else is reached.
+        self.assertEqual(409, self.act('c1', 'gate').status_code)
+        self.assertEqual(409, self.act('c2', 'gate', answer='open sesame').status_code)
+        state = self.state()
+        state['graph_timer_started_at:gate'] = time.time() - 120
+        self.session.session_state = state
+        self.session.save(update_fields=['session_state'])
+        self.assertEqual(400, self.act('c3', 'gate').status_code)                                  # answer is mandatory
+        self.assertEqual(403, self.act('c4', 'gate', answer='wrong').status_code)
+        self.assertEqual({'graph_timer_started_at:gate': state['graph_timer_started_at:gate']}, self.state())
+        self.assertEqual(200, self.act('c5', 'gate', operation='complete', answer='open sesame').status_code)
+        self.assertEqual({'word': 'open sesame'}, self.state()['graph_vars'])
+
+    def test_explicit_complete_and_omitted_operation_are_equivalent(self):
+        self.start(chain_graph(ABSENT))
+        self.assertEqual('b', self.act('e1', 'a', operation='complete').json()['next_stage_id'])
+        self.assertEqual('c', self.act('e2', 'b').json()['next_stage_id'])
+
+    def test_hint_keeps_its_behaviour(self):
+        self.start(self.gate_graph())
+        response = self.act('h1', 'gate', operation='hint')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('Say the magic words', response.json()['content'])
+        self.assertEqual(-2, ScoreLedger.objects.get(session=self.session).amount)
+        self.assertNotIn('graph_vars', self.state())
+
+    def test_hint_and_media_without_the_tool_are_still_refused_as_before(self):
+        self.start(chain_graph(ABSENT))
+        self.assertEqual(403, self.act('m1', 'a', operation='hint').status_code)
+        self.assertEqual(403, self.act('m2', 'a', operation='media').status_code)

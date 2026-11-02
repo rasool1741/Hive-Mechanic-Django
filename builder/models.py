@@ -42,7 +42,7 @@ from activity_logger.models import log
 
 from . import card_issues
 from .utils import fetch_cytoscape_node as fetch_cytoscape, obfuscate_player_id
-from .urban_tools import accepted_answers, answer_key, answer_tool_kind, tool_variable_name
+from .urban_tools import CONDITION_NONE, CONDITION_VALID, accepted_answers, answer_key, answer_tool_kind, graph_dominators, parse_condition, tool_variable_name
 
 if sys.version_info[0] > 2:
     from django.db.models import JSONField # pylint: disable=no-name-in-module
@@ -1119,16 +1119,22 @@ class GameVersion(models.Model):
         if any(visit(node_id) for node_id in node_ids):
             errors.append('Graph contains a cycle.')
 
-        errors.extend(GameVersion.validate_graph_conditions(nodes, edges, node_ids))
+        errors.extend(GameVersion.validate_graph_conditions(nodes, edges, node_ids, start))
         return errors
 
     @staticmethod
-    def validate_graph_conditions(nodes, edges, node_ids): # pylint: disable=too-many-locals, too-many-branches, too-many-statements
-        """Reject answer tools and edge conditions that could never work for a player.
+    def validate_graph_conditions(nodes, edges, node_ids, start): # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+        """Reject answer tools and edge conditions that could not work for every player.
 
         Contract (see urban_tools): Quiz/Text tools that list accepted answers write the
-        authored accepted value to a variable; edge conditions {"variable", "equals"}
-        compare against those server-written variables only.
+        authored accepted value to a variable; an edge condition is None (no condition) or
+        {"variable"|"key", "equals"} and is compared against those server-written
+        variables only. Every node that branches must:
+
+        * have only conditional outgoing edges, all on exactly ONE variable;
+        * use a variable whose tool node lies on every path from the start to it
+          (the declaring node dominates the branching node, or is it);
+        * have exactly one outgoing edge for each accepted answer of that variable.
         """
         errors = []
 
@@ -1153,64 +1159,57 @@ class GameVersion(models.Model):
                 declared[name] = (node['id'], kind, accepted)
 
         outgoing = {node_id: [] for node_id in node_ids}
-        parents = {node_id: [] for node_id in node_ids}
         for edge in edges:
             if isinstance(edge, dict) and edge.get('source') in node_ids and edge.get('target') in node_ids:
                 outgoing[edge['source']].append(edge)
-                parents[edge['target']].append(edge['source'])
 
-        def ancestors_and_self(node_id):
-            seen, stack = set(), [node_id]
-            while stack:
-                current = stack.pop()
-                if current not in seen:
-                    seen.add(current)
-                    stack.extend(parents[current])
-            return seen
+        dominators = graph_dominators(node_ids, edges, start)
 
         for node_id, node_edges in outgoing.items():
-            conditional = [edge for edge in node_edges if edge.get('condition')]
+            conditions = [(edge, parse_condition(edge.get('condition'))) for edge in node_edges]
+            conditional = [(edge, parsed) for edge, parsed in conditions if parsed[0] != CONDITION_NONE]
             if not conditional:
                 continue
             if len(conditional) != len(node_edges):
                 errors.append("Node '%s' mixes conditional and unconditional outgoing edges." % node_id)
-            known_nodes = ancestors_and_self(node_id)
-            seen_conditions = set()
-            covered = {}
-            for edge in conditional:
-                label = "Edge '%s'" % edge.get('id')
-                condition = edge['condition']
-                if not isinstance(condition, dict) or set(condition) - {'variable', 'key', 'equals'}:
-                    errors.append('%s has an unsupported condition (only variable and equals are allowed).' % label)
-                    continue
-                variable = condition.get('variable', condition.get('key'))
-                if not isinstance(variable, str) or 'equals' not in condition:
-                    errors.append('%s condition needs a variable name and an equals value.' % label)
-                    continue
-                if variable not in declared:
-                    errors.append("%s refers to variable '%s', which no quiz or text tool declares." % (label, variable))
-                    continue
-                declaring_node, _kind, accepted = declared[variable]
-                if declaring_node not in known_nodes:
-                    errors.append("%s refers to variable '%s', which is only set after this node." % (label, variable))
-                    continue
-                if not isinstance(condition['equals'], str) or condition['equals'] not in accepted:
-                    errors.append("%s equals value must be one of the accepted answers of '%s'." % (label, variable))
-                    continue
-                if (variable, condition['equals']) in seen_conditions:
-                    errors.append("Node '%s' has two outgoing edges for '%s' = '%s'." % (node_id, variable, condition['equals']))
-                    continue
-                seen_conditions.add((variable, condition['equals']))
-                covered.setdefault(variable, set()).add(condition['equals'])
 
-            # A node branching on its own answer must have a path for every accepted answer,
-            # otherwise a player who answered correctly would be stuck.
-            if len(conditional) == len(node_edges) and len(covered) == 1:
-                variable = next(iter(covered))
-                if declared[variable][0] == node_id:
-                    for value in declared[variable][2]:
-                        if value not in covered[variable]:
-                            errors.append("Node '%s' has no outgoing edge for accepted answer '%s'." % (node_id, value))
+            usable = []
+            for edge, (status, variable, equals) in conditional:
+                if status != CONDITION_VALID:
+                    errors.append("Edge '%s' has an invalid condition: use null for none, or exactly "
+                                  "{variable or key, equals}." % edge.get('id'))
+                else:
+                    usable.append((edge, variable, equals))
+            variables = sorted({variable for _edge, variable, _equals in usable})
+            undeclared = [variable for variable in variables if variable not in declared]
+            for variable in undeclared:
+                errors.append("Node '%s' branches on variable '%s', which no quiz or text tool declares." % (node_id, variable))
+            if len(variables) > 1:
+                errors.append("Node '%s' branches on more than one variable (%s); a branching node must use exactly one."
+                              % (node_id, ', '.join(variables)))
+                continue
+            if not variables or undeclared:
+                continue
+
+            variable = variables[0]
+            declaring_node, _kind, accepted = declared[variable]
+            if node_id in dominators and declaring_node not in dominators[node_id]:
+                errors.append("Node '%s' branches on variable '%s', which is not guaranteed to be set before this node "
+                              "(it is only set after this node or on only some of the paths to it)." % (node_id, variable))
+                continue
+
+            seen = set()
+            for edge, _variable, equals in usable:
+                label = "Edge '%s'" % edge.get('id')
+                if not isinstance(equals, str) or equals not in accepted:
+                    errors.append("%s equals value must be one of the accepted answers of '%s'." % (label, variable))
+                elif equals in seen:
+                    errors.append("Node '%s' has two outgoing edges for '%s' = '%s'." % (node_id, variable, equals))
+                else:
+                    seen.add(equals)
+            for value in accepted:
+                if value not in seen:
+                    errors.append("Node '%s' has no outgoing edge for accepted answer '%s'." % (node_id, value))
         return errors
 
     def calculate_checksum(self):
