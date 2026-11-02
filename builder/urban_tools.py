@@ -49,3 +49,61 @@ def verify_qr_token(token, secret, now=None):
         return payload
     except (AttributeError, ValueError, KeyError, TypeError, json.JSONDecodeError):
         return None
+
+
+# --- Graph answer tools (Quiz / Text) -------------------------------------------------
+#
+# Contract for conditional graph edges. The player never supplies a variable. A Quiz
+# ("answer") or Text ("exact") tool lists the accepted answers (a value or a list of
+# values). When the server validates the player's answer it stores the AUTHORED accepted
+# value (not the raw text the player typed) in session_state['graph_vars'] under the tool's
+# variable name. Edge conditions {"variable": ..., "equals": ...} only read graph_vars.
+
+ANSWER_TOOL_KINDS = {'quiz': 'quiz', 'text': 'text', 'text_input': 'text'}
+
+
+def answer_tool_kind(tool):
+    """Return 'quiz' or 'text' for an answer-bearing tool, else None."""
+    return ANSWER_TOOL_KINDS.get(tool.get('type')) if isinstance(tool, dict) else None
+
+
+def accepted_answers(settings_data, kind):
+    """Authored accepted answers of a quiz ('answer') or text ('exact') tool.
+
+    Returns None when the tool declares none (free-form tool), a list of strings when it
+    does, and an empty list when the declaration is invalid (empty list or unsupported
+    types), which can never match.
+    """
+    key = 'answer' if kind == 'quiz' else 'exact'
+    if not isinstance(settings_data, dict) or key not in settings_data:
+        return None
+    value = settings_data[key]
+    items = value if isinstance(value, list) else [value]
+    if not items or any(isinstance(item, bool) or not isinstance(item, (str, int, float)) for item in items):
+        return []
+    return [str(item) for item in items]
+
+
+def answer_key(kind, authored):
+    """Form in which two authored accepted answers count as duplicates."""
+    return str(authored).strip().casefold() if kind == 'quiz' else str(authored)
+
+
+def match_answer(kind, submitted, accepted):
+    """Return the authored accepted value that equals what the player sent, else None.
+
+    Quiz: ignores case and outer spaces. Text: only the player's outer spaces are ignored
+    and the comparison is case-sensitive (unchanged from the previous behaviour).
+    """
+    if kind == 'quiz':
+        normalized = str(submitted).strip().casefold()
+        return next((candidate for candidate in accepted if candidate.strip().casefold() == normalized), None)
+    return next((candidate for candidate in accepted if str(submitted).strip() == candidate), None)
+
+
+def tool_variable_name(node_id, tool, kind):
+    """Variable an answer tool writes to: settings.variable, else '<node id>.<quiz|text>'."""
+    name = (tool.get('settings') or {}).get('variable') if isinstance(tool.get('settings'), dict) else None
+    if isinstance(name, str) and name.strip():
+        return name.strip()
+    return '%s.%s' % (node_id, kind)

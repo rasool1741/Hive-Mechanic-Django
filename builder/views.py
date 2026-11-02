@@ -40,7 +40,7 @@ from integrations.models import Integration
 from user_creation.decorators import user_accepted_all_terms
 
 from .models import City, Game, GameVersion, InteractionCard, Player, Session, SessionEvent, ScoreLedger, DataProcessor, SiteSettings, StateVariable, SessionMediaSubmission
-from .urban_tools import inside_radius, validate_location_sample, verify_qr_token
+from .urban_tools import accepted_answers, inside_radius, match_answer, tool_variable_name, validate_location_sample, verify_qr_token
 
 
 def public_city_catalog(request):
@@ -294,16 +294,21 @@ def player_media_download(request, submission_id):
     return response
 
 
-def _graph_condition_matches(condition, session_state):
-    """Evaluate the small, server-owned condition contract for graph edges."""
+def _graph_condition_matches(condition, graph_vars):
+    """Evaluate the small, server-owned condition contract for graph edges.
+
+    Only graph_vars is read: the variables the server wrote after validating a Quiz or
+    Text answer. Nothing else in the session or in the request can satisfy a condition.
+    Anything that is not exactly {variable|key, equals} fails closed.
+    """
     if not condition:
         return True
-    if not isinstance(condition, dict):
+    if not isinstance(condition, dict) or set(condition) - {'variable', 'key', 'equals'}:
         return False
     variable = condition.get('variable', condition.get('key'))
-    if not variable or 'equals' not in condition:
+    if not isinstance(variable, str) or 'equals' not in condition:
         return False
-    return session_state.get(variable) == condition['equals']
+    return variable in graph_vars and graph_vars[variable] == condition['equals']
 
 
 def _graph_game_action(session, payload, event_id, stage_id, graph):
@@ -386,13 +391,17 @@ def _graph_game_action(session, payload, event_id, stage_id, graph):
         if operation == 'complete' and timezone.now().timestamp() - float(started_at) < minimum:
             return JsonResponse({'error': 'Timer has not elapsed.'}, status=409)
 
+    answered = {}  # variables set by this action; saved only together with the node transition
     for tool in tools:
         settings_data = tool.get('settings') or {}
         if tool.get('type') == 'quiz' and operation == 'complete':
-            if 'answer' not in payload or 'answer' not in settings_data:
+            accepted = accepted_answers(settings_data, 'quiz')
+            if 'answer' not in payload or accepted is None:
                 return JsonResponse({'error': 'Quiz answer is required.'}, status=400)
-            if str(payload['answer']).strip().casefold() != str(settings_data['answer']).strip().casefold():
+            matched = match_answer('quiz', payload['answer'], accepted)
+            if matched is None:
                 return JsonResponse({'error': 'Quiz answer is incorrect.'}, status=403)
+            answered[tool_variable_name(current, tool, 'quiz')] = matched
         if tool.get('type') in ('text', 'text_input') and operation == 'complete':
             value = payload.get('text')
             if not isinstance(value, str) or not value.strip():
@@ -400,8 +409,12 @@ def _graph_game_action(session, payload, event_id, stage_id, graph):
             maximum = int(settings_data.get('max_length', 1000) or 1000)
             if len(value) > maximum:
                 return JsonResponse({'error': 'Text input is too long.'}, status=400)
-            if 'exact' in settings_data and value.strip() != str(settings_data['exact']):
-                return JsonResponse({'error': 'Text input is incorrect.'}, status=403)
+            accepted = accepted_answers(settings_data, 'text')
+            if accepted is not None:
+                matched = match_answer('text', value, accepted)
+                if matched is None:
+                    return JsonResponse({'error': 'Text input is incorrect.'}, status=403)
+                answered[tool_variable_name(current, tool, 'text')] = matched
     city = session.game_version.game.city
     gps = payload.get('gps')
     if 'gps' in tool_types:
@@ -421,8 +434,10 @@ def _graph_game_action(session, payload, event_id, stage_id, graph):
         if qr is None or qr.get('game') != session.game_version.game.slug or qr.get('stage') != current:
             return JsonResponse({'error': 'QR validation failed.'}, status=403)
 
+    graph_vars = dict(state['graph_vars']) if isinstance(state.get('graph_vars'), dict) else {}
+    graph_vars.update(answered)
     candidates = [edge for edge in edges if edge.get('source') == current and
-                  _graph_condition_matches(edge.get('condition'), state)]
+                  _graph_condition_matches(edge.get('condition'), graph_vars)]
     if len(candidates) > 1:
         return JsonResponse({'error': 'Graph has ambiguous outgoing conditions.'}, status=409)
     next_node = candidates[0].get('target') if candidates else None
@@ -443,6 +458,8 @@ def _graph_game_action(session, payload, event_id, stage_id, graph):
     ScoreLedger.objects.create(session=session, event=event, reason='graph-node-complete', amount=100)
     state['graph_node_id'] = None if completed else next_node
     state['runtime'] = 'graph'
+    if answered:
+        state['graph_vars'] = graph_vars
     session.session_state = state
     if completed:
         session.completed = timezone.now()

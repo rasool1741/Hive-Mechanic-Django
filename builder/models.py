@@ -42,6 +42,7 @@ from activity_logger.models import log
 
 from . import card_issues
 from .utils import fetch_cytoscape_node as fetch_cytoscape, obfuscate_player_id
+from .urban_tools import accepted_answers, answer_key, answer_tool_kind, tool_variable_name
 
 if sys.version_info[0] > 2:
     from django.db.models import JSONField # pylint: disable=no-name-in-module
@@ -1117,6 +1118,99 @@ class GameVersion(models.Model):
 
         if any(visit(node_id) for node_id in node_ids):
             errors.append('Graph contains a cycle.')
+
+        errors.extend(GameVersion.validate_graph_conditions(nodes, edges, node_ids))
+        return errors
+
+    @staticmethod
+    def validate_graph_conditions(nodes, edges, node_ids): # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+        """Reject answer tools and edge conditions that could never work for a player.
+
+        Contract (see urban_tools): Quiz/Text tools that list accepted answers write the
+        authored accepted value to a variable; edge conditions {"variable", "equals"}
+        compare against those server-written variables only.
+        """
+        errors = []
+
+        declared = {}  # variable name -> (node id, tool kind, accepted answers)
+        for node in nodes:
+            if not isinstance(node, dict) or node.get('id') not in node_ids or not isinstance(node.get('tools'), list):
+                continue
+            for tool in node['tools']:
+                kind = answer_tool_kind(tool)
+                accepted = accepted_answers(tool.get('settings'), kind) if kind else None
+                if accepted is None:
+                    continue  # free-form tool: it stores nothing and cannot drive a condition
+                if not accepted:
+                    errors.append("Node '%s' has an empty or unsupported accepted-answer list." % node['id'])
+                    continue
+                if len({answer_key(kind, item) for item in accepted}) != len(accepted):
+                    errors.append("Node '%s' lists the same accepted answer more than once." % node['id'])
+                name = tool_variable_name(node['id'], tool, kind)
+                if name in declared:
+                    errors.append("Variable '%s' is declared by more than one tool." % name)
+                    continue
+                declared[name] = (node['id'], kind, accepted)
+
+        outgoing = {node_id: [] for node_id in node_ids}
+        parents = {node_id: [] for node_id in node_ids}
+        for edge in edges:
+            if isinstance(edge, dict) and edge.get('source') in node_ids and edge.get('target') in node_ids:
+                outgoing[edge['source']].append(edge)
+                parents[edge['target']].append(edge['source'])
+
+        def ancestors_and_self(node_id):
+            seen, stack = set(), [node_id]
+            while stack:
+                current = stack.pop()
+                if current not in seen:
+                    seen.add(current)
+                    stack.extend(parents[current])
+            return seen
+
+        for node_id, node_edges in outgoing.items():
+            conditional = [edge for edge in node_edges if edge.get('condition')]
+            if not conditional:
+                continue
+            if len(conditional) != len(node_edges):
+                errors.append("Node '%s' mixes conditional and unconditional outgoing edges." % node_id)
+            known_nodes = ancestors_and_self(node_id)
+            seen_conditions = set()
+            covered = {}
+            for edge in conditional:
+                label = "Edge '%s'" % edge.get('id')
+                condition = edge['condition']
+                if not isinstance(condition, dict) or set(condition) - {'variable', 'key', 'equals'}:
+                    errors.append('%s has an unsupported condition (only variable and equals are allowed).' % label)
+                    continue
+                variable = condition.get('variable', condition.get('key'))
+                if not isinstance(variable, str) or 'equals' not in condition:
+                    errors.append('%s condition needs a variable name and an equals value.' % label)
+                    continue
+                if variable not in declared:
+                    errors.append("%s refers to variable '%s', which no quiz or text tool declares." % (label, variable))
+                    continue
+                declaring_node, _kind, accepted = declared[variable]
+                if declaring_node not in known_nodes:
+                    errors.append("%s refers to variable '%s', which is only set after this node." % (label, variable))
+                    continue
+                if not isinstance(condition['equals'], str) or condition['equals'] not in accepted:
+                    errors.append("%s equals value must be one of the accepted answers of '%s'." % (label, variable))
+                    continue
+                if (variable, condition['equals']) in seen_conditions:
+                    errors.append("Node '%s' has two outgoing edges for '%s' = '%s'." % (node_id, variable, condition['equals']))
+                    continue
+                seen_conditions.add((variable, condition['equals']))
+                covered.setdefault(variable, set()).add(condition['equals'])
+
+            # A node branching on its own answer must have a path for every accepted answer,
+            # otherwise a player who answered correctly would be stuck.
+            if len(conditional) == len(node_edges) and len(covered) == 1:
+                variable = next(iter(covered))
+                if declared[variable][0] == node_id:
+                    for value in declared[variable][2]:
+                        if value not in covered[variable]:
+                            errors.append("Node '%s' has no outgoing edge for accepted answer '%s'." % (node_id, value))
         return errors
 
     def calculate_checksum(self):
