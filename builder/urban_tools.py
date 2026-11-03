@@ -81,7 +81,24 @@ def accepted_answers(settings_data, kind):
     items = value if isinstance(value, list) else [value]
     if not items or any(isinstance(item, bool) or not isinstance(item, (str, int, float)) for item in items):
         return []
-    return [str(item) for item in items]
+    accepted = [str(item) for item in items]
+    if kind == 'text':
+        # The runtime compares the player's text after strip() and rejects text longer than
+        # max_length before comparing. A Text answer that is empty, has outer spaces or does
+        # not fit could therefore never be entered: it is unusable, not just unusual.
+        maximum = text_max_length(settings_data)
+        if any(not item.strip() or item != item.strip() or (maximum is not None and len(item) > maximum)
+               for item in accepted):
+            return []
+    return accepted
+
+
+def text_max_length(settings_data):
+    """The limit the runtime applies to Text input (default 1000); None if it cannot be read."""
+    try:
+        return int(settings_data.get('max_length', 1000) or 1000)
+    except (TypeError, ValueError):
+        return None
 
 
 def answer_key(kind, authored):
@@ -92,13 +109,17 @@ def answer_key(kind, authored):
 def match_answer(kind, submitted, accepted):
     """Return the authored accepted value that equals what the player sent, else None.
 
-    Quiz: ignores case and outer spaces. Text: only the player's outer spaces are ignored
-    and the comparison is case-sensitive (unchanged from the previous behaviour).
+    Quiz: ignores case and outer spaces; the stored (canonical) value is the authored one.
+    Text: the player's outer spaces are ignored and the comparison is case-sensitive and exact,
+    so the canonical value is identical to the player's stripped text. Empty text never matches.
     """
     if kind == 'quiz':
         normalized = str(submitted).strip().casefold()
         return next((candidate for candidate in accepted if candidate.strip().casefold() == normalized), None)
-    return next((candidate for candidate in accepted if str(submitted).strip() == candidate), None)
+    text = str(submitted).strip()
+    if not text:
+        return None
+    return next((candidate for candidate in accepted if candidate == text), None)
 
 
 def tool_variable_name(node_id, tool, kind):
@@ -172,3 +193,32 @@ def graph_dominators(node_ids, edges, start):
                 dominators[node_id] = updated
                 changed = True
     return dominators
+
+
+# --- Structure of ONE branching node, shared by publish validation and the runtime -----
+
+BRANCH_MIXED, BRANCH_INVALID_CONDITION, BRANCH_MULTIPLE_VARIABLES = 'mixed', 'invalid-condition', 'multiple-variables'
+
+
+def branch_problems(outgoing_edges):
+    """Structural problems of the outgoing edges of ONE node, as a list of (code, detail).
+
+    A node branches when at least one outgoing edge has a condition other than None. Such a
+    node must have only conditional edges, every condition valid, and exactly one variable.
+    Publishing and the runtime both apply exactly these rules, so a graph published earlier
+    (or edited by hand) cannot make the runtime pick a path the rules forbid.
+    """
+    parsed = [(edge, parse_condition(edge.get('condition'))) for edge in outgoing_edges]
+    conditional = [(edge, result) for edge, result in parsed if result[0] != CONDITION_NONE]
+    if not conditional:
+        return []
+    problems = []
+    if len(conditional) != len(parsed):
+        problems.append((BRANCH_MIXED, None))
+    for edge, (status, _variable, _equals) in conditional:
+        if status != CONDITION_VALID:
+            problems.append((BRANCH_INVALID_CONDITION, edge.get('id')))
+    variables = sorted({variable for _edge, (status, variable, _equals) in conditional if status == CONDITION_VALID})
+    if len(variables) > 1:
+        problems.append((BRANCH_MULTIPLE_VARIABLES, variables))
+    return problems

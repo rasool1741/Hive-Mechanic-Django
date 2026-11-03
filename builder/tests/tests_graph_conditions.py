@@ -6,9 +6,10 @@ from django.test import TestCase
 from django.urls import reverse
 
 from ..models import City, Game, GameVersion, Player, ScoreLedger, Session, SessionEvent
+from ..views import _graph_condition_matches
 from ..urban_tools import (
-    CONDITION_INVALID, CONDITION_NONE, CONDITION_VALID, accepted_answers, answer_key, graph_dominators, match_answer,
-    parse_condition, tool_variable_name,
+    BRANCH_INVALID_CONDITION, BRANCH_MIXED, BRANCH_MULTIPLE_VARIABLES, CONDITION_INVALID, CONDITION_NONE, CONDITION_VALID,
+    accepted_answers, answer_key, branch_problems, graph_dominators, match_answer, parse_condition, tool_variable_name,
 )
 
 # Deliberately unusual answers so a leak is easy to spot in any response body.
@@ -662,3 +663,227 @@ class UnknownOperationTests(GraphRuntimeBase):
         self.start(chain_graph(ABSENT))
         self.assertEqual(403, self.act('m1', 'a', operation='hint').status_code)
         self.assertEqual(403, self.act('m2', 'a', operation='media').status_code)
+
+
+# =============================== Third review round ===============================
+
+
+def cond(value):
+    return {'variable': 'palette', 'equals': value}
+
+
+def fan_graph(conditions, node_tools=None):
+    """Node 'a' with one outgoing edge per entry of ``conditions`` (ABSENT = no condition key)."""
+    tools = node_tools if node_tools is not None else [{'type': 'quiz', 'settings': {'answer': list(ACCEPTED), 'variable': 'palette'}}]
+    nodes = [{'id': 'a', 'tools': tools}, {'id': 'end'}]
+    edges = []
+    for index, condition in enumerate(conditions):
+        target = 't%d' % index
+        nodes.append({'id': target})
+        edge = {'id': 'e%d' % index, 'source': 'a', 'target': target}
+        if condition is not ABSENT:
+            edge['condition'] = condition
+        edges.append(edge)
+        edges.append({'id': 'x%d' % index, 'source': target, 'target': 'end'})
+    return {'nodes': nodes, 'edges': edges, 'start': 'a', 'end': 'end'}
+
+
+# Structures of ONE node's outgoing edges that the rules forbid. For answer 'Crimson Tide' the
+# old runtime would still have chosen a path in several of these (exactly one edge matched).
+MALFORMED_BRANCHES = {
+    'empty dict plus unconditional': [{}, ABSENT],
+    'empty list plus unconditional': [[], ABSENT],
+    'empty string plus unconditional': ['', ABSENT],
+    'zero plus unconditional': [0, ABSENT],
+    'false plus unconditional': [False, ABSENT],
+    'variable and key plus unconditional': [{'variable': 'palette', 'key': 'palette', 'equals': 'Crimson Tide'}, ABSENT],
+    'unknown key plus unconditional': [{'variable': 'palette', 'equals': 'Crimson Tide', 'extra': 1}, ABSENT],
+    'missing equals plus unconditional': [{'variable': 'palette'}, ABSENT],
+    'valid but false plus unconditional': [cond('Azure Wave'), ABSENT],
+    'valid and true plus unconditional': [cond('Crimson Tide'), ABSENT],
+    'true edge plus invalid edge': [cond('Crimson Tide'), {'variable': 'palette', 'key': 'palette', 'equals': 'Azure Wave'}],
+    'true edge plus empty dict edge': [cond('Crimson Tide'), {}],
+    'only invalid conditions': [{}, []],
+    'two variables, only one true': [cond('Crimson Tide'), {'variable': 'other', 'equals': 'x'}],
+}
+
+
+class RuntimeBranchStructureTests(GraphRuntimeBase):
+    """The runtime applies the publish-time branching rules to the CURRENT node before it moves."""
+
+    def assert_refused_and_nothing_recorded(self, response, label, expected_state=None):
+        self.assertEqual(409, response.status_code, (label, response.content))
+        self.assertEqual(expected_state if expected_state is not None else {}, self.state(), label)
+        self.assertEqual(0, ScoreLedger.objects.filter(session=self.session).count(), label)
+        self.assertEqual(0, SessionEvent.objects.filter(session=self.session).count(), label)
+
+    def test_malformed_branches_are_refused_without_choosing_a_path(self):
+        for label, conditions in MALFORMED_BRANCHES.items():
+            self.start(fan_graph(conditions), validate=False)
+            response = self.act('s1', 'a', answer='Crimson Tide')
+            self.assert_refused_and_nothing_recorded(response, label)
+
+    def test_runtime_and_publish_agree_on_every_malformed_branch(self):
+        for label, conditions in MALFORMED_BRANCHES.items():
+            graph = fan_graph(conditions)
+            self.assertTrue(branch_problems(graph['edges'][::2]), label)  # the shared rule itself
+            self.assertTrue(GameVersion.validate_graph(definition_with(graph)), label)  # publish refuses it
+            self.start(graph, validate=False)
+            self.assertEqual(409, self.act('s1', 'a', answer='Crimson Tide').status_code, label)  # runtime refuses it
+
+    def test_the_old_runtime_would_have_moved_on_these(self):
+        # Documents why the check exists: exactly one edge matches in each of these, so the
+        # candidate rule alone (one match = go) would pick that edge.
+        for label in ('empty dict plus unconditional', 'valid but false plus unconditional',
+                      'true edge plus invalid edge', 'two variables, only one true'):
+            graph = fan_graph(MALFORMED_BRANCHES[label])
+            self.start(graph, validate=False)
+            node_edges = graph['edges'][::2]
+            matching = [edge for edge in node_edges if _graph_condition_matches(edge.get('condition'), {'palette': 'Crimson Tide'})]
+            self.assertEqual(1, len(matching), label)
+            self.assertEqual(409, self.act('s1', 'a', answer='Crimson Tide').status_code, label)
+
+    def test_malformed_branch_refuses_before_the_timer_starts_or_an_answer_is_kept(self):
+        tools = [{'type': 'timer', 'settings': {'minimum_seconds': 1}},
+                 {'type': 'quiz', 'settings': {'answer': list(ACCEPTED), 'variable': 'palette'}}]
+        self.start(fan_graph([{}, ABSENT], node_tools=tools), validate=False)
+        response = self.act('s1', 'a', answer='Crimson Tide')
+        self.assert_refused_and_nothing_recorded(response, 'timer node')  # state stays {}: no timer key, no variable
+
+    def _two_variable_graph(self):
+        return {
+            'nodes': [{'id': 'n1', 'tools': [{'type': 'quiz', 'settings': {'answer': ['a', 'b'], 'variable': 'v1'}}]},
+                      {'id': 'n2', 'tools': [{'type': 'quiz', 'settings': {'answer': ['c', 'd'], 'variable': 'v2'}}]},
+                      {'id': 'n3'}, {'id': 't1'}, {'id': 't2'}, {'id': 'end'}],
+            'edges': [{'id': 'e1', 'source': 'n1', 'target': 'n2'}, {'id': 'e2', 'source': 'n2', 'target': 'n3'},
+                      {'id': 'e3', 'source': 'n3', 'target': 't1', 'condition': {'variable': 'v1', 'equals': 'a'}},
+                      {'id': 'e4', 'source': 'n3', 'target': 't2', 'condition': {'variable': 'v2', 'equals': 'c'}},
+                      {'id': 'e5', 'source': 't1', 'target': 'end'}, {'id': 'e6', 'source': 't2', 'target': 'end'}],
+            'start': 'n1', 'end': 'end',
+        }
+
+    def test_two_variables_are_refused_whether_one_or_both_conditions_hold(self):
+        graph = self._two_variable_graph()
+        self.assertTrue(any('more than one variable (v1, v2)' in error for error in GameVersion.validate_graph(definition_with(graph))))
+        for first, second, label in (('a', 'd', 'only v1 true'), ('b', 'c', 'only v2 true'), ('a', 'c', 'both true'), ('b', 'd', 'none true')):
+            self.start(graph, validate=False)
+            self.assertEqual(200, self.act('v1', 'n1', answer=first).status_code)
+            self.assertEqual(200, self.act('v2', 'n2', answer=second).status_code)
+            before_vars = self.state()['graph_vars']
+            ledger_before = ScoreLedger.objects.filter(session=self.session).count()
+            events_before = SessionEvent.objects.filter(session=self.session).count()
+            response = self.act('v3', 'n3')
+            self.assertEqual(409, response.status_code, (label, response.content))
+            self.assertEqual('n3', self.state()['graph_node_id'], label)
+            self.assertEqual(before_vars, self.state()['graph_vars'], label)
+            self.assertEqual(ledger_before, ScoreLedger.objects.filter(session=self.session).count(), label)
+            self.assertEqual(events_before, SessionEvent.objects.filter(session=self.session).count(), label)
+
+    def test_hint_and_media_on_a_malformed_node_keep_their_behaviour(self):
+        tools = [{'type': 'hint', 'settings': {'content': 'Look closer', 'score_cost': 1}},
+                 {'type': 'quiz', 'settings': {'answer': list(ACCEPTED), 'variable': 'palette'}}]
+        self.start(fan_graph([{}, ABSENT], node_tools=tools), validate=False)
+        hint = self.act('h1', 'a', operation='hint')
+        self.assertEqual(200, hint.status_code)
+        self.assertEqual('Look closer', hint.json()['content'])
+        self.assertEqual(403, self.act('m1', 'a', operation='media').status_code)  # no media tool: unchanged
+
+    def test_well_formed_nodes_are_not_affected(self):
+        self.start(branching_graph())
+        self.assertEqual('red-path', self.act('w1', 'pick', answer='Crimson Tide').json()['next_stage_id'])
+        self.start(chain_graph(ABSENT))
+        self.assertEqual('b', self.act('w2', 'a').json()['next_stage_id'])
+
+    def test_branch_problems_codes(self):
+        edges = lambda *conditions: [dict({'id': 'e%d' % i}, **({} if c is ABSENT else {'condition': c})) for i, c in enumerate(conditions)]
+        self.assertEqual([], branch_problems(edges()))
+        self.assertEqual([], branch_problems(edges(ABSENT, None)))
+        self.assertEqual([], branch_problems(edges(cond('x'), cond('y'))))
+        self.assertEqual([(BRANCH_MIXED, None)], branch_problems(edges(cond('x'), ABSENT)))
+        self.assertEqual([(BRANCH_INVALID_CONDITION, 'e0')], branch_problems(edges({})))
+        self.assertEqual([(BRANCH_MIXED, None), (BRANCH_INVALID_CONDITION, 'e0')], branch_problems(edges([], ABSENT)))
+        self.assertEqual([(BRANCH_MULTIPLE_VARIABLES, ['other', 'palette'])],
+                         branch_problems(edges(cond('x'), {'variable': 'other', 'equals': 'y'})))
+
+
+class TextAnswerUsabilityTests(GraphRuntimeBase):
+    """A Text answer the player could never enter must not be publishable, and the stored value
+    is exactly the text the player's answer was compared with."""
+
+    UNUSABLE = [
+        ('', 'empty'), ('   ', 'only spaces'), ('\t\n', 'only whitespace characters'),
+        (' north', 'leading space'), ('north ', 'trailing space'), (' north ', 'both'),
+        (['north', ''], 'list with an empty member'), (['north', '   '], 'list with a space-only member'),
+        (['north', ' south'], 'list member with a leading space'), (['north', 'south '], 'list member with a trailing space'),
+    ]
+
+    @staticmethod
+    def text_graph(exact, **settings):
+        return {'nodes': [{'id': 'a', 'tools': [{'type': 'text_input', 'settings': dict({'exact': exact}, **settings)}]}, {'id': 'b'}],
+                'edges': [{'id': 'e', 'source': 'a', 'target': 'b'}], 'start': 'a', 'end': 'b'}
+
+    def test_accepted_answers_for_text(self):
+        for exact, label in self.UNUSABLE:
+            self.assertEqual([], accepted_answers({'exact': exact}, 'text'), label)
+        self.assertEqual(['north'], accepted_answers({'exact': 'north'}, 'text'))
+        self.assertEqual(['north', 'south'], accepted_answers({'exact': ['north', 'south']}, 'text'))
+        self.assertEqual(['north east'], accepted_answers({'exact': 'north east'}, 'text'))  # inner spaces are fine
+        self.assertEqual(['42', '4.5'], accepted_answers({'exact': [42, 4.5]}, 'text'))
+
+    def test_text_answers_must_fit_max_length(self):
+        self.assertEqual([], accepted_answers({'exact': 'abcdef', 'max_length': 5}, 'text'))
+        self.assertEqual(['abcde'], accepted_answers({'exact': 'abcde', 'max_length': 5}, 'text'))
+        self.assertEqual([], accepted_answers({'exact': 'x' * 1001}, 'text'))  # default limit is 1000
+        self.assertEqual(['x' * 1000], accepted_answers({'exact': 'x' * 1000}, 'text'))
+        self.assertEqual([], accepted_answers({'exact': ['ok', 'toolong'], 'max_length': 5}, 'text'))
+        self.assertEqual(['north'], accepted_answers({'exact': 'north', 'max_length': 0}, 'text'))  # 0 means default, as in the runtime
+        self.assertEqual(['north'], accepted_answers({'exact': 'north', 'max_length': 'abc'}, 'text'))  # unreadable limit: not judged here
+
+    def test_unusable_text_answers_cannot_be_published(self):
+        for exact, label in self.UNUSABLE:
+            errors = GameVersion.validate_graph(definition_with(self.text_graph(exact)))
+            self.assertTrue(any('empty or unsupported' in error for error in errors), (label, errors))
+        errors = GameVersion.validate_graph(definition_with(self.text_graph('abcdef', max_length=5)))
+        self.assertTrue(any('empty or unsupported' in error for error in errors), errors)
+
+    def test_usable_text_answers_still_publish(self):
+        for exact in ('north', ['north', 'south'], 'north east', 42):
+            self.assertEqual([], GameVersion.validate_graph(definition_with(self.text_graph(exact))), exact)
+
+    def test_unusable_text_answer_in_a_branching_graph_cannot_be_published(self):
+        tool = {'type': 'text', 'settings': {'exact': ['Crimson Tide', ' Azure Wave'], 'variable': 'palette'}}
+        errors = GameVersion.validate_graph(definition_with(branching_graph(tool)))
+        self.assertTrue(any('empty or unsupported' in error for error in errors), errors)
+
+    def test_match_answer_for_text_is_exact_and_never_matches_empty_text(self):
+        self.assertIsNone(match_answer('text', '', ['']))
+        self.assertIsNone(match_answer('text', '   ', ['   ', 'north']))
+        self.assertIsNone(match_answer('text', 'north', [' north ']))
+        self.assertIsNone(match_answer('text', 'North', ['north']))
+        for sent in ('north', '  north', 'north  ', '\tnorth\n'):
+            matched = match_answer('text', sent, ['north', 'south'])
+            self.assertEqual('north', matched)
+            self.assertEqual(sent.strip(), matched)  # canonical value == the text it was compared with
+
+    def test_quiz_behaviour_is_unchanged(self):
+        self.assertEqual([' 42 '], accepted_answers({'answer': ' 42 '}, 'quiz'))
+        self.assertEqual(' 42 ', match_answer('quiz', '42', [' 42 ']))
+        self.assertEqual('Azure Wave', match_answer('quiz', ' azure WAVE ', ['Crimson Tide', 'Azure Wave']))
+        self.assertEqual([''], accepted_answers({'answer': ''}, 'quiz'))
+
+    def test_stored_value_is_exactly_the_players_stripped_text(self):
+        tool = {'type': 'text', 'settings': {'exact': ['Crimson Tide', 'Azure Wave'], 'variable': 'palette'}}
+        self.start(branching_graph(tool))
+        response = self.act('t1', 'pick', text='   Azure Wave \n')
+        self.assertEqual('blue-path', response.json()['next_stage_id'])
+        self.assertEqual({'palette': 'Azure Wave'}, self.state()['graph_vars'])
+
+    def test_older_published_definitions_with_dead_text_answers_fail_closed(self):
+        for exact in (' north ', 'north ', '   ', ''):
+            self.start(self.text_graph(exact), validate=False)  # published before the rule existed
+            for sent in ('north', ' north ', ' ', ''):
+                response = self.act('d-%s' % repr(sent), 'a', text=sent)
+                self.assertIn(response.status_code, (400, 403), (exact, sent, response.content))
+            self.assertNotIn('graph_node_id', self.state(), exact)
+            self.assertNotIn('graph_vars', self.state(), exact)
+            self.assertEqual(0, ScoreLedger.objects.filter(session=self.session).count(), exact)

@@ -41,7 +41,7 @@ from user_creation.decorators import user_accepted_all_terms
 
 from .models import City, Game, GameVersion, InteractionCard, Player, Session, SessionEvent, ScoreLedger, DataProcessor, SiteSettings, StateVariable, SessionMediaSubmission
 from .urban_tools import (
-    CONDITION_INVALID, CONDITION_NONE, accepted_answers, inside_radius, match_answer, parse_condition,
+    CONDITION_INVALID, CONDITION_NONE, accepted_answers, branch_problems, inside_radius, match_answer, parse_condition,
     tool_variable_name, validate_location_sample, verify_qr_token,
 )
 
@@ -385,6 +385,13 @@ def _graph_game_action(session, payload, event_id, stage_id, graph):
         if cost:
             ScoreLedger.objects.create(session=session, event=event, reason='hint-cost', amount=-cost)
         return JsonResponse(result)
+
+    # Only 'complete' gets here (media and hint returned above). Before anything is written (the
+    # timer start, a validated answer, the move), the current node's outgoing edges must follow the
+    # same branching rules that publishing enforces. A graph published earlier, or edited by hand,
+    # could otherwise still have the runtime choose a path those rules forbid.
+    if branch_problems([edge for edge in edges if edge.get('source') == current]):
+        return JsonResponse({'error': 'Graph node has an invalid branching structure.'}, status=409)
 
     timer_tools = [tool for tool in tools if tool.get('type') == 'timer']
     if timer_tools:

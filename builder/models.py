@@ -42,7 +42,10 @@ from activity_logger.models import log
 
 from . import card_issues
 from .utils import fetch_cytoscape_node as fetch_cytoscape, obfuscate_player_id
-from .urban_tools import CONDITION_NONE, CONDITION_VALID, accepted_answers, answer_key, answer_tool_kind, graph_dominators, parse_condition, tool_variable_name
+from .urban_tools import (
+    BRANCH_INVALID_CONDITION, BRANCH_MIXED, BRANCH_MULTIPLE_VARIABLES, CONDITION_NONE, CONDITION_VALID, accepted_answers,
+    answer_key, answer_tool_kind, branch_problems, graph_dominators, parse_condition, tool_variable_name,
+)
 
 if sys.version_info[0] > 2:
     from django.db.models import JSONField # pylint: disable=no-name-in-module
@@ -1148,7 +1151,9 @@ class GameVersion(models.Model):
                 if accepted is None:
                     continue  # free-form tool: it stores nothing and cannot drive a condition
                 if not accepted:
-                    errors.append("Node '%s' has an empty or unsupported accepted-answer list." % node['id'])
+                    errors.append("Node '%s' has an empty or unsupported accepted-answer list (values must be strings or "
+                                  "numbers; a Text answer must not be empty, must not start or end with spaces and must "
+                                  "fit max_length)." % node['id'])
                     continue
                 if len({answer_key(kind, item) for item in accepted}) != len(accepted):
                     errors.append("Node '%s' lists the same accepted answer more than once." % node['id'])
@@ -1166,27 +1171,27 @@ class GameVersion(models.Model):
         dominators = graph_dominators(node_ids, edges, start)
 
         for node_id, node_edges in outgoing.items():
-            conditions = [(edge, parse_condition(edge.get('condition'))) for edge in node_edges]
-            conditional = [(edge, parsed) for edge, parsed in conditions if parsed[0] != CONDITION_NONE]
-            if not conditional:
+            parsed = [(edge, parse_condition(edge.get('condition'))) for edge in node_edges]
+            if all(result[0] == CONDITION_NONE for _edge, result in parsed):
                 continue
-            if len(conditional) != len(node_edges):
-                errors.append("Node '%s' mixes conditional and unconditional outgoing edges." % node_id)
 
-            usable = []
-            for edge, (status, variable, equals) in conditional:
-                if status != CONDITION_VALID:
+            # The same structural rules the runtime applies to the current node.
+            for code, detail in branch_problems(node_edges):
+                if code == BRANCH_MIXED:
+                    errors.append("Node '%s' mixes conditional and unconditional outgoing edges." % node_id)
+                elif code == BRANCH_INVALID_CONDITION:
                     errors.append("Edge '%s' has an invalid condition: use null for none, or exactly "
-                                  "{variable or key, equals}." % edge.get('id'))
-                else:
-                    usable.append((edge, variable, equals))
+                                  "{variable or key, equals}." % detail)
+                elif code == BRANCH_MULTIPLE_VARIABLES:
+                    errors.append("Node '%s' branches on more than one variable (%s); a branching node must use exactly one."
+                                  % (node_id, ', '.join(detail)))
+
+            usable = [(edge, variable, equals) for edge, (status, variable, equals) in parsed if status == CONDITION_VALID]
             variables = sorted({variable for _edge, variable, _equals in usable})
             undeclared = [variable for variable in variables if variable not in declared]
             for variable in undeclared:
                 errors.append("Node '%s' branches on variable '%s', which no quiz or text tool declares." % (node_id, variable))
             if len(variables) > 1:
-                errors.append("Node '%s' branches on more than one variable (%s); a branching node must use exactly one."
-                              % (node_id, ', '.join(variables)))
                 continue
             if not variables or undeclared:
                 continue
