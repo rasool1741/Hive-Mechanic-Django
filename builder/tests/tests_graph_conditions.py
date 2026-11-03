@@ -299,7 +299,7 @@ class GraphConditionPublishValidationTests(TestCase):
     def test_non_string_equals_is_rejected(self):
         graph = branching_graph()
         graph['edges'][0]['condition']['equals'] = ['Crimson Tide']
-        self.assertTrue(any('must be one of the accepted answers' in error for error in self.errors(graph)))
+        self.assertTrue(any('invalid condition' in error for error in self.errors(graph)))  # was: "must be one of the accepted answers"
 
     def test_variable_set_only_after_the_edge_is_rejected(self):
         graph = {
@@ -422,7 +422,7 @@ class ConditionContractTests(GraphRuntimeBase):
         self.assertEqual((CONDITION_NONE, None, None), parse_condition(None))
         self.assertEqual((CONDITION_VALID, 'palette', 'x'), parse_condition({'variable': 'palette', 'equals': 'x'}))
         self.assertEqual((CONDITION_VALID, 'palette', 'x'), parse_condition({'key': 'palette', 'equals': 'x'}))
-        self.assertEqual((CONDITION_VALID, 'palette', None), parse_condition({'variable': 'palette', 'equals': None}))
+        self.assertEqual((CONDITION_INVALID, None, None), parse_condition({'variable': 'palette', 'equals': None}))  # equals must be a string
         for bad in INVALID_CONDITIONS:
             self.assertEqual((CONDITION_INVALID, None, None), parse_condition(bad), bad)
 
@@ -707,6 +707,13 @@ MALFORMED_BRANCHES = {
     'only invalid conditions': [{}, []],
     'two variables, only one true': [cond('Crimson Tide'), {'variable': 'other', 'equals': 'x'}],
     'duplicate condition, only the other edge matches': [cond('Crimson Tide'), cond('Azure Wave'), cond('Azure Wave')],
+    'valid edge plus list equals': [cond('Crimson Tide'), cond(['Azure Wave'])],
+    'valid edge plus dict equals': [cond('Crimson Tide'), cond({'a': 1})],
+    'valid edge plus int equals': [cond('Crimson Tide'), cond(1)],
+    'valid edge plus float equals': [cond('Crimson Tide'), cond(1.5)],
+    'valid edge plus true equals': [cond('Crimson Tide'), cond(True)],
+    'valid edge plus false equals': [cond('Crimson Tide'), cond(False)],
+    'valid edge plus null equals': [cond('Crimson Tide'), cond(None)],
 }
 
 
@@ -926,10 +933,13 @@ class DuplicateConditionTests(GraphRuntimeBase):
         self.assertEqual([(BRANCH_DUPLICATE_CONDITION, ('palette', 'blue'))], branch_problems(edges))
 
     def test_non_string_equals_do_not_break_duplicate_detection(self):
+        # A non-string equals is an invalid condition (not a valid one that could repeat): it is reported as
+        # invalid, never as a duplicate, and nothing unhashable ever reaches the duplicate check.
         edges = [{'id': 'e0', 'condition': {'variable': 'palette', 'equals': ['x']}},
                  {'id': 'e1', 'condition': {'variable': 'palette', 'equals': ['x']}},
                  {'id': 'e2', 'condition': {'variable': 'palette', 'equals': {'a': 1}}}]
-        self.assertEqual([(BRANCH_DUPLICATE_CONDITION, ('palette', ['x']))], branch_problems(edges))
+        self.assertEqual([(BRANCH_INVALID_CONDITION, 'e0'), (BRANCH_INVALID_CONDITION, 'e1'), (BRANCH_INVALID_CONDITION, 'e2')],
+                         branch_problems(edges))
 
     def test_publish_rejects_two_edges_with_the_same_condition(self):
         graph = palette_graph(['red', 'blue', 'blue'])
@@ -1095,3 +1105,97 @@ class TextMaxLengthTests(GraphRuntimeBase):
         self.start(branching_graph(tool))
         self.assertEqual('blue-path', self.act('c1', 'pick', text=' Azure Wave ').json()['next_stage_id'])
         self.assertEqual({'palette': 'Azure Wave'}, self.state()['graph_vars'])
+
+
+# =============================== Fifth review round ===============================
+
+NON_STRING_EQUALS = [('list', ['blue']), ('empty list', []), ('dict', {'a': 1}), ('empty dict', {}), ('int', 1), ('zero', 0),
+                     ('float', 1.5), ('true', True), ('false', False), ('null', None), ('nested', [['blue']])]
+
+
+class NonStringEqualsTests(GraphRuntimeBase):
+    """`equals` must be a string: the one shared contract, so publish and runtime cannot disagree."""
+
+    def test_parse_condition_accepts_only_string_equals(self):
+        for label, value in NON_STRING_EQUALS:
+            for spelling in ('variable', 'key'):
+                self.assertEqual((CONDITION_INVALID, None, None), parse_condition({spelling: 'palette', 'equals': value}), (label, spelling))
+        for text in ('blue', '', ' blue ', '1', 'true', 'null'):  # any STRING is structurally valid
+            self.assertEqual((CONDITION_VALID, 'palette', text), parse_condition({'variable': 'palette', 'equals': text}), text)
+        self.assertEqual((CONDITION_INVALID, None, None), parse_condition({'variable': 'palette'}))  # missing equals
+
+    def test_branch_problems_flags_the_edge_with_the_non_string_equals(self):
+        for label, value in NON_STRING_EQUALS:
+            edges = [{'id': 'good', 'condition': cond('red')}, {'id': 'bad', 'condition': cond(value)}]
+            self.assertEqual([(BRANCH_INVALID_CONDITION, 'bad')], branch_problems(edges), label)  # exactly the bad edge, nothing else
+
+    def test_publish_rejects_a_valid_edge_next_to_a_non_string_equals_edge(self):
+        for label, value in NON_STRING_EQUALS:
+            for spelling in ('variable', 'key'):
+                errors = GameVersion.validate_graph(definition_with(palette_graph(['red', value], spelling=spelling)))
+                self.assertTrue(any("Edge 'e1' has an invalid condition" in error for error in errors), (label, spelling, errors))
+                self.assertFalse(any("Edge 'e0'" in error for error in errors), (label, errors))  # the valid edge is not blamed
+
+    def test_runtime_refuses_the_whole_node_when_the_matching_edge_is_valid(self):
+        # edge 0: palette == "red" (valid, and it is the one that matches); edge 1: palette == <not a string>
+        for label, value in NON_STRING_EQUALS:
+            self.start(palette_graph(['red', value]), validate=False)  # an older published definition
+            response = self.act('n1', 'pick', answer='red')
+            self.assertEqual(409, response.status_code, (label, response.content))
+            self.assertEqual({}, self.state(), label)  # no transition, no variable, no timer key
+            self.assertEqual(0, ScoreLedger.objects.filter(session=self.session).count(), label)
+            self.assertEqual(0, SessionEvent.objects.filter(session=self.session).count(), label)
+
+    def test_runtime_refuses_whichever_answer_the_player_sends(self):
+        for label, value in NON_STRING_EQUALS:
+            self.start(palette_graph(['red', value]), validate=False)
+            for index, answer in enumerate(('red', 'blue', 'wrong')):
+                # a matching answer, a non-matching accepted answer and a wrong answer are ALL refused with 409:
+                # the node's structure is judged first, whatever the player sent.
+                self.assertEqual(409, self.act('a%d' % index, 'pick', answer=answer).status_code, (label, answer))
+            self.assertEqual({}, self.state(), label)
+
+    def test_the_user_scenario_red_string_edge_and_a_list_edge(self):
+        graph = palette_graph(['red', ['blue']])
+        self.assertTrue(any('invalid condition' in error for error in GameVersion.validate_graph(definition_with(graph))))
+        self.start(graph, validate=False)
+        before = (ScoreLedger.objects.count(), SessionEvent.objects.count())
+        self.assertEqual(409, self.act('u1', 'pick', answer='red').status_code)
+        self.assertEqual(before, (ScoreLedger.objects.count(), SessionEvent.objects.count()))
+        self.assertEqual({}, self.state())
+
+    def test_numbers_and_booleans_are_not_coerced_into_strings(self):
+        # 1 / true / 1.5 must not be treated as '1' / 'true' / '1.5' (python would not, json would not either).
+        graph = text_choice_graph(['1', 'true'])
+        self.assertEqual([], GameVersion.validate_graph(definition_with(graph)))  # the string forms are fine
+        self.start(graph)
+        self.assertEqual('to0', self.act('s1', 'pick', answer='1').json()['next_stage_id'])
+        for label, value in (('int 1', 1), ('true', True), ('float', 1.5)):
+            bad = text_choice_graph(['1', value])
+            self.assertTrue(any('invalid condition' in e for e in GameVersion.validate_graph(definition_with(bad))), label)
+            self.start(bad, validate=False)
+            self.assertEqual(409, self.act('s2', 'pick', answer='1').status_code, label)
+            self.assertEqual({}, self.state(), label)
+
+    def test_string_equals_graphs_are_unaffected(self):
+        graph = palette_graph(['red', 'blue'])
+        self.assertEqual([], GameVersion.validate_graph(definition_with(graph)))
+        self.start(graph)
+        self.assertEqual('to1', self.act('ok1', 'pick', answer='blue').json()['next_stage_id'])
+        self.assertEqual({'palette': 'blue'}, self.state()['graph_vars'])
+
+    def test_hint_on_a_node_with_a_non_string_equals_edge_keeps_working(self):
+        graph = palette_graph(['red', ['blue']])
+        graph['nodes'][0]['tools'].append({'type': 'hint', 'settings': {'content': 'Think of a colour', 'score_cost': 1}})
+        self.start(graph, validate=False)
+        hint = self.act('h1', 'pick', operation='hint')
+        self.assertEqual(200, hint.status_code)
+        self.assertEqual('Think of a colour', hint.json()['content'])
+        self.assertNotIn('graph_node_id', self.state())
+
+
+def text_choice_graph(values):
+    """Like palette_graph, but the accepted answers are the numeric-looking strings '1' and 'true'."""
+    graph = palette_graph(list(values))
+    graph['nodes'][0]['tools'][0]['settings']['answer'] = ['1', 'true']
+    return graph

@@ -1185,7 +1185,7 @@ class GameVersion(models.Model):
                     errors.append("Node '%s' mixes conditional and unconditional outgoing edges." % node_id)
                 elif code == BRANCH_INVALID_CONDITION:
                     errors.append("Edge '%s' has an invalid condition: use null for none, or exactly "
-                                  "{variable or key, equals}." % detail)
+                                  "{variable or key, equals} where equals is a text value." % detail)
                 elif code == BRANCH_MULTIPLE_VARIABLES:
                     errors.append("Node '%s' branches on more than one variable (%s); a branching node must use exactly one."
                                   % (node_id, ', '.join(detail)))
@@ -1212,7 +1212,7 @@ class GameVersion(models.Model):
             seen = set()
             for edge, _variable, equals in usable:
                 label = "Edge '%s'" % edge.get('id')
-                if not isinstance(equals, str) or equals not in accepted:
+                if equals not in accepted:
                     errors.append("%s equals value must be one of the accepted answers of '%s'." % (label, variable))
                 else:
                     seen.add(equals)  # duplicates are reported by the shared branch rule above

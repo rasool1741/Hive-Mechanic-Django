@@ -168,16 +168,20 @@ def parse_condition(condition):
 
     * ``None`` (or no condition at all) is the ONLY way to say "no condition".
     * A valid condition is a dict with ``equals`` and exactly one of ``variable`` / ``key``
-      naming a non-empty string, and no other keys.
+      naming a non-empty string, and no other keys. ``equals`` must be a string: the values a
+      Quiz or Text tool stores in graph_vars are the authored accepted answers, which are
+      strings, so no other type can ever be matched.
     * Everything else is invalid and must never be treated as "always true": ``{}``,
       ``[]``, ``''``, ``0``, ``False``, other types, both ``variable`` and ``key``,
-      unknown keys, an empty or non-string variable name, a missing ``equals``.
+      unknown keys, an empty or non-string variable name, a missing ``equals`` and an
+      ``equals`` that is not a string (list, object, number, true/false, null).
     """
     if condition is None:
         return CONDITION_NONE, None, None
     if not isinstance(condition, dict) or set(condition) - {'variable', 'key', 'equals'}:
         return CONDITION_INVALID, None, None
-    if 'equals' not in condition or ('variable' in condition) == ('key' in condition):
+    if 'equals' not in condition or not isinstance(condition['equals'], str) \
+            or ('variable' in condition) == ('key' in condition):
         return CONDITION_INVALID, None, None
     variable = condition['variable'] if 'variable' in condition else condition['key']
     if not isinstance(variable, str) or not variable:
@@ -229,14 +233,6 @@ BRANCH_MIXED, BRANCH_INVALID_CONDITION, BRANCH_MULTIPLE_VARIABLES = 'mixed', 'in
 BRANCH_DUPLICATE_CONDITION = 'duplicate-condition'
 
 
-def _condition_key(variable, equals):
-    """Hashable identity of a valid condition; 'key' and 'variable' spellings are the same condition."""
-    try:
-        return variable, json.dumps(equals, sort_keys=True)
-    except (TypeError, ValueError):
-        return variable, repr(equals)
-
-
 def branch_problems(outgoing_edges):
     """Structural problems of the outgoing edges of ONE node, as a list of (code, detail).
 
@@ -263,7 +259,7 @@ def branch_problems(outgoing_edges):
     seen, reported = set(), set()
     for _edge, (status, variable, equals) in conditional:
         if status == CONDITION_VALID:
-            key = _condition_key(variable, equals)
+            key = (variable, equals)  # equals is always a string here (see parse_condition)
             if key in seen and key not in reported:
                 problems.append((BRANCH_DUPLICATE_CONDITION, (variable, equals)))
                 reported.add(key)
