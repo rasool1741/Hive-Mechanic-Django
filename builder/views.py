@@ -42,7 +42,7 @@ from user_creation.decorators import user_accepted_all_terms
 from .models import City, Game, GameVersion, InteractionCard, Player, Session, SessionEvent, ScoreLedger, DataProcessor, SiteSettings, StateVariable, SessionMediaSubmission
 from .urban_tools import (
     CONDITION_INVALID, CONDITION_NONE, accepted_answers, branch_problems, inside_radius, match_answer, parse_condition,
-    tool_variable_name, validate_location_sample, verify_qr_token,
+    text_max_length, tool_variable_name, validate_location_sample, verify_qr_token,
 )
 
 
@@ -392,6 +392,10 @@ def _graph_game_action(session, payload, event_id, stage_id, graph):
     # could otherwise still have the runtime choose a path those rules forbid.
     if branch_problems([edge for edge in edges if edge.get('source') == current]):
         return JsonResponse({'error': 'Graph node has an invalid branching structure.'}, status=409)
+    # A Text tool whose max_length is invalid (an older published definition) fails closed with a
+    # controlled error, before the timer starts or an answer is kept; never a 500 and never a guess.
+    if any(tool.get('type') in ('text', 'text_input') and text_max_length(tool.get('settings')) is None for tool in tools):
+        return JsonResponse({'error': 'Text input configuration is invalid.'}, status=409)
 
     timer_tools = [tool for tool in tools if tool.get('type') == 'timer']
     if timer_tools:
@@ -422,7 +426,7 @@ def _graph_game_action(session, payload, event_id, stage_id, graph):
             value = payload.get('text')
             if not isinstance(value, str) or not value.strip():
                 return JsonResponse({'error': 'Text input is required.'}, status=400)
-            maximum = int(settings_data.get('max_length', 1000) or 1000)
+            maximum = text_max_length(settings_data)
             if len(value) > maximum:
                 return JsonResponse({'error': 'Text input is too long.'}, status=400)
             accepted = accepted_answers(settings_data, 'text')

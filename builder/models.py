@@ -43,8 +43,9 @@ from activity_logger.models import log
 from . import card_issues
 from .utils import fetch_cytoscape_node as fetch_cytoscape, obfuscate_player_id
 from .urban_tools import (
-    BRANCH_INVALID_CONDITION, BRANCH_MIXED, BRANCH_MULTIPLE_VARIABLES, CONDITION_NONE, CONDITION_VALID, accepted_answers,
-    answer_key, answer_tool_kind, branch_problems, graph_dominators, parse_condition, tool_variable_name,
+    BRANCH_DUPLICATE_CONDITION, BRANCH_INVALID_CONDITION, BRANCH_MIXED, BRANCH_MULTIPLE_VARIABLES, CONDITION_NONE,
+    CONDITION_VALID, accepted_answers, answer_key, answer_tool_kind, branch_problems, graph_dominators, parse_condition,
+    text_max_length, tool_variable_name,
 )
 
 if sys.version_info[0] > 2:
@@ -1147,6 +1148,9 @@ class GameVersion(models.Model):
                 continue
             for tool in node['tools']:
                 kind = answer_tool_kind(tool)
+                if kind == 'text' and text_max_length(tool.get('settings')) is None:
+                    errors.append("Node '%s' has an invalid max_length for its Text tool (use a whole number of at least 1, "
+                                  "or leave it out for the default of 1000)." % node['id'])
                 accepted = accepted_answers(tool.get('settings'), kind) if kind else None
                 if accepted is None:
                     continue  # free-form tool: it stores nothing and cannot drive a condition
@@ -1185,6 +1189,8 @@ class GameVersion(models.Model):
                 elif code == BRANCH_MULTIPLE_VARIABLES:
                     errors.append("Node '%s' branches on more than one variable (%s); a branching node must use exactly one."
                                   % (node_id, ', '.join(detail)))
+                elif code == BRANCH_DUPLICATE_CONDITION:
+                    errors.append("Node '%s' has two outgoing edges for '%s' = '%s'." % (node_id, detail[0], detail[1]))
 
             usable = [(edge, variable, equals) for edge, (status, variable, equals) in parsed if status == CONDITION_VALID]
             variables = sorted({variable for _edge, variable, _equals in usable})
@@ -1208,10 +1214,8 @@ class GameVersion(models.Model):
                 label = "Edge '%s'" % edge.get('id')
                 if not isinstance(equals, str) or equals not in accepted:
                     errors.append("%s equals value must be one of the accepted answers of '%s'." % (label, variable))
-                elif equals in seen:
-                    errors.append("Node '%s' has two outgoing edges for '%s' = '%s'." % (node_id, variable, equals))
                 else:
-                    seen.add(equals)
+                    seen.add(equals)  # duplicates are reported by the shared branch rule above
             for value in accepted:
                 if value not in seen:
                     errors.append("Node '%s' has no outgoing edge for accepted answer '%s'." % (node_id, value))

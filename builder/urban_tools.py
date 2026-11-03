@@ -86,19 +86,47 @@ def accepted_answers(settings_data, kind):
         # The runtime compares the player's text after strip() and rejects text longer than
         # max_length before comparing. A Text answer that is empty, has outer spaces or does
         # not fit could therefore never be entered: it is unusable, not just unusual.
-        maximum = text_max_length(settings_data)
+        maximum = text_max_length(settings_data)  # None = invalid limit: reported separately, not judged here
         if any(not item.strip() or item != item.strip() or (maximum is not None and len(item) > maximum)
                for item in accepted):
             return []
     return accepted
 
 
+DEFAULT_TEXT_MAX_LENGTH = 1000
+
+
 def text_max_length(settings_data):
-    """The limit the runtime applies to Text input (default 1000); None if it cannot be read."""
-    try:
-        return int(settings_data.get('max_length', 1000) or 1000)
-    except (TypeError, ValueError):
+    """The limit the runtime applies to Text input, or None when ``max_length`` is invalid.
+
+    The default (1000) applies ONLY when ``max_length`` is absent or null. A valid limit is a
+    whole number of at least 1: an int, an integral float (50.0) or a string of ASCII digits
+    ('50'). Everything else is invalid and gives None, it is never replaced by the default:
+    0, negatives, '', whitespace, 'abc', '5.5', 5.7, true/false, lists and objects.
+    Publishing and the runtime both call this one function.
+    """
+    if settings_data is None:
+        settings_data = {}
+    if not isinstance(settings_data, dict):
         return None
+    value = settings_data.get('max_length')
+    if value is None:
+        return DEFAULT_TEXT_MAX_LENGTH
+    if isinstance(value, bool):
+        return None
+    try:
+        if isinstance(value, int):
+            number = value
+        elif isinstance(value, float):
+            number = int(value) if value.is_integer() else None
+        elif isinstance(value, str):
+            stripped = value.strip()
+            number = int(stripped) if stripped.isascii() and stripped.isdigit() else None
+        else:
+            number = None
+    except (ValueError, OverflowError):
+        number = None
+    return number if number is not None and number >= 1 else None
 
 
 def answer_key(kind, authored):
@@ -198,13 +226,24 @@ def graph_dominators(node_ids, edges, start):
 # --- Structure of ONE branching node, shared by publish validation and the runtime -----
 
 BRANCH_MIXED, BRANCH_INVALID_CONDITION, BRANCH_MULTIPLE_VARIABLES = 'mixed', 'invalid-condition', 'multiple-variables'
+BRANCH_DUPLICATE_CONDITION = 'duplicate-condition'
+
+
+def _condition_key(variable, equals):
+    """Hashable identity of a valid condition; 'key' and 'variable' spellings are the same condition."""
+    try:
+        return variable, json.dumps(equals, sort_keys=True)
+    except (TypeError, ValueError):
+        return variable, repr(equals)
 
 
 def branch_problems(outgoing_edges):
     """Structural problems of the outgoing edges of ONE node, as a list of (code, detail).
 
     A node branches when at least one outgoing edge has a condition other than None. Such a
-    node must have only conditional edges, every condition valid, and exactly one variable.
+    node must have only conditional edges, every condition valid, exactly one variable, and no
+    two edges with the same condition (that would make the path ambiguous whenever it applies,
+    so the whole node is refused even when only one of the twins happens to match).
     Publishing and the runtime both apply exactly these rules, so a graph published earlier
     (or edited by hand) cannot make the runtime pick a path the rules forbid.
     """
@@ -221,4 +260,12 @@ def branch_problems(outgoing_edges):
     variables = sorted({variable for _edge, (status, variable, _equals) in conditional if status == CONDITION_VALID})
     if len(variables) > 1:
         problems.append((BRANCH_MULTIPLE_VARIABLES, variables))
+    seen, reported = set(), set()
+    for _edge, (status, variable, equals) in conditional:
+        if status == CONDITION_VALID:
+            key = _condition_key(variable, equals)
+            if key in seen and key not in reported:
+                problems.append((BRANCH_DUPLICATE_CONDITION, (variable, equals)))
+                reported.add(key)
+            seen.add(key)
     return problems

@@ -8,8 +8,9 @@ from django.urls import reverse
 from ..models import City, Game, GameVersion, Player, ScoreLedger, Session, SessionEvent
 from ..views import _graph_condition_matches
 from ..urban_tools import (
-    BRANCH_INVALID_CONDITION, BRANCH_MIXED, BRANCH_MULTIPLE_VARIABLES, CONDITION_INVALID, CONDITION_NONE, CONDITION_VALID,
-    accepted_answers, answer_key, branch_problems, graph_dominators, match_answer, parse_condition, tool_variable_name,
+    BRANCH_DUPLICATE_CONDITION, BRANCH_INVALID_CONDITION, BRANCH_MIXED, BRANCH_MULTIPLE_VARIABLES, CONDITION_INVALID,
+    CONDITION_NONE, CONDITION_VALID, accepted_answers, answer_key, branch_problems, graph_dominators, match_answer,
+    parse_condition, text_max_length, tool_variable_name,
 )
 
 # Deliberately unusual answers so a leak is easy to spot in any response body.
@@ -705,6 +706,7 @@ MALFORMED_BRANCHES = {
     'true edge plus empty dict edge': [cond('Crimson Tide'), {}],
     'only invalid conditions': [{}, []],
     'two variables, only one true': [cond('Crimson Tide'), {'variable': 'other', 'equals': 'x'}],
+    'duplicate condition, only the other edge matches': [cond('Crimson Tide'), cond('Azure Wave'), cond('Azure Wave')],
 }
 
 
@@ -836,8 +838,8 @@ class TextAnswerUsabilityTests(GraphRuntimeBase):
         self.assertEqual([], accepted_answers({'exact': 'x' * 1001}, 'text'))  # default limit is 1000
         self.assertEqual(['x' * 1000], accepted_answers({'exact': 'x' * 1000}, 'text'))
         self.assertEqual([], accepted_answers({'exact': ['ok', 'toolong'], 'max_length': 5}, 'text'))
-        self.assertEqual(['north'], accepted_answers({'exact': 'north', 'max_length': 0}, 'text'))  # 0 means default, as in the runtime
-        self.assertEqual(['north'], accepted_answers({'exact': 'north', 'max_length': 'abc'}, 'text'))  # unreadable limit: not judged here
+        self.assertEqual(['north'], accepted_answers({'exact': 'north', 'max_length': 0}, 'text'))  # invalid limit: not judged here, publishing rejects it separately
+        self.assertEqual(['north'], accepted_answers({'exact': 'north', 'max_length': 'abc'}, 'text'))  # invalid limit: not judged here, publishing rejects it separately
 
     def test_unusable_text_answers_cannot_be_published(self):
         for exact, label in self.UNUSABLE:
@@ -887,3 +889,209 @@ class TextAnswerUsabilityTests(GraphRuntimeBase):
             self.assertNotIn('graph_node_id', self.state(), exact)
             self.assertNotIn('graph_vars', self.state(), exact)
             self.assertEqual(0, ScoreLedger.objects.filter(session=self.session).count(), exact)
+
+
+# =============================== Fourth review round ===============================
+
+
+def palette_graph(edge_values, spelling='variable'):
+    """pick (quiz 'palette': red | blue) with one outgoing edge per entry of ``edge_values``."""
+    tool = {'type': 'quiz', 'settings': {'answer': ['red', 'blue'], 'variable': 'palette'}}
+    nodes = [{'id': 'pick', 'tools': [tool]}, {'id': 'end'}]
+    edges = []
+    for index, value in enumerate(edge_values):
+        nodes.append({'id': 'to%d' % index})
+        edges.append({'id': 'e%d' % index, 'source': 'pick', 'target': 'to%d' % index, 'condition': {spelling: 'palette', 'equals': value}})
+        edges.append({'id': 'x%d' % index, 'source': 'to%d' % index, 'target': 'end'})
+    return {'nodes': nodes, 'edges': edges, 'start': 'pick', 'end': 'end'}
+
+
+class DuplicateConditionTests(GraphRuntimeBase):
+    """Duplicate conditions are part of the ONE shared branch rule, so publish and runtime agree."""
+
+    def test_branch_problems_reports_duplicates_once(self):
+        edge = lambda i, c: {'id': 'e%d' % i, 'condition': c}
+        self.assertEqual([(BRANCH_DUPLICATE_CONDITION, ('palette', 'blue'))],
+                         branch_problems([edge(0, cond('red')), edge(1, cond('blue')), edge(2, cond('blue'))]))
+        self.assertEqual([(BRANCH_DUPLICATE_CONDITION, ('palette', 'blue'))],
+                         branch_problems([edge(i, cond('blue')) for i in range(4)]))  # three copies: one report
+        self.assertEqual([], branch_problems([edge(0, cond('red')), edge(1, cond('blue'))]))
+        # same value on different variables is not a duplicate (it is the multiple-variables problem instead)
+        self.assertEqual([(BRANCH_MULTIPLE_VARIABLES, ['other', 'palette'])],
+                         branch_problems([edge(0, cond('blue')), edge(1, {'variable': 'other', 'equals': 'blue'})]))
+
+    def test_variable_and_key_spellings_are_the_same_condition(self):
+        edges = [{'id': 'e0', 'condition': {'variable': 'palette', 'equals': 'blue'}},
+                 {'id': 'e1', 'condition': {'key': 'palette', 'equals': 'blue'}}]
+        self.assertEqual([(BRANCH_DUPLICATE_CONDITION, ('palette', 'blue'))], branch_problems(edges))
+
+    def test_non_string_equals_do_not_break_duplicate_detection(self):
+        edges = [{'id': 'e0', 'condition': {'variable': 'palette', 'equals': ['x']}},
+                 {'id': 'e1', 'condition': {'variable': 'palette', 'equals': ['x']}},
+                 {'id': 'e2', 'condition': {'variable': 'palette', 'equals': {'a': 1}}}]
+        self.assertEqual([(BRANCH_DUPLICATE_CONDITION, ('palette', ['x']))], branch_problems(edges))
+
+    def test_publish_rejects_two_edges_with_the_same_condition(self):
+        graph = palette_graph(['red', 'blue', 'blue'])
+        errors = GameVersion.validate_graph(definition_with(graph))
+        self.assertTrue(any("two outgoing edges for 'palette' = 'blue'" in error for error in errors), errors)
+        self.assertEqual(1, sum('two outgoing edges' in error for error in errors), errors)  # reported once, not twice
+
+    def test_publish_rejects_the_key_spelling_duplicate_too(self):
+        graph = palette_graph(['red', 'blue', 'blue'])
+        graph['edges'][4]['condition'] = {'key': 'palette', 'equals': 'blue'}
+        errors = GameVersion.validate_graph(definition_with(graph))
+        self.assertTrue(any('two outgoing edges' in error for error in errors), errors)
+
+    def test_runtime_refuses_the_whole_node_even_when_only_one_edge_matches(self):
+        graph = palette_graph(['red', 'blue', 'blue'])  # one edge for red, two identical edges for blue
+        self.start(graph, validate=False)
+        response = self.act('d1', 'pick', answer='red')  # only the single red edge matches
+        self.assertEqual(409, response.status_code, response.content)
+        self.assertEqual({}, self.state())  # no transition, no variable, no timer key
+        self.assertEqual(0, ScoreLedger.objects.filter(session=self.session).count())
+        self.assertEqual(0, SessionEvent.objects.filter(session=self.session).count())
+
+    def test_runtime_also_refuses_when_the_duplicated_condition_is_the_one_that_matches(self):
+        self.start(palette_graph(['red', 'blue', 'blue']), validate=False)
+        response = self.act('d2', 'pick', answer='blue')  # both twins match
+        self.assertEqual(409, response.status_code)
+        self.assertEqual({}, self.state())
+        self.assertEqual(0, SessionEvent.objects.filter(session=self.session).count())
+
+    def test_the_same_graph_without_the_duplicate_publishes_and_routes(self):
+        graph = palette_graph(['red', 'blue'])
+        self.assertEqual([], GameVersion.validate_graph(definition_with(graph)))
+        self.start(graph)
+        self.assertEqual('to0', self.act('ok1', 'pick', answer='red').json()['next_stage_id'])
+        self.assertEqual({'palette': 'red'}, self.state()['graph_vars'])
+
+    def test_what_the_runtime_would_do_without_the_duplicate_rule(self):
+        # Documents why the rule must be in the shared function: without it exactly one edge matches 'red'.
+        graph = palette_graph(['red', 'blue', 'blue'])
+        matching = [edge for edge in graph['edges'] if edge['source'] == 'pick'
+                    and _graph_condition_matches(edge.get('condition'), {'palette': 'red'})]
+        self.assertEqual(1, len(matching))
+
+
+INVALID_MAX_LENGTHS = [0, -5, '', '  ', 'abc', '5.5', '5e2', '0', '-3', '\u0665', 5.7, 0.0, float('nan'), float('inf'), True, False,
+                       [], {}, [5], {'a': 1}, '9' * 5000]
+VALID_MAX_LENGTHS = [(ABSENT, 1000), (None, 1000), (50, 50), ('50', 50), (' 50 ', 50), (50.0, 50), (1, 1), ('1', 1), (10 ** 6, 10 ** 6)]
+
+
+def text_node_graph(max_length, tools_extra=None, exact=None):
+    settings = {} if max_length is ABSENT else {'max_length': max_length}
+    if exact is not None:
+        settings['exact'] = exact
+    tools = [{'type': 'text', 'settings': settings}] + list(tools_extra or [])
+    return {'nodes': [{'id': 'a', 'tools': tools}, {'id': 'b'}], 'edges': [{'id': 'e', 'source': 'a', 'target': 'b'}],
+            'start': 'a', 'end': 'b'}
+
+
+class TextMaxLengthTests(GraphRuntimeBase):
+    """max_length has ONE contract (text_max_length): default 1000 only when absent or null."""
+
+    def test_text_max_length_contract(self):
+        for value, expected in VALID_MAX_LENGTHS:
+            settings = {} if value is ABSENT else {'max_length': value}
+            self.assertEqual(expected, text_max_length(settings), value)
+        for value in INVALID_MAX_LENGTHS:
+            self.assertIsNone(text_max_length({'max_length': value}), repr(value)[:40])
+        self.assertEqual(1000, text_max_length(None))      # a tool without settings
+        self.assertIsNone(text_max_length('abc'))           # settings that are not an object
+
+    def test_empty_and_falsy_values_are_not_mistaken_for_the_default(self):
+        # Before: 0, '', false, [] and {} were silently replaced by 1000 (python's "or 1000").
+        for value in (0, '', False, [], {}, '  '):
+            self.assertIsNone(text_max_length({'max_length': value}), repr(value))
+        self.assertEqual(1000, text_max_length({'max_length': None}))
+        self.assertEqual(1000, text_max_length({}))
+
+    def test_invalid_max_length_is_rejected_at_publish_for_every_kind_of_text_tool(self):
+        for value in INVALID_MAX_LENGTHS:
+            label = repr(value)[:40]
+            for graph in (text_node_graph(value), text_node_graph(value, exact='north'), text_node_graph(value, exact=['north', 'south'])):
+                errors = GameVersion.validate_graph(definition_with(graph))
+                self.assertTrue(any('invalid max_length' in error for error in errors), (label, errors))
+        graph = text_node_graph('abc')
+        graph['nodes'][0]['tools'][0]['type'] = 'text_input'  # the other spelling of the Text tool
+        self.assertTrue(any('invalid max_length' in error for error in GameVersion.validate_graph(definition_with(graph))))
+
+    def test_valid_max_length_values_publish(self):
+        for value, _expected in VALID_MAX_LENGTHS:
+            self.assertEqual([], GameVersion.validate_graph(definition_with(text_node_graph(value))), repr(value))
+            # 'n' fits every valid limit (the smallest is 1); a longer answer correctly would not fit a limit of 1.
+            self.assertEqual([], GameVersion.validate_graph(definition_with(text_node_graph(value, exact='n'))), repr(value))
+
+    def test_max_length_on_other_tools_is_not_judged(self):
+        graph = text_node_graph(ABSENT)
+        graph['nodes'][0]['tools'].append({'type': 'quiz', 'settings': {'answer': 'x', 'max_length': 'abc'}})
+        self.assertEqual([], GameVersion.validate_graph(definition_with(graph)))
+
+    def test_publish_refuses_a_text_node_with_an_invalid_limit_and_accepts_the_fixed_one(self):
+        city = City.objects.create(slug='maxlen-city', name='MaxLen')
+        game = Game.objects.create(name='MaxLen', slug='maxlen-game', city=city)
+        broken = GameVersion.objects.create(game=game, created='2026-01-01T00:00:00Z', definition=json.dumps(definition_with(text_node_graph('abc'))))
+        published, errors = broken.publish()
+        self.assertFalse(published)
+        self.assertTrue(any('invalid max_length' in error for error in errors))
+        fixed = GameVersion.objects.create(game=game, created='2026-01-02T00:00:00Z', definition=json.dumps(definition_with(text_node_graph('50'))))
+        self.assertTrue(fixed.publish()[0])
+
+    def test_accepted_answers_fit_check_uses_the_same_contract(self):
+        self.assertEqual([], accepted_answers({'exact': 'abcdef', 'max_length': '5'}, 'text'))   # string limit is honoured
+        self.assertEqual(['abcde'], accepted_answers({'exact': 'abcde', 'max_length': 5.0}, 'text'))
+        self.assertEqual([], accepted_answers({'exact': 'x' * 1001, 'max_length': None}, 'text'))  # null means the default
+        self.assertEqual(['x' * 1001], accepted_answers({'exact': 'x' * 1001, 'max_length': 'abc'}, 'text'))  # invalid: reported elsewhere
+
+    def test_older_published_definitions_with_an_invalid_limit_fail_closed_with_a_controlled_error(self):
+        self.client.raise_request_exception = False
+        for value in INVALID_MAX_LENGTHS:
+            label = repr(value)[:40]
+            self.start(text_node_graph(value), validate=False)  # published before the rule existed
+            for payload in ({'text': 'hello'}, {'text': ''}, {}):
+                response = self.act('m-%d' % len(payload), 'a', **payload)
+                self.assertEqual(409, response.status_code, (label, payload, response.content))
+                self.assertEqual({'error': 'Text input configuration is invalid.'}, response.json(), label)
+            self.assertEqual({}, self.state(), label)
+            self.assertEqual(0, ScoreLedger.objects.filter(session=self.session).count(), label)
+            self.assertEqual(0, SessionEvent.objects.filter(session=self.session).count(), label)
+
+    def test_invalid_limit_fails_closed_before_the_timer_starts_and_with_accepted_answers(self):
+        self.client.raise_request_exception = False
+        extra = [{'type': 'timer', 'settings': {'minimum_seconds': 1}}]
+        for graph in (text_node_graph('abc', tools_extra=extra), text_node_graph('abc', tools_extra=extra, exact='north')):
+            self.start(graph, validate=False)
+            self.assertEqual(409, self.act('t1', 'a', text='north').status_code)
+            self.assertEqual({}, self.state())  # no timer key written
+
+    def test_invalid_limit_does_not_affect_hint_or_other_operations(self):
+        self.client.raise_request_exception = False
+        extra = [{'type': 'hint', 'settings': {'content': 'Look closer', 'score_cost': 1}}]
+        self.start(text_node_graph('abc', tools_extra=extra), validate=False)
+        hint = self.act('h1', 'a', operation='hint')
+        self.assertEqual(200, hint.status_code)
+        self.assertEqual('Look closer', hint.json()['content'])
+        self.assertEqual(400, self.act('u1', 'a', operation='skip').status_code)  # unknown operation: still 400
+
+    def test_empty_and_falsy_limits_in_old_definitions_no_longer_mean_one_thousand(self):
+        self.client.raise_request_exception = False
+        for value in (0, '', False, [], {}):
+            self.start(text_node_graph(value), validate=False)
+            self.assertEqual(409, self.act('z1', 'a', text='hello').status_code, repr(value))
+
+    def test_valid_limits_are_enforced_by_the_runtime(self):
+        for value, limit in (('5', 5), (5.0, 5), (5, 5), (' 5 ', 5)):
+            self.start(text_node_graph(value))
+            self.assertEqual(400, self.act('v1', 'a', text='x' * (limit + 1)).status_code, repr(value))  # too long
+            self.assertEqual(200, self.act('v2', 'a', text='x' * limit).status_code, repr(value))        # fits exactly
+        for value in (ABSENT, None):
+            self.start(text_node_graph(value))
+            self.assertEqual(400, self.act('d1', 'a', text='x' * 1001).status_code, value)
+            self.assertEqual(200, self.act('d2', 'a', text='x' * 1000).status_code, value)
+
+    def test_valid_limit_with_accepted_answers_still_stores_the_canonical_value(self):
+        tool = {'type': 'text', 'settings': {'exact': ['Crimson Tide', 'Azure Wave'], 'variable': 'palette', 'max_length': '20'}}
+        self.start(branching_graph(tool))
+        self.assertEqual('blue-path', self.act('c1', 'pick', text=' Azure Wave ').json()['next_stage_id'])
+        self.assertEqual({'palette': 'Azure Wave'}, self.state()['graph_vars'])
