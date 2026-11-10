@@ -81,6 +81,20 @@ The system will execute the game from the command line. Feel free to type your r
 
 Once the activity is running as expected, you are now ready to open it up to the world and integrate it with Twilio and other services.
 
+## Running the tests
+
+**Run the tests against an empty or throwaway database, never against a database that holds real data.**
+
+The template settings (`TEST_RUNNER = 'hivemechanic.no_db_test_runner.NoDbTestRunner'`) create no test database, so `python manage.py test` would run on the database in your settings, and some tests (the browser tests) erase the whole database when they finish. To protect you, that runner now refuses to start when the database already holds data (anything beyond the permissions, content types and default site that `migrate` creates), and tells you why.
+
+The safe way to run the tests is with Django's standard runner, which builds and destroys its own test database:
+
+```
+python manage.py test --testrunner django.test.runner.DiscoverRunner --noinput <test modules>
+```
+
+The browser tests (`builder.tests.tests_browser` and `builder.tests.tests_browser_empty_card_ids`) also need Firefox and `geckodriver`. If you really do want `NoDbTestRunner` to run on a database that holds data (for example a disposable copy), set the environment variable `HIVE_ALLOW_TESTS_ON_CONFIGURED_DATABASE=1`; this can erase that database.
+
 ## Twilio integration
 
 *Coming Soon.*
