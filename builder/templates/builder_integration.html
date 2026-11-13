@@ -1,9 +1,10 @@
 {% extends 'builder_base.html' %}
+{% load i18n %}
 {% load static %}
 {% load filer_admin_tags %}
 {% load absolute_uri_tags %}
-{% block 'page_title' %}Hive Mechanic{% endblock %}
-{% block 'navigation_title' %}Hive Mechanic{% endblock %}
+{% block 'page_title' %}{% trans "Hive Mechanic" %}{% endblock %}
+{% block 'navigation_title' %}{% trans "Hive Mechanic" %}{% endblock %}
 {% block 'main_content' %}
     <div class="mdc-layout-grid">
         <div class="mdc-layout-grid__inner">
@@ -12,7 +13,7 @@
 					<div class="mdc-layout-grid__inner" style="grid-gap: 0px !important;">
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-8" style="padding: 16px;">
 							<h1 class="mdc-typography--headline5" style="margin-top: 8px;">
-								Integrations
+								{% trans "Integrations" %}
 							</h1>
 						</div>
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-4" style="padding: 16px;">
@@ -22,22 +23,22 @@
 										<span class="mdc-notched-outline__leading"></span>
 										<span class="mdc-notched-outline__trailing"></span>
 									</span>
-									<input class="mdc-text-field__input" id="file_filter_field" type="text" aria-label="Search" name="q" placeholder="Search&#8230;" style="width: 100%;" value="{% if query %}{{ query }}{% endif %}">
+									<input class="mdc-text-field__input" id="file_filter_field" type="text" aria-label="{% trans 'Search' %}" name="q" placeholder="{% trans 'Search…' %}" style="width: 100%;" value="{% if query %}{{ query }}{% endif %}">
 								</label>	
 							</form>
 						</div>
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
-							<div class="mdc-typography--subtitle1" style="margin-top: 0px; margin-left: 16px; margin-right: 16px;">{{ integrations|length }} integrations</div>
+							<div class="mdc-typography--subtitle1" style="margin-top: 0px; margin-left: 16px; margin-right: 16px;">{% blocktrans trimmed with integrations=integrations|length %}{{ integrations }} integrations{% endblocktrans %}</div>
 						</div>
 
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
 							<div class="mdc-data-table" style="border: none; margin-top: 20px;">
-								<table class="mdc-data-table__table" aria-label="Active Sessions" id="table_sessions" style="width: 100%;">
+								<table class="mdc-data-table__table" aria-label="{% trans 'Active Sessions' %}" id="table_sessions" style="width: 100%;">
 									<thead>
 										<tr class="mdc-data-table__header-row">
-											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">Integration</th>
-											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">Activity</th>
-											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">Type</th>
+											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">{% trans "Integration" %}</th>
+											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">{% trans "Activity" %}</th>
+											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">{% trans "Type" %}</th>
 											<th class="mdc-data-table__header-cell" role="columnheader" scope="col" style="width: 48px;"></th>
 										</tr>
 									</thead>
@@ -49,7 +50,7 @@
 													{% if integration.activity_slug %}
 														<td class="mdc-data-table__cell"><a href="{% url 'builder_game' integration.activity_slug %}">{{ integration.activity }}</a></td>
 													{% else %}
-														<td class="mdc-data-table__cell">None</td>
+														<td class="mdc-data-table__cell">{% trans "None" %}</td>
 													{% endif %}
 													<td class="mdc-data-table__cell">{{ integration.type }}</td>
 													<td class="mdc-data-table__cell">
@@ -60,9 +61,9 @@
 										{% else %}
 											<tr class="mdc-data-table__row">
 												{% if query %}
-													<td class="mdc-data-table__cell" colspan=4">No matches for "{{ query }}" found.</td>
+													<td class="mdc-data-table__cell" colspan=4">{% blocktrans trimmed with query=query %}No matches for "{{ query }}" found.{% endblocktrans %}</td>
 												{% else %}
-													<td class="mdc-data-table__cell" colspan=4">No available integrations. Contact your Hive Mechanic administrator.</td>
+													<td class="mdc-data-table__cell" colspan=4">{% trans "No available integrations. Contact your Hive Mechanic administrator." %}</td>
 												{% endif %}
 											</tr>
 										{% endif %}
@@ -80,7 +81,7 @@
     	{% csrf_token %}
         <div class="mdc-dialog__container">
             <div class="mdc-dialog__surface">
-                    <h2 class="mdc-dialog__title" id="integration-dialog-title">Update Integration</h2>
+                    <h2 class="mdc-dialog__title" id="integration-dialog-title">{% trans "Update Integration" %}</h2>
                     <div class="mdc-dialog__content" id="integration-dialog-content" style="padding: 0px;">
                         <div class="mdc-dialog__content mdc-layout-grid" style="padding-top: 0px;">
                             <div class="mdc-layout-grid mdc-layout-grid__inner" style="padding: 0px;">
@@ -90,13 +91,13 @@
                                     <div class="mdc-notched-outline">
                                         <div class="mdc-notched-outline__leading"></div>
                                             <div class="mdc-notched-outline__notch">
-                                            <label for="tf-outlined" class="mdc-floating-label">Integration Name</label>
+                                            <label for="tf-outlined" class="mdc-floating-label">{% trans "Integration Name" %}</label>
                                         </div>
                                         <div class="mdc-notched-outline__trailing"></div>
                                     </div>
                                 </div>
                                 <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
-                                  Connected Activity
+                                  {% trans "Connected Activity" %}
                                 </div>
                                 {% for activity in activities %}
                                     <div class="mdc-form-field mdc-layout-grid__cell mdc-layout-grid__cell--span-6  {{ activity.integration_type_classes }}">
@@ -110,7 +111,7 @@
                                         </div>
                                         <label for="activity_name_{{ activity.pk }}_field" id="activity_name_{{ activity.pk }}_label">
                                         	<div class="mdc-typography--body1 activity_name">{{ activity.name }}</div>
-                                        	<div class="mdc-typography--caption integration_linked_warning">Already linked to this kind of integration."</div>
+                                        	<div class="mdc-typography--caption integration_linked_warning">{% trans "Already linked to this kind of integration." %}</div>
                                         </label>
                                     </div>
                                 {% endfor %}
@@ -123,17 +124,17 @@
                                         </div>
                                         <div class="mdc-radio__ripple"></div>
                                     </div>
-                                    <label for="activity_name_none_field" class="mdc-typography--body1">None (Detach)</label>
+                                    <label for="activity_name_none_field" class="mdc-typography--body1">{% trans "None (Detach)" %}</label>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <footer class="mdc-dialog__actions">
                         <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
-                            <span class="mdc-button__label">Cancel</span>
+                            <span class="mdc-button__label">{% trans "Cancel" %}</span>
                         </button>
                         <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="update_integration">
-                            <span class="mdc-button__label">Update</span>
+                            <span class="mdc-button__label">{% trans "Update" %}</span>
                         </button>
                     </footer>
                 </form>

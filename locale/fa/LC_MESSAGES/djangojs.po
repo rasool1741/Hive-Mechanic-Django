@@ -1,0 +1,411 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-13 05:16-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: fa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: builder/static/builder-js/js/app/activities.js:82
+msgid "New %(name)s Activity"
+msgstr "بازی %(name)s جدید"
+
+#: builder/static/builder-js/js/app/activities.js:84
+msgid "New Blank Activity"
+msgstr "بازی خالی جدید"
+
+#: builder/static/builder-js/js/app/activities.js:104
+#: builder/static/builder-js/js/app/activities.js:138
+#: builder/static/builder-js/js/app/integrations.js:139
+#: builder/static/builder-js/js/app/players.js:85
+msgid "Success"
+msgstr "موفقیت"
+
+#: builder/static/builder-js/js/app/activities.js:106
+#: builder/static/builder-js/js/app/activities.js:140
+#: builder/static/builder-js/js/app/integrations.js:141
+#: builder/static/builder-js/js/app/players.js:87
+msgid "Failure"
+msgstr "شکست"
+
+#: builder/static/builder-js/js/app/activities.js:198
+msgid "Clone of %(name)s"
+msgstr "رونوشت %(name)s"
+
+#: builder/static/builder-js/js/app/authors.js:70
+msgid "Are you sure you wish to activate this author?"
+msgstr "آیا مطمئن هستید که می‌خواهید این سازنده را فعال کنید؟"
+
+#: builder/static/builder-js/js/app/authors.js:89
+msgid "Are you sure you wish to delete this author?"
+msgstr "آیا مطمئن هستید که می‌خواهید این سازنده را حذف کنید؟"
+
+#: builder/static/builder-js/js/app/authors.js:108
+msgid "Are you sure you wish to deactivate this author?"
+msgstr "آیا مطمئن هستید که می‌خواهید این سازنده را غیرفعال کنید؟"
+
+#: builder/static/builder-js/js/app/authors.js:127
+msgid "Are you sure you wish to demote this author?"
+msgstr "آیا مطمئن هستید که می‌خواهید مقام این سازنده را کاهش دهید؟"
+
+#: builder/static/builder-js/js/app/authors.js:146
+msgid "Are you sure you wish to promote this author?"
+msgstr "آیا مطمئن هستید که می‌خواهید مقام این سازنده را ارتقا دهید؟"
+
+#: builder/static/builder-js/js/app/cards/node.js:25
+msgid "Uncategorized"
+msgstr "دسته‌بندی‌نشده"
+
+#: builder/static/builder-js/js/app/cards/node.js:44
+msgid "Go to..."
+msgstr "برو به..."
+
+#: builder/static/builder-js/js/app/cards/node.js:61
+msgid "Insert Card Before…"
+msgstr "درج کارت قبل از..."
+
+#: builder/static/builder-js/js/app/cards/node.js:65
+msgid "Advanced Settings…"
+msgstr "تنظیمات پیشرفته..."
+
+#: builder/static/builder-js/js/app/cards/node.js:78
+msgid "Card Name"
+msgstr "نام کارت"
+
+#: builder/static/builder-js/js/app/cards/node.js:107
+msgid "Remove Card"
+msgstr "حذف کارت"
+
+#: builder/static/builder-js/js/app/cards/node.js:110
+msgid "Close"
+msgstr "بستن"
+
+#: builder/static/builder-js/js/app/cards/node.js:126
+msgid "Please provide a node name."
+msgstr "لطفاً نامی برای مرحله وارد کنید."
+
+#: builder/static/builder-js/js/app/cards/node.js:130
+msgid "Please provide a node ID."
+msgstr "لطفاً یک شناسه برای مرحله وارد کنید."
+
+#: builder/static/builder-js/js/app/cards/node.js:139
+msgid "Empty destination node."
+msgstr "مرحله مقصد خالی است."
+
+#: builder/static/builder-js/js/app/cards/node.js:141
+msgid "Node references self in destination."
+msgstr "مرحله به خودش به عنوان مقصد ارجاع می‌دهد."
+
+#: builder/static/builder-js/js/app/cards/node.js:329
+msgid "Begins with..."
+msgstr "شروع می‌شود با..."
+
+#: builder/static/builder-js/js/app/cards/node.js:332
+msgid "Ends with..."
+msgstr "پایان می‌یابد با..."
+
+#: builder/static/builder-js/js/app/cards/node.js:335
+msgid "Equals/is..."
+msgstr "برابر است با / است..."
+
+#: builder/static/builder-js/js/app/cards/node.js:338
+msgid "Does not equal / is not..."
+msgstr "برابر نیست با / نیست..."
+
+#: builder/static/builder-js/js/app/cards/node.js:341
+msgid "Contains..."
+msgstr "شامل می‌شود..."
+
+#: builder/static/builder-js/js/app/cards/node.js:344
+msgid "Does not contain..."
+msgstr "شامل نمی‌شود..."
+
+#: builder/static/builder-js/js/app/cards/node.js:347
+msgid "No action defined..."
+msgstr "هیچ اقدامی تعریف نشده است..."
+
+#: builder/static/builder-js/js/app/cards/node.js:532
+msgid "  "
+msgstr "  "
+
+#: builder/static/builder-js/js/app/cards/node.js:1197
+msgid ", "
+msgstr "، "
+
+#: builder/static/builder-js/js/app/cards/node.js:1199
+msgid ", or "
+msgstr "، یا "
+
+#: builder/static/builder-js/js/app/cards/node.js:1201
+msgid " or "
+msgstr " یا "
+
+#: builder/static/builder-js/js/app/cards/node.js:1208
+msgid "If response starts with %(match)s, go to <em>%(action)s</em>."
+msgstr "اگر پاسخ با %(match)s شروع شود، به <em>%(action)s</em> بروید."
+
+#: builder/static/builder-js/js/app/cards/node.js:1210
+msgid "If response is anything, go to <em>%(action)s</em>."
+msgstr "اگر پاسخ هر چیزی باشد، به <em>%(action)s</em> بروید."
+
+#: builder/static/builder-js/js/app/cards/node.js:1212
+msgid "If response is \"%(pattern)s\", go to <em>%(action)s</em>."
+msgstr "اگر پاسخ «%(pattern)s» باشد، به <em>%(action)s</em> بروید."
+
+#: builder/static/builder-js/js/app/cards/node.js:1215
+msgid "If response matches \"%(pattern)s\", go to <em>%(action)s</em>."
+msgstr ""
+"اگر پاسخ با «%(pattern)s» مطابقت داشته باشد، به <em>%(action)s</em> بروید."
+
+#: builder/static/builder-js/js/app/cards/node.js:1341
+msgid "Card Identifier"
+msgstr "شناسه کارت"
+
+#: builder/static/builder-js/js/app/cards/node.js:1346
+msgid ""
+"Invalid characters or format detected. Please use only alphanumeric "
+"characters and dashes."
+msgstr ""
+"کاراکترها یا فرمت نامعتبر شناسایی شد. لطفاً فقط از حروف الفبا، اعداد و خط "
+"تیره استفاده کنید."
+
+#: builder/static/builder-js/js/app/cards/node.js:1356
+msgid "Comment"
+msgstr "دیدگاه"
+
+#: builder/static/builder-js/js/app/cards/node.js:1364
+msgid "Markdown Cheat Sheet"
+msgstr "راهنمای مارک‌داون"
+
+#: builder/static/builder-js/js/app/integrations.js:121
+msgid "Integration name required"
+msgstr "نام اتصال الزامی است"
+
+#: builder/static/builder-js/js/app/integrations.js:122
+msgid "Please provide a name for the integration."
+msgstr "لطفاً نامی برای اتصال وارد کنید."
+
+#: builder/static/builder-js/js/app/integrations.js:163
+msgid "Name Required"
+msgstr "نام الزامی است"
+
+#: builder/static/builder-js/js/app/main.js:51
+#: builder/static/builder-js/js/app/main.js:55
+msgid "Activity has unsaved changes. Close?"
+msgstr "بازی دارای تغییرات ذخیره‌نشده است. بسته شود؟"
+
+#: builder/static/builder-js/js/app/main.js:323
+#: builder/static/builder-js/js/app/main.js:849
+msgid "New Sequence"
+msgstr "توالی جدید"
+
+#: builder/static/builder-js/js/app/main.js:345
+msgid "Add Sequence"
+msgstr "افزودن توالی"
+
+#: builder/static/builder-js/js/app/main.js:353
+msgid "Return to Dashboard"
+msgstr "بازگشت به پیشخوان"
+
+#: builder/static/builder-js/js/app/main.js:705
+msgid "The name of this activity has changed. Reloading activity..."
+msgstr "نام این بازی تغییر کرده است. در حال بارگذاری مجدد بازی..."
+
+#: builder/static/builder-js/js/app/main.js:770
+msgid ""
+"Unable to load card type \"%(card)s\". Please verify that the site is setup "
+"correctly."
+msgstr ""
+"بارگذاری نوع کارت «%(card)s» امکان‌پذیر نیست. لطفاً بررسی کنید که سایت به "
+"درستی راه‌اندازی شده باشد."
+
+#: builder/static/builder-js/js/app/main.js:867
+msgid "The location of this activity has changed. Updating location..."
+msgstr "مکان این بازی تغییر کرده است. در حال به‌روزرسانی مکان..."
+
+#: builder/static/builder-js/js/app/main.js:1012
+msgid "Incoming Response…"
+msgstr "پاسخ ورودی..."
+
+#: builder/static/builder-js/js/app/main.js:1043
+msgid "Begins with…"
+msgstr "شروع می‌شود با..."
+
+#: builder/static/builder-js/js/app/main.js:1048
+msgid "Ends with…"
+msgstr "پایان می‌یابد با..."
+
+#: builder/static/builder-js/js/app/main.js:1053
+msgid "Equals…"
+msgstr "برابر است با..."
+
+#: builder/static/builder-js/js/app/main.js:1058
+msgid "Does not equal…"
+msgstr "برابر نیست با..."
+
+#: builder/static/builder-js/js/app/main.js:1063
+msgid "Contains…"
+msgstr "شامل می‌شود..."
+
+#: builder/static/builder-js/js/app/main.js:1068
+msgid "Does not contain…"
+msgstr "شامل نمی‌شود..."
+
+#: builder/static/builder-js/js/app/main.js:1082
+#: builder/static/builder-js/js/app/main.js:1229
+msgid "Value"
+msgstr "مقدار"
+
+#: builder/static/builder-js/js/app/main.js:1178
+msgid "Scope"
+msgstr "دامنه"
+
+#: builder/static/builder-js/js/app/main.js:1196
+msgid "Session"
+msgstr "نشست"
+
+#: builder/static/builder-js/js/app/main.js:1200
+msgid "Player"
+msgstr "بازیکن"
+
+#: builder/static/builder-js/js/app/main.js:1204
+msgid "Game"
+msgstr "بازی"
+
+#: builder/static/builder-js/js/app/main.js:1216
+msgid "Name"
+msgstr "نام"
+
+#: builder/static/builder-js/js/app/main.js:1316
+msgid "(None Selected)"
+msgstr "(هیچ‌کدام انتخاب نشده)"
+
+#: builder/static/builder-js/js/app/main.js:1550
+msgid "You have unsaved changes. Are you sure you want to exit now?"
+msgstr ""
+"تغییرات ذخیره‌نشده‌ای دارید. آیا مطمئن هستید که می‌خواهید اکنون خارج شوید؟"
+
+#: builder/static/builder-js/js/app/main.js:1564
+msgid "Fetching variables…"
+msgstr "در حال دریافت متغیرها…"
+
+#: builder/static/builder-js/js/app/media.js:104
+msgid "URL copied to clipboard."
+msgstr "نشانی URL در حافظه موقت کپی شد."
+
+#: builder/static/builder-js/js/app/media.js:106
+msgid "Error copying URL to clipboard."
+msgstr "خطا در کپی کردن نشانی URL در حافظه موقت."
+
+#: builder/static/builder-js/js/app/moderate.js:182
+msgid "Please select items to moderate."
+msgstr "لطفاً مواردی را برای بازبینی انتخاب کنید."
+
+#: builder/static/builder-js/js/app/moderate.js:188
+msgid "1 item selected."
+msgstr "۱ مورد انتخاب شد."
+
+#: builder/static/builder-js/js/app/moderate.js:194
+msgid "%(count)s items selected."
+msgstr "%(count)s مورد انتخاب شد."
+
+#: builder/static/builder-js/js/app/sequence.js:50
+msgid "Undefined Node Id"
+msgstr "شناسه مرحله تعریف‌نشده"
+
+#: builder/static/builder-js/js/app/sequence.js:325
+msgid "Duplicate ID \"%(id)s\" in \"%(sequence)s\"."
+msgstr "شناسه تکراری \"%(id)s\" در \"%(sequence)s\"."
+
+#: builder/static/builder-js/js/app/sequence.js:347
+#: builder/static/builder-js/js/app/sequence.js:376
+#: builder/static/builder-js/js/app/sequence.js:407
+#: builder/static/builder-js/js/app/sequence.js:446
+msgid "Add…"
+msgstr "افزودن…"
+
+#: builder/static/builder-js/js/app/sequence.js:352
+msgid "Destination"
+msgstr "مقصد"
+
+#: builder/static/builder-js/js/app/sequence.js:627
+#: builder/static/builder-js/js/app/sequence.js:654
+msgid "New %(card)s Card"
+msgstr "کارت %(card)s جدید"
+
+#: builder/static/builder-js/js/app/sessions.js:74
+msgid "Are you sure you wish to remove this session?"
+msgstr "آیا مطمئن هستید که می‌خواهید این نشست را حذف کنید؟"
+
+#: builder/static/builder-js/js/app/sessions.js:82
+msgid "Are you sure you wish to cancel this session?"
+msgstr "آیا مطمئن هستید که می‌خواهید این نشست را لغو کنید؟"
+
+#: builder/static/builder-js/js/app/settings.js:90
+msgid "Settings updated."
+msgstr "تنظیمات به‌روزرسانی شد."
+
+#: builder/static/builder-js/js/app/urban_graph.js:29
+msgid "Stage added."
+msgstr "مرحله اضافه شد."
+
+#: builder/static/builder-js/js/app/urban_graph.js:32
+#: builder/static/builder-js/js/app/urban_graph.js:54
+msgid "Select a stage first."
+msgstr "ابتدا یک مرحله را انتخاب کنید."
+
+#: builder/static/builder-js/js/app/urban_graph.js:33
+msgid "Stage title"
+msgstr "عنوان مرحله"
+
+#: builder/static/builder-js/js/app/urban_graph.js:34
+msgid "Stage description"
+msgstr "توضیحات مرحله"
+
+#: builder/static/builder-js/js/app/urban_graph.js:46
+msgid "Select two stages with Ctrl."
+msgstr "با استفاده از Ctrl دو مرحله را انتخاب کنید."
+
+#: builder/static/builder-js/js/app/urban_graph.js:47
+msgid "Path condition as JSON (optional)"
+msgstr "شرط مسیر به صورت JSON (اختیاری)"
+
+#: builder/static/builder-js/js/app/urban_graph.js:48
+msgid "The JSON condition is not valid."
+msgstr "شرط JSON معتبر نیست."
+
+#: builder/static/builder-js/js/app/urban_graph.js:56
+msgid "Tool settings as JSON (optional)"
+msgstr "تنظیمات ابزار به صورت JSON (اختیاری)"
+
+#: builder/static/builder-js/js/app/urban_graph.js:57
+msgid "The JSON settings are not valid."
+msgstr "تنظیمات JSON معتبر نیستند."
+
+#: builder/static/builder-js/js/app/urban_graph.js:63
+msgid "Saving failed."
+msgstr "ذخیره‌سازی انجام نشد."
+
+#: builder/static/builder-js/js/app/urban_graph.js:63
+msgid "Draft saved; publishing errors remain."
+msgstr "پیش‌نویس ذخیره شد؛ خطاهای انتشار همچنان باقی هستند."
+
+#: builder/static/builder-js/js/app/urban_graph.js:63
+msgid "Draft saved."
+msgstr "پیش‌نویس ذخیره شد."
+
+#: builder/static/builder-js/js/app/urban_graph.js:66
+msgid "Loading the graph failed."
+msgstr "بارگذاری نمودار با شکست مواجه شد."

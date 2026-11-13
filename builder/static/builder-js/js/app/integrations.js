@@ -118,8 +118,8 @@ requirejs(['material', 'cookie', 'jquery'], function (mdc, Cookies) {
       const name = integrationName.value
 
       if (name === undefined || name.trim() === '') {
-        $('#dialog-title').html('Integration name required')
-        $('#dialog-content').html('Please provide a name for the integration.')
+        $('#dialog-title').html(gettext('Integration name required'))
+        $('#dialog-content').html(gettext('Please provide a name for the integration.'))
 
         baseDialog.listen('MDCDialog:closed', function () {})
 
@@ -136,9 +136,9 @@ requirejs(['material', 'cookie', 'jquery'], function (mdc, Cookies) {
 
       $.post('/builder/update-integration.json', payload, function (response) {
         if (response.result === 'success') {
-          $('#dialog-title').html('Success')
+          $('#dialog-title').html(gettext('Success'))
         } else {
-          $('#dialog-title').html('Failure')
+          $('#dialog-title').html(gettext('Failure'))
         }
 
         $('#dialog-content').html(response.message)
@@ -160,7 +160,7 @@ requirejs(['material', 'cookie', 'jquery'], function (mdc, Cookies) {
     const integrationName = $('#integration_name')
 
     if (integrationName.val() === '') {
-      alert('Name Required')
+      alert(gettext('Name Required'))
       return false
     }
   })

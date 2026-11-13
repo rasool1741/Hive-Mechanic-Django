@@ -1,14 +1,15 @@
 {% extends 'builder_base.html' %}
+{% load i18n %}
 {% load static %}
 {% load builder_tags %}
 
-{% block 'page_title' %}Authors | Interaction Builder{% endblock %}
+{% block 'page_title' %}{% trans "Authors | Interaction Builder" %}{% endblock %}
 
 {% block 'page_help' %}
-	<a href="#" class="material-icons mdc-top-app-bar__action-item" aria-label="Help" id="action_help">help</a>
+	<a href="#" class="material-icons mdc-top-app-bar__action-item" aria-label="{% trans 'Help' %}" id="action_help">help</a>
 {% endblock %}
 
-{% block 'navigation_title' %}Authors{% endblock %}
+{% block 'navigation_title' %}{% trans "Authors" %}{% endblock %}
 
 {% block 'main_content' %}
 	<div class="mdc-layout-grid">
@@ -17,16 +18,16 @@
 				<div class="mdc-card mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
 					<div class="mdc-layout-grid__inner">
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
-							<h1 class="mdc-typography--headline5" style="margin: 16px 16px 0px 16px;">Authors: Pending or Inactive</h1>
+							<h1 class="mdc-typography--headline5" style="margin: 16px 16px 0px 16px;">{% trans "Authors: Pending or Inactive" %}</h1>
 						</div>
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
 							<div class="mdc-data-table" style="width: 100%; border: none;">
-								<table class="mdc-data-table__table" aria-label="All Games" id="table_players">
+								<table class="mdc-data-table__table" aria-label="{% trans 'All Games' %}" id="table_players">
 									<thead>
 										<tr class="mdc-data-table__header-row">
-											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">E-Mail</th>
-											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">Name</th>
-											<th class="mdc-data-table__header-cell" role="columnheader" scope="col" style="text-align: right;">Actions</th>
+											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">{% trans "E-Mail" %}</th>
+											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">{% trans "Name" %}</th>
+											<th class="mdc-data-table__header-cell" role="columnheader" scope="col" style="text-align: right;">{% trans "Actions" %}</th>
 										</tr>
 									</thead>
 									<tbody class="mdc-data-table__content">
@@ -37,7 +38,7 @@
 													{% if user.first_name and user.last_name %}
 														{{ user.first_name }} {{ user.last_name }}
 													{% else %}
-														<em>No name provided&#8230;</em>
+														<em>{% trans "No name provided…" %}</em>
 													{% endif %}
 												</td>
 												<td class="mdc-data-table__cell mdc-data-table__cell--numeric">
@@ -62,18 +63,18 @@
 				<div class="mdc-card mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
 					<div class="mdc-layout-grid__inner">
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
-							<h1 class="mdc-typography--headline5" style="margin: 16px 16px 0px 16px;">Authors: Active</h1>
+							<h1 class="mdc-typography--headline5" style="margin: 16px 16px 0px 16px;">{% trans "Authors: Active" %}</h1>
 						</div>
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
 							<div class="mdc-data-table" style="width: 100%; border: none;">
-								<table class="mdc-data-table__table" aria-label="All Games" id="table_players">
+								<table class="mdc-data-table__table" aria-label="{% trans 'All Games' %}" id="table_players">
 									<thead>
 										<tr class="mdc-data-table__header-row">
-											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">E-Mail</th>
-											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">Name</th>
-											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">Last Login</th>
-											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">Role</th>
-											{% if is_manager %}<th class="mdc-data-table__header-cell" role="columnheader" scope="col" style="text-align: right;">Actions</th>{% endif %}
+											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">{% trans "E-Mail" %}</th>
+											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">{% trans "Name" %}</th>
+											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">{% trans "Last Login" %}</th>
+											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">{% trans "Role" %}</th>
+											{% if is_manager %}<th class="mdc-data-table__header-cell" role="columnheader" scope="col" style="text-align: right;">{% trans "Actions" %}</th>{% endif %}
 										</tr>
 									</thead>
 									<tbody class="mdc-data-table__content">
@@ -90,7 +91,7 @@
 															{% if user.last_name %}
 																{{ user.last_name }}
 															{% else %}
-																<em>No name provided&#8230;</em>
+																<em>{% trans "No name provided…" %}</em>
 															{% endif %}
 														{% endif %}
 													{% endif %}

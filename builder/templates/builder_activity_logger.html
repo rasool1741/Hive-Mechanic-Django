@@ -1,11 +1,12 @@
 {% extends 'builder_base.html' %}
+{% load i18n %}
 {% load static %}
 {% load builder_tags %}
 
-{% block 'page_title' %}Activity Log | Hive Mechanic{% endblock %}
+{% block 'page_title' %}{% trans "Activity Log | Hive Mechanic" %}{% endblock %}
 
 {% block 'page_help' %}
-	<a href="#" class="material-icons mdc-top-app-bar__action-item" aria-label="Help" id="action_help">help</a>
+	<a href="#" class="material-icons mdc-top-app-bar__action-item" aria-label="{% trans 'Help' %}" id="action_help">help</a>
 {% endblock %}
 
 {% block 'main_content' %}
@@ -16,13 +17,13 @@
 					<div class="mdc-layout-grid__inner" style="grid-gap: 0px !important;">
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-8">
 							<h1 class="mdc-typography--headline5" style="margin-top: 8px;">
-								Activity Log{% if selected_tag %}: {{ selected_tag }}{% endif %}
+								{% trans "Activity Log" %}{% if selected_tag %}: {{ selected_tag }}{% endif %}
 							</h1>
 						</div>
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-4">
 						</div>
 						<div class=" mdc-layout-grid__cell--span-6" style="padding-bottom: 16px; padding-top: 16px;">
-							{{ total_count }} entries &bull; Page {{ page_index|add:1 }} of {{ page_count }} &bull; (<a href="{% url 'builder_activity_logger' %}">Reset View</a>)
+							{% blocktrans trimmed with total_count=total_count page_index=page_index|add:1 page_count=page_count %}{{ total_count }} entries • Page {{ page_index }} of {{ page_count }} • ({% endblocktrans %}<a href="{% url 'builder_activity_logger' %}">{% trans "Reset View" %}</a>)
 						</div>
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6 mdc-typography--button" style="padding-bottom: 16px; padding-top: 16px; text-align: right;">
 							{% if prior_page %}
@@ -30,19 +31,19 @@
 									<span class="mdc-button__ripple"></span>
 									<span class="mdc-button__focus-ring"></span>
 									<i class="material-icons mdc-button__icon" aria-hidden="true">chevron_left</i>
-									<span class="mdc-button__label">Previous Page</span>
+									<span class="mdc-button__label">{% trans "Previous Page" %}</span>
 								</a>
 							{% endif %}
 
 							{% if prior_page and next_page %}
-								&bull;
+								{% trans "•" %}
 							{% endif %}
 
 							{% if next_page %}
 								<a href="{{ next_page }}" class="mdc-button mdc-button--icon-leading">
 									<span class="mdc-button__ripple"></span>
 									<span class="mdc-button__focus-ring"></span>
-									<span class="mdc-button__label">Next Page</span>
+									<span class="mdc-button__label">{% trans "Next Page" %}</span>
 									<i class="material-icons mdc-button__icon" aria-hidden="true">chevron_right</i>
 								</a>
 							{% endif %}
@@ -55,7 +56,7 @@
 											{{ item.logged }}:
 											<p><strong>{{ item.message }}</strong></p>
 											<p>
-												<strong>Tags:</strong>
+												<strong>{% trans "Tags:" %}</strong>
 												{% for tag in item.tags.all %}
 													{% if tag.tag == selected_tag %}
 														[<strong><a href="?tag={{ tag.tag }}">{{ tag.name }}</a></strong>]
@@ -67,19 +68,19 @@
 										</div>
 										<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
 											{% if item.player %}
-												Player: <a href="?player={{ item.player.pk }}">{{ item.player.identifier|obfuscate_identifier }}</a><br />
+												{% trans "Player:" %} <a href="?player={{ item.player.pk }}">{{ item.player.identifier|obfuscate_identifier }}</a><br />
 											{% endif %}
 
 											{% if item.game_version %}
-												Activity: <a href="?game={{ item.game_version.game.pk }}">{{ item.game_version.game }}</a><br />
+												{% trans "Activity:" %} <a href="?game={{ item.game_version.game.pk }}">{{ item.game_version.game }}</a><br />
 											{% endif %}
 
 											{% if item.session %}
-												Session: <a href="?session={{ item.session.pk }}">{{ item.session }}</a>
+												{% trans "Session:" %} <a href="?session={{ item.session.pk }}">{{ item.session }}</a>
 											{% endif %}
 										</div>
 										<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
-											Metadata:<br />
+											{% trans "Metadata:" %}<br />
 											<strong>{{ item.metadata }}</strong>
 										</div>
 									</div>

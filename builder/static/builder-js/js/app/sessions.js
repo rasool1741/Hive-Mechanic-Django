@@ -71,7 +71,7 @@ requirejs(['material', 'cookie', 'jquery'], function (mdc, Cookies) {
     }
 
     if (action === 'delete') {
-      if (confirm('Are you sure you wish to remove this session?')) {
+      if (confirm(gettext('Are you sure you wish to remove this session?'))) {
         $.post('/builder/session/actions', data, function (data) {
           if (data.success) {
             window.location.reload()
@@ -79,7 +79,7 @@ requirejs(['material', 'cookie', 'jquery'], function (mdc, Cookies) {
         })
       }
     } else if (action === 'cancel') {
-      if (confirm('Are you sure you wish to cancel this session?')) {
+      if (confirm(gettext('Are you sure you wish to cancel this session?'))) {
         $.post('/builder/session/actions', data, function (data) {
           if (data.success) {
             window.location.reload()

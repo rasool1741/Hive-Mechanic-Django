@@ -1,26 +1,17 @@
 {% extends 'builder_base.html' %}
+{% load i18n %}
 {% load humanize %}
 {% load static %}
 {% load builder_tags %}
 
-{% block 'page_title' %}Moderate Content | Hive Mechanic{% endblock %}
+{% block 'page_title' %}{% trans "Moderate Content | Hive Mechanic" %}{% endblock %}
 
 {% block 'page_help' %}
-	<a href="#" class="material-icons mdc-top-app-bar__action-item" aria-label="Help" id="action_help">help</a>
+	<a href="#" class="material-icons mdc-top-app-bar__action-item" aria-label="{% trans 'Help' %}" id="action_help">help</a>
 {% endblock %}
 
 {% block 'additional_css' %}
-	.selected_tag {
-		display: inline-block;
-		background-color: #6100EE;
-		border-radius: 5px;
-		color: #ffffff;
-		font-weight: bold;
-		padding-left: 5px;
-		padding-right: 5px;
-		padding-bottom: 2px;
-		margin-bottom: 2px;
-	}
+	.selected_tag { display: inline-block; background-color: #6100EE; border-radius: 5px; color: #ffffff; font-weight: bold; padding-left: 5px; padding-right: 5px; padding-bottom: 2px; margin-bottom: 2px; }
 {% endblock %}
 
 {% block 'main_content' %}
@@ -32,25 +23,25 @@
 						<div class="mdc-layout-grid__inner">
 							<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6" style="padding-top: 8px;">
 								<div style="display: inline-block; padding-top: 10px;">
-									<em id="selection_label">Please select items to moderate.</em>
+									<em id="selection_label">{% trans "Please select items to moderate." %}</em>
 								</div>
 								<span style="float: right;">
 									<button class="mdc-button mdc-button--outlined mdc-button--icon-leading" id="button_approve">
 										<span class="mdc-button__ripple"></span>
 										<span class="mdc-button__focus-ring"></span>
 										<i class="material-icons mdc-button__icon" aria-hidden="true">thumb_up</i>
-										<span class="mdc-button__label">Approve</span>
+										<span class="mdc-button__label">{% trans "Approve" %}</span>
 									</button>
 									<button class="mdc-button mdc-button--outlined mdc-button--icon-leading" id="button_reject">
 										<span class="mdc-button__ripple"></span>
 										<span class="mdc-button__focus-ring"></span>
 										<i class="material-icons mdc-button__icon" aria-hidden="true">thumb_down</i>
-										<span class="mdc-button__label">Reject</span>
+										<span class="mdc-button__label">{% trans "Reject" %}</span>
 									</button>
 									<button class="mdc-button mdc-button--outlined"  id="button_reset">
 										<span class="mdc-button__ripple"></span>
 										<span class="mdc-button__focus-ring"></span>
-										<span class="mdc-button__label">Reset</span>
+										<span class="mdc-button__label">{% trans "Reset" %}</span>
 									</button>
 								</span>
 							</div>
@@ -60,7 +51,7 @@
 										<span class="mdc-notched-outline">
 											<span class="mdc-notched-outline__leading"></span>
 											<span class="mdc-notched-outline__notch">
-											<span id="outlined-select-label" class="mdc-floating-label">Show&#8230;</span>
+											<span id="outlined-select-label" class="mdc-floating-label">{% trans "Show…" %}</span>
 											</span>
 											<span class="mdc-notched-outline__trailing"></span>
 										</span>
@@ -75,29 +66,29 @@
 										</span>
 									</div>
 									<div class="mdc-select__menu mdc-menu mdc-menu-surface mdc-menu-surface--fullwidth" style="z-index: 9999;">
-										<ul class="mdc-list" role="listbox" aria-label="Select activity&#8230;">
+										<ul class="mdc-list" role="listbox" aria-label="{% trans 'Select activity…' %}">
 											<li class="mdc-list-item {% if selected_status == 'pending' %}mdc-list-item--selected{% endif %}" data-value="pending" role="option">
 												<span class="mdc-list-item__ripple"></span>
 												<span class="mdc-list-item__text">
-													Pending Moderation
+													{% trans "Pending Moderation" %}
 												</span>
 											</li>
 											<li class="mdc-list-item {% if selected_status == 'all' %}mdc-list-item--selected{% endif %}" data-value="all" role="option">
 												<span class="mdc-list-item__ripple"></span>
 												<span class="mdc-list-item__text">
-													All Items
+													{% trans "All Items" %}
 												</span>
 											</li>
 											<li class="mdc-list-item {% if selected_status == 'approved' %}mdc-list-item--selected{% endif %}" data-value="approved" role="option">
 												<span class="mdc-list-item__ripple"></span>
 												<span class="mdc-list-item__text">
-													Approved
+													{% trans "Approved" %}
 												</span>
 											</li>
 											<li class="mdc-list-item {% if selected_status == 'rejected' %}mdc-list-item--selected{% endif %}" data-value="rejected" role="option">
 												<span class="mdc-list-item__ripple"></span>
 												<span class="mdc-list-item__text">
-													Rejected
+													{% trans "Rejected" %}
 												</span>
 											</li>
 										</ul>
@@ -109,7 +100,7 @@
 									<span class="mdc-notched-outline">
 										<span class="mdc-notched-outline__leading"></span>
 										<span class="mdc-notched-outline__notch">
-											<span class="mdc-floating-label" id="my-label-id">Search</span>
+											<span class="mdc-floating-label" id="my-label-id">{% trans "Search" %}</span>
 										</span>
 										<span class="mdc-notched-outline__trailing"></span>
 									</span>
@@ -126,12 +117,12 @@
 				<div class="mdc-card">
 					<div class="mdc-data-table" id="moderation_table">
 					  <div class="mdc-data-table__table-container">
-						<table class="mdc-data-table__table mdc-typography--caption" aria-label="Moderation Items" style="width: 100%">
+						<table class="mdc-data-table__table mdc-typography--caption" aria-label="{% trans 'Moderation Items' %}" style="width: 100%">
 						  <thead>
 							<tr class="mdc-data-table__header-row">
 							  <th class="mdc-data-table__header-cell mdc-data-table__header-cell--checkbox-foo" role="columnheader" scope="col" style="width: 64px;">
 								<div class="mdc-checkbox mdc-data-table__header-row-checkbox">
-									<input type="checkbox" class="mdc-checkbox__native-control" aria-label="Toggle all rows"/>
+									<input type="checkbox" class="mdc-checkbox__native-control" aria-label="{% trans 'Toggle all rows' %}"/>
 									<div class="mdc-checkbox__background">
 									<svg class="mdc-checkbox__checkmark" viewBox="0 0 24 24">
 										<path class="mdc-checkbox__checkmark-path" fill="none" d="M1.73,12.91 8.1,19.28 22.79,4.59" />
@@ -142,7 +133,7 @@
 								</div>
 							  </th>
 							  <th class="mdc-data-table__header-cell mdc-typography--caption" role="columnheader" scope="col" style="width: 180px;">
-								<strong style="vertical-align: middle;"><a href="#" id="sort_submitted">Date</a></strong>
+								<strong style="vertical-align: middle;"><a href="#" id="sort_submitted">{% trans "Date" %}</a></strong>
 								{% if sort == 'added' %}
 									<span class="material-icons" style="vertical-align: middle;">arrow_drop_up</span>
 								{% endif %}
@@ -151,7 +142,7 @@
 								{% endif %}
 							  </th>
 							  <th class="mdc-data-table__header-cell mdc-typography--caption" role="columnheader" scope="col" style="width: 150px;">
-								<strong style="vertical-align: middle;"><a href="#" id="sort_player">Player</a></strong>
+								<strong style="vertical-align: middle;"><a href="#" id="sort_player">{% trans "Player" %}</a></strong>
 								{% if sort == 'player' %}
 									<span class="material-icons" style="vertical-align: middle;">arrow_drop_up</span>
 								{% endif %}
@@ -160,13 +151,13 @@
 								{% endif %}
 							</th>
 							<th class="mdc-data-table__header-cell mdc-typography--caption" role="columnheader" scope="col" style="width: 200px;">
-								<strong style="vertical-align: middle;">Context</strong>
+								<strong style="vertical-align: middle;">{% trans "Context" %}</strong>
 							</th>
 							<th class="mdc-data-table__header-cell mdc-typography--caption" role="columnheader" scope="col">
-							  	<strong style="vertical-align: middle;">Content</strong>
+							  	<strong style="vertical-align: middle;">{% trans "Content" %}</strong>
 							</th>
 							<th class="mdc-data-table__header-cell mdc-typography--caption" role="columnheader" scope="col" style="width: 100px;">
-								<strong>Status</strong>
+								<strong>{% trans "Status" %}</strong>
 							</th>
 							</tr>
 						  </thead>
@@ -191,12 +182,12 @@
 								  <td class="mdc-data-table__cell mdc-typography--caption" scope="row" style="white-space: break-spaces;">{{ item.content }}</td>
 								  <td class="mdc-data-table__cell mdc-typography--caption" scope="row">
 									{% if item.metadata.moderation_status is True %}
-										<!-- <span class="material-icons">thumb_up</span> --><span>Approved</span>
+										<!-- <span class="material-icons">thumb_up</span> --><span>{% trans "Approved" %}</span>
 									{% else %}
 										{% if item.metadata.moderation_status is False %}
-											<!-- <span class="material-icons">thumb_down</span> --><span>Rejected</span>
+											<!-- <span class="material-icons">thumb_down</span> --><span>{% trans "Rejected" %}</span>
 										{% else %}
-											<!-- <span class="material-icons">question_mark</span> --><span>Pending</span>
+											<!-- <span class="material-icons">question_mark</span> --><span>{% trans "Pending" %}</span>
 										{% endif %}
 									{% endif %}
 								  </td>
@@ -209,7 +200,7 @@
 						<div class="mdc-data-table__pagination-trailing">
 						  <div class="mdc-data-table__pagination-rows-per-page">
 							<div class="mdc-data-table__pagination-rows-per-page-label">
-							  Items per page
+							  {% trans "Items per page" %}
 							</div>
 							<div class="mdc-select mdc-select--outlined mdc-select--no-label mdc-data-table__pagination-rows-per-page-select mdc-data-table__pagination-rows-per-page-select--outlined" id="items_per_page">
 							  <div class="mdc-select__anchor" role="button" aria-haspopup="listbox" aria-labelledby="demo-pagination-select" tabindex="0">
@@ -254,7 +245,7 @@
 
 						  <div class="mdc-data-table__pagination-navigation">
 							<div class="mdc-data-table__pagination-total">
-							  {{ start_item|intcomma }} to {{ end_item|intcomma }} of {{ total_count|intcomma }}
+							  {% blocktrans trimmed with start_item=start_item|intcomma end_item=end_item|intcomma total_count=total_count|intcomma %}{{ start_item }} to {{ end_item }} of {{ total_count }}{% endblocktrans %}
 							</div>
 							{% if first_page %}
 								<a href="{{ first_page }}" class="mdc-icon-button material-icons mdc-data-table__pagination-button" data-first-page="true">

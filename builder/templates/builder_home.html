@@ -1,15 +1,16 @@
 {% extends 'builder_base.html' %}
+{% load i18n %}
 {% load humanize %}
 {% load static %}
 {% load simple_dashboard %}
 
-{% block 'page_title' %}Dashboard | Interaction Builder{% endblock %}
+{% block 'page_title' %}{% trans "Dashboard | Interaction Builder" %}{% endblock %}
 
 {% block 'page_help' %}
-	<a href="#" class="material-icons mdc-top-app-bar__action-item" aria-label="Help" id="action_help">help</a>
+	<a href="#" class="material-icons mdc-top-app-bar__action-item" aria-label="{% trans 'Help' %}" id="action_help">help</a>
 {% endblock %}
 
-{% block 'navigation_title' %}Dashboard{% endblock %}
+{% block 'navigation_title' %}{% trans "Dashboard" %}{% endblock %}
 
 {% block 'main_content' %}
 	<div class="mdc-layout-grid">

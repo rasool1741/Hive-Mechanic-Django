@@ -1,11 +1,12 @@
 {% extends 'builder_base.html' %}
+{% load i18n %}
 {% load builder_tags %}
 {% load absolute_uri_tags %}
 {% load filer_admin_tags %}
 {% load thumbnail %}
 {% load static %}
-{% block 'page_title' %}All Media | Hive Mechanic{% endblock %}
-{% block 'navigation_title' %}Hive Mechanic{% endblock %}
+{% block 'page_title' %}{% trans "All Media | Hive Mechanic" %}{% endblock %}
+{% block 'navigation_title' %}{% trans "Hive Mechanic" %}{% endblock %}
 {% block 'main_content' %}
 	<div class="mdc-layout-grid">
 		<div class="mdc-layout-grid__inner">
@@ -14,7 +15,7 @@
 					<div class="mdc-layout-grid__inner" style="grid-gap: 0px !important;">
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-8">
 							<h1 class="mdc-typography--headline5" style="margin-top: 8px;">
-								Media Library
+								{% trans "Media Library" %}
 							</h1>
 						</div>
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-4">
@@ -24,7 +25,7 @@
 										<span class="mdc-notched-outline__leading"></span>
 										<span class="mdc-notched-outline__trailing"></span>
 									</span>
-									<input class="mdc-text-field__input" type="text" aria-label="Search" placeholder="Search&#8230;" style="width: 100%;" name="q" value="{% if query %}{{ query }}{% endif %}">
+									<input class="mdc-text-field__input" type="text" aria-label="{% trans 'Search' %}" placeholder="{% trans 'Search…' %}" style="width: 100%;" name="q" value="{% if query %}{{ query }}{% endif %}">
 								</label>
 							</form>
 						</div>
@@ -34,15 +35,15 @@
 								<span class="mdc-button__ripple"></span>
 								<span class="mdc-button__focus-ring"></span>
 								<i class="material-icons mdc-button__icon" aria-hidden="true">cloud_upload</i>
-								<span class="mdc-button__label">Upload File</span>
+								<span class="mdc-button__label">{% trans "Upload File" %}</span>
 							</button>
-							<div class="mdc-typography--body2" style="margin-top: 8px;">Can include images, audio, video, PDF, etc.</div>
+							<div class="mdc-typography--body2" style="margin-top: 8px;">{% trans "Can include images, audio, video, PDF, etc." %}</div>
 						</div>
 						<div class=" mdc-layout-grid__cell--span-9" style="text-align: right;">
 							{% if media_files|length == 1 %}
-								<div class="mdc-typography--subtitle1" style="margin-top: 8px;">{{ media_files|length }} media file</div>
+								<div class="mdc-typography--subtitle1" style="margin-top: 8px;">{% blocktrans trimmed with media_files=media_files|length %}{{ media_files }} media file{% endblocktrans %}</div>
 							{% else %}
-								<div class="mdc-typography--subtitle1" style="margin-top: 8px;">{{ media_files|length }} media files</div>
+								<div class="mdc-typography--subtitle1" style="margin-top: 8px;">{% blocktrans trimmed with media_files=media_files|length %}{{ media_files }} media files{% endblocktrans %}</div>
 							{% endif %}
 						</div>
 
@@ -61,7 +62,7 @@
 												{% else %}
 													<video controls style="width: 100%;">
 													  <source src="{{ media_file.url }}" type="{{ media_file.mime_type }} ">
-													  Your browser does not support the video tag.
+													  {% trans "Your browser does not support the video tag." %}
 													</video>
 												{% endif %}
 											{% endif %}
@@ -69,26 +70,26 @@
 									</div>
 									<div class= mdc-layout-grid__cell--span-9 mdc-typography--body2">
 										<div>
-											Filename: <a href="{% absolute_uri media_file.url request %}">{{ media_file.original_filename }}</a> -- {{ media_file.mime_type }}<br />
-											Identifier: {{ media_file.pk }}<br />
-											Uploaded By: {{ media_file.owner }}<br />
-											Description: {% if media_file.description %} {{ media_file.description }} {% endif %}<br />
-											Uploaded At: {{ media_file.uploaded_at }}<br />
-											File Size: {{ media_file.size|humanize_file_size }}
+											{% trans "Filename:" %} <a href="{% absolute_uri media_file.url request %}">{{ media_file.original_filename }}</a> -- {{ media_file.mime_type }}<br />
+											{% blocktrans trimmed with pk=media_file.pk %}Identifier: {{ pk }}{% endblocktrans %}<br />
+											{% blocktrans trimmed with owner=media_file.owner %}Uploaded By: {{ owner }}{% endblocktrans %}<br />
+											{% trans "Description:" %} {% if media_file.description %} {{ media_file.description }} {% endif %}<br />
+											{% blocktrans trimmed with uploaded_at=media_file.uploaded_at %}Uploaded At: {{ uploaded_at }}{% endblocktrans %}<br />
+											{% blocktrans trimmed with size=media_file.size|humanize_file_size %}File Size: {{ size }}{% endblocktrans %}
 											<div style="background-color: #e82e2e; color: #fff; padding: 8px; {% if media_file.size < media_file_warning_size %}display: none;{% else %}display: inline-block;{% endif %}">
-												WARNING: file sizes above 5 mb (like this one) are often skipped by Twilio for MMS messaging
+												{% trans "WARNING: file sizes above 5 mb (like this one) are often skipped by Twilio for MMS messaging" %}
 											</div>
 										</div>
 
 										<div style="margin-top: 1em; margin-bottom: 1em;">
-											File URL: <a href="{% absolute_uri media_file.url request %}" target="_blank">{% absolute_uri media_file.url request %}</a>
+											{% trans "File URL:" %} <a href="{% absolute_uri media_file.url request %}" target="_blank">{% absolute_uri media_file.url request %}</a>
 										</div>
 
 										<button class="mdc-button mdc-button--raised mdc-button--icon-leading clipboard-copy" id="upload_button" data-url="{% absolute_uri media_file.url request %}">
 											<span class="mdc-button__ripple"></span>
 											<span class="mdc-button__focus-ring"></span>
 											<i class="material-icons mdc-button__icon" aria-hidden="true">content_copy</i>
-											<span class="mdc-button__label">Copy URL to clipboard</span>
+											<span class="mdc-button__label">{% trans "Copy URL to clipboard" %}</span>
 										</button>
 									</div>
 								</div>
@@ -102,13 +103,13 @@
 
 	<div id="clipboard-tooltip-id" class="mdc-tooltip" role="tooltip" aria-hidden="true">
 		<div class="mdc-tooltip__surface mdc-tooltip__surface-animation">
-			Copy to clipboard
+			{% trans "Copy to clipboard" %}
 		</div>
 	</div>
 
 	<div id="upload-tooltip-id" class="mdc-tooltip" role="tooltip" aria-hidden="true">
 		<div class="mdc-tooltip__surface mdc-tooltip__surface-animation">
-			Upload file
+			{% trans "Upload file" %}
 		</div>
 	</div>
 
@@ -121,12 +122,12 @@
 	<div class="mdc-dialog" role="alertdialog" aria-modal="true" aria-labelledby="upload-dialog-title" id="dialog_upload_file">
 		<div class="mdc-dialog__container">
 			<div class="mdc-dialog__surface">
-				<h2 class="mdc-dialog__title" id="upload-dialog-title">Upload File</h2>
+				<h2 class="mdc-dialog__title" id="upload-dialog-title">{% trans "Upload File" %}</h2>
                 <div class="mdc-dialog__content">
 					<div class="mdc-layout-grid mdc-typography" style="padding: 0px;">
 						<div class="mdc-layout-grid__inner" style="grid-gap: 8px;">
 							<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12 mdc-typography--body1">
-				                Please add a description (optional):
+				                {% trans "Please add a description (optional):" %}
 				            </div>
 							<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
 								<div class="mdc-text-field mdc-text-field--outlined" id="file_description" style="margin-top: 8px; width: 100%;">
@@ -134,7 +135,7 @@
 									<div class="mdc-notched-outline">
 										<div class="mdc-notched-outline__leading"></div>
 											<div class="mdc-notched-outline__notch">
-											<label for="tf-outlined" class="mdc-floating-label">Description</label>
+											<label for="tf-outlined" class="mdc-floating-label">{% trans "Description" %}</label>
 										</div>
 										<div class="mdc-notched-outline__trailing"></div>
 									</div>
@@ -145,10 +146,10 @@
 				</div>
 				<footer class="mdc-dialog__actions">
 					<button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
-						<span class="mdc-button__label">Cancel</span>
+						<span class="mdc-button__label">{% trans "Cancel" %}</span>
 					</button>
 					<button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="upload">
-						<span class="mdc-button__label">Upload File</span>
+						<span class="mdc-button__label">{% trans "Upload File" %}</span>
 					</button>
 				</footer>
 			</div>

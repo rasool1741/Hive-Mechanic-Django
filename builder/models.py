@@ -35,6 +35,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import smart_str
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _
 
 from django_dialog_engine.models import Dialog, DialogStateTransition
 
@@ -323,25 +324,30 @@ class PermissionsSupport(models.Model):
 
 class RemoteRepository(models.Model):
     class Meta: # pylint: disable=old-style-class, no-init, too-few-public-methods
-        verbose_name_plural = 'Remote repositories'
+        verbose_name = _('remote repository')
+        verbose_name_plural = _('Remote repositories')
 
-    name = models.CharField(max_length=4096, unique=True)
-    url = models.URLField(max_length=4096, unique=True)
+    name = models.CharField(max_length=4096, unique=True, verbose_name=_('name'))
+    url = models.URLField(max_length=4096, unique=True, verbose_name=_('url'))
 
-    priority = models.IntegerField(default=0)
+    priority = models.IntegerField(default=0, verbose_name=_('priority'))
 
-    repository_definition = models.TextField(max_length=1048576, null=True, blank=True)
+    repository_definition = models.TextField(max_length=1048576, null=True, blank=True, verbose_name=_('repository definition'))
 
-    http_auth_headers = models.TextField(max_length=1048576, default='{}')
+    http_auth_headers = models.TextField(max_length=1048576, default='{}', verbose_name=_('http auth headers'))
 
-    last_updated = models.DateTimeField(null=True, blank=True)
+    last_updated = models.DateTimeField(null=True, blank=True, verbose_name=_('last updated'))
 
-    enabled = models.BooleanField(default=True)
+    enabled = models.BooleanField(default=True, verbose_name=_('enabled'))
 
 @python_2_unicode_compatible
 class InteractionCardCategory(models.Model):
-    name = models.CharField(max_length=4096, unique=True)
-    priority = models.IntegerField(default=1)
+    class Meta: # pylint: disable=too-few-public-methods
+        verbose_name = _('interaction card category')
+        verbose_name_plural = _('interaction card categories')
+
+    name = models.CharField(max_length=4096, unique=True, verbose_name=_('name'))
+    priority = models.IntegerField(default=1, verbose_name=_('priority'))
 
     def __str__(self):
         return '%s (%d)' % (self.name, int(self.priority))
@@ -349,20 +355,22 @@ class InteractionCardCategory(models.Model):
 
 @python_2_unicode_compatible
 class City(models.Model):
-    slug = models.SlugField(max_length=255, unique=True)
-    name = models.CharField(max_length=255)
-    country = models.CharField(max_length=255, blank=True)
-    region = models.CharField(max_length=255, blank=True)
-    description = models.TextField(blank=True)
-    center_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    center_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    timezone = models.CharField(max_length=64, default='UTC')
-    language = models.CharField(max_length=16, default='fa')
-    is_active = models.BooleanField(default=True, db_index=True)
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
+    slug = models.SlugField(max_length=255, unique=True, verbose_name=_('slug'))
+    name = models.CharField(max_length=255, verbose_name=_('name'))
+    country = models.CharField(max_length=255, blank=True, verbose_name=_('country'))
+    region = models.CharField(max_length=255, blank=True, verbose_name=_('region'))
+    description = models.TextField(blank=True, verbose_name=_('description'))
+    center_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, verbose_name=_('center latitude'))
+    center_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, verbose_name=_('center longitude'))
+    timezone = models.CharField(max_length=64, default='UTC', verbose_name=_('timezone'))
+    language = models.CharField(max_length=16, default='fa', verbose_name=_('language'))
+    is_active = models.BooleanField(default=True, db_index=True, verbose_name=_('is active'))
+    created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
+    updated = models.DateTimeField(auto_now=True, verbose_name=_('updated'))
 
     class Meta:
+        verbose_name = _('city')
+        verbose_name_plural = _('cities')
         ordering = ['name']
 
     def __str__(self):
@@ -370,23 +378,27 @@ class City(models.Model):
 
 @python_2_unicode_compatible
 class InteractionCard(models.Model):
-    name = models.CharField(max_length=4096, unique=True)
-    identifier = models.SlugField(max_length=4096, unique=True)
-    category = models.ForeignKey(InteractionCardCategory, null=True, blank=True, on_delete=models.SET_NULL)
+    class Meta: # pylint: disable=too-few-public-methods
+        verbose_name = _('interaction card')
+        verbose_name_plural = _('interaction cards')
 
-    description = models.TextField(max_length=16384, null=True, blank=True)
+    name = models.CharField(max_length=4096, unique=True, verbose_name=_('name'))
+    identifier = models.SlugField(max_length=4096, unique=True, verbose_name=_('identifier'))
+    category = models.ForeignKey(InteractionCardCategory, null=True, blank=True, on_delete=models.SET_NULL, verbose_name=_('category'))
 
-    enabled = models.BooleanField(default=True)
+    description = models.TextField(max_length=16384, null=True, blank=True, verbose_name=_('description'))
 
-    evaluate_function = models.TextField(max_length=1048576, default='return None, [], None')
-    entry_actions = models.TextField(max_length=1048576, default='return []')
+    enabled = models.BooleanField(default=True, verbose_name=_('enabled'))
 
-    client_implementation = models.FileField(upload_to='interaction_cards/', null=True, blank=True)
+    evaluate_function = models.TextField(max_length=1048576, default='return None, [], None', verbose_name=_('evaluate function'))
+    entry_actions = models.TextField(max_length=1048576, default='return []', verbose_name=_('entry actions'))
 
-    metadata = models.TextField(max_length=1048576, null=True, blank=True)
-    repository_definition = models.TextField(max_length=1048576, null=True, blank=True)
+    client_implementation = models.FileField(upload_to='interaction_cards/', null=True, blank=True, verbose_name=_('client implementation'))
 
-    version = models.FloatField(default=0.0)
+    metadata = models.TextField(max_length=1048576, null=True, blank=True, verbose_name=_('metadata'))
+    repository_definition = models.TextField(max_length=1048576, null=True, blank=True, verbose_name=_('repository definition'))
+
+    version = models.FloatField(default=0.0, verbose_name=_('version'))
 
     def definition_metadata(self):
         if not self.metadata:
@@ -559,31 +571,33 @@ class Game(models.Model):  # pylint: disable=too-many-public-methods
         (STATUS_ARCHIVED, 'Archived'),
     )
     class Meta: # pylint: disable=too-few-public-methods
+        verbose_name = _('game')
+        verbose_name_plural = _('games')
         ordering = ['name']
 
-    name = models.CharField(max_length=1024, db_index=True)
-    slug = models.SlugField(max_length=1024, db_index=True, unique=True)
-    city = models.ForeignKey('builder.City', null=True, blank=True, related_name='games', on_delete=models.SET_NULL)
-    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_DRAFT, db_index=True)
-    description = models.TextField(blank=True)
-    difficulty = models.CharField(max_length=32, blank=True)
-    estimated_minutes = models.PositiveIntegerField(null=True, blank=True)
-    is_team_game = models.BooleanField(default=False)
+    name = models.CharField(max_length=1024, db_index=True, verbose_name=_('name'))
+    slug = models.SlugField(max_length=1024, db_index=True, unique=True, verbose_name=_('slug'))
+    city = models.ForeignKey('builder.City', null=True, blank=True, related_name='games', on_delete=models.SET_NULL, verbose_name=_('city'))
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_DRAFT, db_index=True, verbose_name=_('status'))
+    description = models.TextField(blank=True, verbose_name=_('description'))
+    difficulty = models.CharField(max_length=32, blank=True, verbose_name=_('difficulty'))
+    estimated_minutes = models.PositiveIntegerField(null=True, blank=True, verbose_name=_('estimated minutes'))
+    is_team_game = models.BooleanField(default=False, verbose_name=_('is team game'))
 
-    cards = models.ManyToManyField(InteractionCard, related_name='games')
+    cards = models.ManyToManyField(InteractionCard, related_name='games', verbose_name=_('cards'))
 
     game_state = JSONField(default=dict, blank=True)
 
-    editors = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='builder_game_editables', blank=True)
-    viewers = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='builder_game_viewables', blank=True)
+    editors = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='builder_game_editables', blank=True, verbose_name=_('editors'))
+    viewers = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='builder_game_viewables', blank=True, verbose_name=_('viewers'))
 
-    icon = models.ImageField(null=True, blank=True, upload_to='activity_icons')
-    is_template = models.BooleanField(default=False)
+    icon = models.ImageField(null=True, blank=True, upload_to='activity_icons', verbose_name=_('icon'))
+    is_template = models.BooleanField(default=False, verbose_name=_('is template'))
 
     metadata = JSONField(default=dict, blank=True)
-    metadata_updated = models.DateTimeField(null=True, blank=True)
+    metadata_updated = models.DateTimeField(null=True, blank=True, verbose_name=_('metadata updated'))
 
-    archived = models.DateTimeField(null=True, blank=True)
+    archived = models.DateTimeField(null=True, blank=True, verbose_name=_('archived'))
 
     def log_id(self):
         return 'game_version:%d' % self.pk
@@ -984,17 +998,21 @@ class GameVersion(models.Model):
         (STATUS_ARCHIVED, 'Archived'),
     )
 
-    game = models.ForeignKey(Game, related_name='versions', on_delete=models.CASCADE)
-    created = models.DateTimeField()
+    class Meta: # pylint: disable=too-few-public-methods
+        verbose_name = _('game version')
+        verbose_name_plural = _('game versions')
 
-    definition = models.TextField(max_length=(1024 * 1024 * 1024), null=True, blank=True)
-    cached_cytoscape = models.TextField(max_length=(1024 * 1024 * 1024), null=True, blank=True)
-    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_DRAFT, db_index=True)
-    definition_checksum = models.CharField(max_length=128, null=True, blank=True, editable=False)
-    published = models.DateTimeField(null=True, blank=True)
+    game = models.ForeignKey(Game, related_name='versions', on_delete=models.CASCADE, verbose_name=_('game'))
+    created = models.DateTimeField(verbose_name=_('created'))
+
+    definition = models.TextField(max_length=(1024 * 1024 * 1024), null=True, blank=True, verbose_name=_('definition'))
+    cached_cytoscape = models.TextField(max_length=(1024 * 1024 * 1024), null=True, blank=True, verbose_name=_('cached cytoscape'))
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_DRAFT, db_index=True, verbose_name=_('status'))
+    definition_checksum = models.CharField(max_length=128, null=True, blank=True, editable=False, verbose_name=_('definition checksum'))
+    published = models.DateTimeField(null=True, blank=True, verbose_name=_('published'))
     validation_errors = JSONField(default=list, blank=True)
 
-    creator = models.ForeignKey(get_user_model(), null=True, blank=True, on_delete=models.SET_NULL)
+    creator = models.ForeignKey(get_user_model(), null=True, blank=True, on_delete=models.SET_NULL, verbose_name=_('creator'))
 
     def log_id(self):
         return 'game_version:%d' % self.pk
@@ -1566,8 +1584,12 @@ def reset_game_version_metadata(sender, instance, *args, **kwargs): # pylint: di
 
 @python_2_unicode_compatible
 class Player(models.Model):
-    identifier = models.CharField(max_length=4096, unique=True)
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, blank=True, related_name='hive_player', on_delete=models.SET_NULL)
+    class Meta: # pylint: disable=too-few-public-methods
+        verbose_name = _('player')
+        verbose_name_plural = _('players')
+
+    identifier = models.CharField(max_length=4096, unique=True, verbose_name=_('identifier'))
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, blank=True, related_name='hive_player', on_delete=models.SET_NULL, verbose_name=_('user'))
 
     player_state = JSONField(default=dict, blank=True)
 
@@ -1650,11 +1672,15 @@ class Player(models.Model):
         return None
 
 class Session(models.Model): # pylint: disable=too-many-public-methods
-    player = models.ForeignKey(Player, related_name='sessions', on_delete=models.CASCADE)
-    game_version = models.ForeignKey(GameVersion, related_name='sessions', on_delete=models.CASCADE)
+    class Meta: # pylint: disable=too-few-public-methods
+        verbose_name = _('session')
+        verbose_name_plural = _('sessions')
 
-    started = models.DateTimeField()
-    completed = models.DateTimeField(null=True, blank=True)
+    player = models.ForeignKey(Player, related_name='sessions', on_delete=models.CASCADE, verbose_name=_('player'))
+    game_version = models.ForeignKey(GameVersion, related_name='sessions', on_delete=models.CASCADE, verbose_name=_('game version'))
+
+    started = models.DateTimeField(verbose_name=_('started'))
+    completed = models.DateTimeField(null=True, blank=True, verbose_name=_('completed'))
 
     session_state = JSONField(default=dict, blank=True)
 
@@ -1991,15 +2017,17 @@ class Session(models.Model): # pylint: disable=too-many-public-methods
 
 @python_2_unicode_compatible
 class SessionEvent(models.Model):
-    session = models.ForeignKey(Session, related_name='events', on_delete=models.CASCADE)
-    event_id = models.CharField(max_length=128)
-    event_type = models.CharField(max_length=128)
+    session = models.ForeignKey(Session, related_name='events', on_delete=models.CASCADE, verbose_name=_('session'))
+    event_id = models.CharField(max_length=128, verbose_name=_('event id'))
+    event_type = models.CharField(max_length=128, verbose_name=_('event type'))
     payload = JSONField(default=dict, blank=True)
     result = JSONField(default=dict, blank=True)
-    accepted = models.BooleanField(default=False)
-    created = models.DateTimeField(auto_now_add=True)
+    accepted = models.BooleanField(default=False, verbose_name=_('accepted'))
+    created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
 
     class Meta:
+        verbose_name = _('session event')
+        verbose_name_plural = _('session events')
         constraints = [
             models.UniqueConstraint(fields=['session', 'event_id'], name='builder_session_event_unique'),
         ]
@@ -2026,19 +2054,21 @@ class SessionMediaSubmission(models.Model):
     STATUS_VALID = 'valid'
     STATUS_CHOICES = ((STATUS_VALID, 'Valid'), ('rejected', 'Rejected'))
 
-    session = models.ForeignKey(Session, related_name='media_submissions', on_delete=models.CASCADE)
-    player = models.ForeignKey(Player, related_name='media_submissions', on_delete=models.CASCADE)
-    node_id = models.CharField(max_length=255)
-    event_id = models.CharField(max_length=128)
-    media_type = models.CharField(max_length=16, choices=TYPE_CHOICES)
-    file = models.FileField(storage=private_player_media_storage, upload_to='submissions/')
-    detected_mime = models.CharField(max_length=128)
-    size = models.PositiveBigIntegerField()
-    sha256 = models.CharField(max_length=64)
-    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_VALID)
-    created = models.DateTimeField(auto_now_add=True)
+    session = models.ForeignKey(Session, related_name='media_submissions', on_delete=models.CASCADE, verbose_name=_('session'))
+    player = models.ForeignKey(Player, related_name='media_submissions', on_delete=models.CASCADE, verbose_name=_('player'))
+    node_id = models.CharField(max_length=255, verbose_name=_('node id'))
+    event_id = models.CharField(max_length=128, verbose_name=_('event id'))
+    media_type = models.CharField(max_length=16, choices=TYPE_CHOICES, verbose_name=_('media type'))
+    file = models.FileField(storage=private_player_media_storage, upload_to='submissions/', verbose_name=_('file'))
+    detected_mime = models.CharField(max_length=128, verbose_name=_('detected mime'))
+    size = models.PositiveBigIntegerField(verbose_name=_('size'))
+    sha256 = models.CharField(max_length=64, verbose_name=_('sha256'))
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_VALID, verbose_name=_('status'))
+    created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
 
     class Meta:
+        verbose_name = _('session media submission')
+        verbose_name_plural = _('session media submissions')
         constraints = [models.UniqueConstraint(fields=['session', 'event_id'], name='builder_submission_session_event_unique')]
         ordering = ['created']
 
@@ -2052,71 +2082,89 @@ class SessionMediaSubmission(models.Model):
 
 
 class Hint(models.Model):
-    game_version = models.ForeignKey(GameVersion, related_name='hints', on_delete=models.CASCADE)
-    stage_id = models.CharField(max_length=255)
-    title = models.CharField(max_length=255)
-    content = models.TextField()
-    unlock_after_seconds = models.PositiveIntegerField(default=0)
-    unlock_after_attempts = models.PositiveIntegerField(default=0)
-    score_cost = models.IntegerField(default=0)
-    position = models.PositiveIntegerField(default=0)
-    enabled = models.BooleanField(default=True)
+    game_version = models.ForeignKey(GameVersion, related_name='hints', on_delete=models.CASCADE, verbose_name=_('game version'))
+    stage_id = models.CharField(max_length=255, verbose_name=_('stage id'))
+    title = models.CharField(max_length=255, verbose_name=_('title'))
+    content = models.TextField(verbose_name=_('content'))
+    unlock_after_seconds = models.PositiveIntegerField(default=0, verbose_name=_('unlock after seconds'))
+    unlock_after_attempts = models.PositiveIntegerField(default=0, verbose_name=_('unlock after attempts'))
+    score_cost = models.IntegerField(default=0, verbose_name=_('score cost'))
+    position = models.PositiveIntegerField(default=0, verbose_name=_('position'))
+    enabled = models.BooleanField(default=True, verbose_name=_('enabled'))
 
     class Meta:
+        verbose_name = _('hint')
+        verbose_name_plural = _('hints')
         ordering = ['stage_id', 'position']
 
 
 class ScoreLedger(models.Model):
-    session = models.ForeignKey(Session, related_name='score_entries', on_delete=models.CASCADE)
-    event = models.ForeignKey(SessionEvent, null=True, blank=True, related_name='score_entries', on_delete=models.SET_NULL)
-    reason = models.CharField(max_length=255)
-    amount = models.IntegerField()
-    created = models.DateTimeField(auto_now_add=True)
+    session = models.ForeignKey(Session, related_name='score_entries', on_delete=models.CASCADE, verbose_name=_('session'))
+    event = models.ForeignKey(SessionEvent, null=True, blank=True, related_name='score_entries', on_delete=models.SET_NULL, verbose_name=_('event'))
+    reason = models.CharField(max_length=255, verbose_name=_('reason'))
+    amount = models.IntegerField(verbose_name=_('amount'))
+    created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
 
     class Meta:
+        verbose_name = _('score ledger')
+        verbose_name_plural = _('score ledgers')
         ordering = ['created']
 
 
 class Team(models.Model):
-    game = models.ForeignKey(Game, related_name='teams', on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
-    invite_code = models.CharField(max_length=64, unique=True)
-    leader = models.ForeignKey(Player, related_name='led_teams', on_delete=models.PROTECT)
-    created = models.DateTimeField(auto_now_add=True)
-    active = models.BooleanField(default=True)
+    class Meta: # pylint: disable=too-few-public-methods
+        verbose_name = _('team')
+        verbose_name_plural = _('teams')
+
+    game = models.ForeignKey(Game, related_name='teams', on_delete=models.CASCADE, verbose_name=_('game'))
+    name = models.CharField(max_length=255, verbose_name=_('name'))
+    invite_code = models.CharField(max_length=64, unique=True, verbose_name=_('invite code'))
+    leader = models.ForeignKey(Player, related_name='led_teams', on_delete=models.PROTECT, verbose_name=_('leader'))
+    created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
+    active = models.BooleanField(default=True, verbose_name=_('active'))
 
 
 class TeamMembership(models.Model):
-    team = models.ForeignKey(Team, related_name='memberships', on_delete=models.CASCADE)
-    player = models.ForeignKey(Player, related_name='team_memberships', on_delete=models.CASCADE)
-    joined = models.DateTimeField(auto_now_add=True)
-    accepted = models.BooleanField(default=False)
+    team = models.ForeignKey(Team, related_name='memberships', on_delete=models.CASCADE, verbose_name=_('team'))
+    player = models.ForeignKey(Player, related_name='team_memberships', on_delete=models.CASCADE, verbose_name=_('player'))
+    joined = models.DateTimeField(auto_now_add=True, verbose_name=_('joined'))
+    accepted = models.BooleanField(default=False, verbose_name=_('accepted'))
 
     class Meta:
+        verbose_name = _('team membership')
+        verbose_name_plural = _('team memberships')
         constraints = [models.UniqueConstraint(fields=['team', 'player'], name='builder_team_player_unique')]
 
 
 class TeamSession(models.Model):
-    team = models.ForeignKey(Team, related_name='sessions', on_delete=models.CASCADE)
-    session = models.OneToOneField(Session, related_name='team_session', on_delete=models.CASCADE)
-    created = models.DateTimeField(auto_now_add=True)
+    class Meta: # pylint: disable=too-few-public-methods
+        verbose_name = _('team session')
+        verbose_name_plural = _('team sessions')
+
+    team = models.ForeignKey(Team, related_name='sessions', on_delete=models.CASCADE, verbose_name=_('team'))
+    session = models.OneToOneField(Session, related_name='team_session', on_delete=models.CASCADE, verbose_name=_('session'))
+    created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
 
 
 class DataProcessor(models.Model):
-    name = models.CharField(max_length=4096, unique=True)
-    identifier = models.SlugField(max_length=4096, unique=True)
+    class Meta: # pylint: disable=too-few-public-methods
+        verbose_name = _('data processor')
+        verbose_name_plural = _('data processors')
 
-    description = models.TextField(max_length=16384, null=True, blank=True)
+    name = models.CharField(max_length=4096, unique=True, verbose_name=_('name'))
+    identifier = models.SlugField(max_length=4096, unique=True, verbose_name=_('identifier'))
 
-    enabled = models.BooleanField(default=True)
+    description = models.TextField(max_length=16384, null=True, blank=True, verbose_name=_('description'))
 
-    processor_function = models.TextField(max_length=1048576, default='return None, [], None')
-    log_summary_function = models.TextField(max_length=1048576, default='None', help_text='Generates summary of data processor API calls, in a human-readable format.')
+    enabled = models.BooleanField(default=True, verbose_name=_('enabled'))
 
-    metadata = models.TextField(max_length=1048576, null=True, blank=True)
-    repository_definition = models.TextField(max_length=1048576, null=True, blank=True)
+    processor_function = models.TextField(max_length=1048576, default='return None, [], None', verbose_name=_('processor function'))
+    log_summary_function = models.TextField(max_length=1048576, default='None', help_text='Generates summary of data processor API calls, in a human-readable format.', verbose_name=_('log summary function'))
 
-    version = models.FloatField(default=0.0)
+    metadata = models.TextField(max_length=1048576, null=True, blank=True, verbose_name=_('metadata'))
+    repository_definition = models.TextField(max_length=1048576, null=True, blank=True, verbose_name=_('repository definition'))
+
+    version = models.FloatField(default=0.0, verbose_name=_('version'))
 
     def __str__(self):
         return self.name + ' (' + self.identifier + ')'
@@ -2217,21 +2265,25 @@ class DataProcessor(models.Model):
             six.print_('No repository definition for ' + self.name + ' ("' + self.identifier + '"). [1]')
 
 class DataProcessorLog(models.Model):
-    data_processor = models.ForeignKey(DataProcessor, related_name='log_items', null=True, blank=True, on_delete=models.SET_NULL)
-    url = models.CharField(max_length=4096)
-    method = models.CharField(max_length=4096, default='GET')
-    requested = models.DateTimeField()
+    class Meta: # pylint: disable=too-few-public-methods
+        verbose_name = _('data processor log')
+        verbose_name_plural = _('data processor logs')
 
-    request_payload = models.TextField(max_length=(1024 *1024 * 4))
+    data_processor = models.ForeignKey(DataProcessor, related_name='log_items', null=True, blank=True, on_delete=models.SET_NULL, verbose_name=_('data processor'))
+    url = models.CharField(max_length=4096, verbose_name=_('url'))
+    method = models.CharField(max_length=4096, default='GET', verbose_name=_('method'))
+    requested = models.DateTimeField(verbose_name=_('requested'))
 
-    response_status = models.IntegerField()
-    response_payload = models.TextField(max_length=(1024 *1024 * 4))
+    request_payload = models.TextField(max_length=(1024 *1024 * 4), verbose_name=_('request payload'))
 
-    context = models.TextField(max_length=(1024 *1024 * 4), null=True, blank=True)
+    response_status = models.IntegerField(verbose_name=_('response status'))
+    response_payload = models.TextField(max_length=(1024 *1024 * 4), verbose_name=_('response payload'))
 
-    session = models.ForeignKey(Session, related_name='processor_logs', null=True, blank=True, on_delete=models.SET_NULL)
-    game = models.ForeignKey(Game, related_name='processor_logs', null=True, blank=True, on_delete=models.SET_NULL)
-    player = models.ForeignKey(Player, related_name='processor_logs', null=True, blank=True, on_delete=models.SET_NULL)
+    context = models.TextField(max_length=(1024 *1024 * 4), null=True, blank=True, verbose_name=_('context'))
+
+    session = models.ForeignKey(Session, related_name='processor_logs', null=True, blank=True, on_delete=models.SET_NULL, verbose_name=_('session'))
+    game = models.ForeignKey(Game, related_name='processor_logs', null=True, blank=True, on_delete=models.SET_NULL, verbose_name=_('game'))
+    player = models.ForeignKey(Player, related_name='processor_logs', null=True, blank=True, on_delete=models.SET_NULL, verbose_name=_('player'))
 
     def update_session_id(self, session_id):
         pass
@@ -2271,36 +2323,45 @@ class DataProcessorLog(models.Model):
 
 class SiteSettings(models.Model):
     class Meta: # pylint: disable=old-style-class, no-init, too-few-public-methods
-        verbose_name_plural = 'Site settings'
+        verbose_name = _('site settings')
+        verbose_name_plural = _('Site settings')
 
-    name = models.CharField(max_length=1024)
-    message_of_the_day = models.TextField(max_length=(1024 * 1024), default='Welcome to Hive Mechanic. You may customize this message in the site settings.')
-    banner = models.ImageField(upload_to='site_banners', null=True, blank=True)
-    created = models.DateTimeField()
-    last_updated = models.DateTimeField()
+    name = models.CharField(max_length=1024, verbose_name=_('name'))
+    message_of_the_day = models.TextField(max_length=(1024 * 1024), default='Welcome to Hive Mechanic. You may customize this message in the site settings.', verbose_name=_('message of the day'))
+    banner = models.ImageField(upload_to='site_banners', null=True, blank=True, verbose_name=_('banner'))
+    created = models.DateTimeField(verbose_name=_('created'))
+    last_updated = models.DateTimeField(verbose_name=_('last updated'))
 
-    new_player_message = models.TextField(max_length=(1024 * 1024), default='Incoming message from Hive Mechanic. Reply STOP to block further messages.')
+    new_player_message = models.TextField(max_length=(1024 * 1024), default='Incoming message from Hive Mechanic. Reply STOP to block further messages.', verbose_name=_('new player message'))
 
-    total_message_limit = models.IntegerField(null=True, blank=True, help_text='Total of incoming and outgoing messages, plus voice calls')
-    count_messages_since = models.DateTimeField(null=True, blank=True)
+    total_message_limit = models.IntegerField(null=True, blank=True, help_text='Total of incoming and outgoing messages, plus voice calls', verbose_name=_('total message limit'))
+    count_messages_since = models.DateTimeField(null=True, blank=True, verbose_name=_('count messages since'))
 
-    maximum_session_duration = models.DurationField(default=datetime.timedelta(days=14))
+    maximum_session_duration = models.DurationField(default=datetime.timedelta(days=14), verbose_name=_('maximum session duration'))
 
 class CachedFile(File):
-    original_url = models.CharField(max_length=4096, null=True, blank=True)
+    class Meta: # pylint: disable=too-few-public-methods
+        verbose_name = _('cached file')
+        verbose_name_plural = _('cached files')
+
+    original_url = models.CharField(max_length=4096, null=True, blank=True, verbose_name=_('original url'))
 
 @python_2_unicode_compatible
 class StateVariable(models.Model):
-    player = models.ForeignKey(Player, related_name='state_variables', null=True, blank=True, on_delete=models.CASCADE)
-    activity = models.ForeignKey(Game, related_name='state_variables', null=True, blank=True, on_delete=models.CASCADE)
-    session = models.ForeignKey(Session, related_name='state_variables', null=True, blank=True, on_delete=models.CASCADE)
+    class Meta: # pylint: disable=too-few-public-methods
+        verbose_name = _('state variable')
+        verbose_name_plural = _('state variables')
 
-    key = models.CharField(max_length=1024)
+    player = models.ForeignKey(Player, related_name='state_variables', null=True, blank=True, on_delete=models.CASCADE, verbose_name=_('player'))
+    activity = models.ForeignKey(Game, related_name='state_variables', null=True, blank=True, on_delete=models.CASCADE, verbose_name=_('activity'))
+    session = models.ForeignKey(Session, related_name='state_variables', null=True, blank=True, on_delete=models.CASCADE, verbose_name=_('session'))
+
+    key = models.CharField(max_length=1024, verbose_name=_('key'))
     value = JSONField(null=True, blank=True)
 
-    active = models.BooleanField(default=True)
+    active = models.BooleanField(default=True, verbose_name=_('active'))
 
-    added = models.DateTimeField()
+    added = models.DateTimeField(verbose_name=_('added'))
     metadata = JSONField(default=dict, null=True, blank=True)
 
     def __str__(self):

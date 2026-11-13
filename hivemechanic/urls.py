@@ -4,12 +4,15 @@ from django.contrib import admin
 from django.views.generic.base import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.i18n import JavaScriptCatalog
 
 if sys.version_info[0] > 2:
     from django.urls import re_path, include
 
     urlpatterns = [
         re_path(r'^accounts/', include('django.contrib.auth.urls')),
+        re_path(r'^i18n/', include('django.conf.urls.i18n')),
+        re_path(r'^jsi18n/$', JavaScriptCatalog.as_view(), name='javascript-catalog'),
         re_path(r'^admin/', admin.site.urls),
         re_path(r'^builder/', include('builder.urls')),
         re_path(r'^play/', include('player_web.urls')),

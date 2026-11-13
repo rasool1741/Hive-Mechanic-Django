@@ -179,19 +179,19 @@ requirejs(['material', 'cookie', 'jquery'], function (mdc, Cookies) {
       const selected = fetchSelected()
 
       if (selected.length === 0) {
-        $('#selection_label').text('Please select items to moderate.')
+        $('#selection_label').text(gettext('Please select items to moderate.'))
 
         $('#button_approve').prop('disabled', true)
         $('#button_reject').prop('disabled', true)
         $('#button_reset').prop('disabled', true)
       } else if (selected.length === 1) {
-        $('#selection_label').text('1 item selected.')
+        $('#selection_label').text(gettext('1 item selected.'))
 
         $('#button_approve').prop('disabled', false)
         $('#button_reject').prop('disabled', false)
         $('#button_reset').prop('disabled', false)
       } else {
-        $('#selection_label').text(`${selected.length} items selected.`)
+        $('#selection_label').text(interpolate(gettext('%(count)s items selected.'), { count: selected.length }, true))
 
         $('#button_approve').prop('disabled', false)
         $('#button_reject').prop('disabled', false)

@@ -82,9 +82,9 @@ requirejs(['material', 'cookie', 'jquery'], function (mdc, Cookies) {
 
       $.post('/builder/clear-variables.json', payload, function (response) {
         if (response.success) {
-          $('#dialog-title').html('Success')
+          $('#dialog-title').html(gettext('Success'))
         } else {
-          $('#dialog-title').html('Failure')
+          $('#dialog-title').html(gettext('Failure'))
         }
 
         $('#dialog-content').html(response.message)

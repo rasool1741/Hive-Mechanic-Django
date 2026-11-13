@@ -101,9 +101,9 @@ requirejs(['material', 'cookie', 'jquery'], function (mdc, Cookies) {
     const copyText = $(this).attr('data-url')
 
     navigator.clipboard.writeText(copyText).then(function () {
-      alert('URL copied to clipboard.')
+      alert(gettext('URL copied to clipboard.'))
     }).catch(function () {
-      alert('Error copying URL to clipboard.')
+      alert(gettext('Error copying URL to clipboard.'))
     })
   })
 

@@ -47,7 +47,7 @@ define(modules, function (mdc, Node) {
 
     selectInitialNode (nodeId) {
       if (typeof nodeId === 'undefined') {
-        throw new Error('Undefined Node Id')
+        throw new Error(gettext('Undefined Node Id'))
       }
 
       $('#sequence_breadcrumbs').html(this.name())
@@ -322,7 +322,7 @@ define(modules, function (mdc, Node) {
           sequenceIssues = sequenceIssues.concat(nodeIssues)
           seenIds.push(id)
         } else {
-          sequenceIssues.push(['Duplicate ID "' + id + '" in "' + this.definition.name + '".', 'sequence', this.definition.id])
+          sequenceIssues.push([interpolate(gettext('Duplicate ID "%(id)s" in "%(sequence)s".'), { id: id, sequence: this.definition.name }, true), 'sequence', this.definition.id])
         }
       }
 
@@ -344,12 +344,12 @@ define(modules, function (mdc, Node) {
         body += '      <option value="' + action.id + '">' + action.name + '</option>'
       }
 
-      body += '      <option value="add_card">Add&#8230;</option>'
+      body += '      <option value="add_card">' + gettext('Add…') + '</option>'
       body += '    </select>'
       body += '  <div class="mdc-notched-outline">'
       body += '    <div class="mdc-notched-outline__leading"></div>'
       body += '    <div class="mdc-notched-outline__notch">'
-      body += '      <label class="mdc-floating-label">Destination</label>'
+      body += '      <label class="mdc-floating-label">' + gettext('Destination') + '</label>'
       body += '    </div>'
       body += '    <div class="mdc-notched-outline__trailing"></div>'
       body += '  </div>'
@@ -373,7 +373,7 @@ define(modules, function (mdc, Node) {
         $(selectId).append('<option value="' + action.id + '">' + action.name + '</option>')
       }
 
-      $(selectId).append('<option value="add_card">Add&#8230;</option>')
+      $(selectId).append('<option value="add_card">' + gettext('Add…') + '</option>')
     }
 
     chooseDestinationMenu (cardId) {
@@ -404,7 +404,7 @@ define(modules, function (mdc, Node) {
 
       body += '      <li class="mdc-list-item mdc-list-item--with-one-line" role="menuitem" id="' + cardId + '_destination_item_add_card">'
       body += '        <span class="mdc-list-item__ripple"></span>'
-      body += '        <span class="mdc-list-item__text mdc-list-item__start">Add&#8230;</span>'
+      body += '        <span class="mdc-list-item__text mdc-list-item__start">' + gettext('Add…') + '</span>'
       body += '        <span class="mdc-layout-grid--align-right mdc-list-item__end material-icons">add</span>'
       body += '      </li>'
 
@@ -443,7 +443,7 @@ define(modules, function (mdc, Node) {
 
       let addCardBody = '      <li class="mdc-list-item mdc-list-item--with-one-line" role="menuitem" id="choose_destination_item_add_card">'
       addCardBody += '        <span class="mdc-list-item__ripple"></span>'
-      addCardBody += '        <span class="mdc-list-item__text mdc-list-item__start">Add&#8230;</span>'
+      addCardBody += '        <span class="mdc-list-item__text mdc-list-item__start">' + gettext('Add…') + '</span>'
       addCardBody += '        <span class="mdc-layout-grid--align-right mdc-list-item__end material-icons">add</span>'
       addCardBody += '      </li>'
 
@@ -624,7 +624,7 @@ define(modules, function (mdc, Node) {
             if (cardName.trim() === '') {
               const selectedCard = $("input[name='add-card-options']:checked").parent().parent().find('label').text()
 
-              cardName = 'New ' + selectedCard + ' Card'
+              cardName = interpolate(gettext('New %(card)s Card'), { card: selectedCard }, true)
             }
 
             const cardClass = window.dialogBuilder.cardMapping[cardType]
@@ -648,12 +648,13 @@ define(modules, function (mdc, Node) {
       $('input[type=radio][name=add-card-options]').change(function () {
         let cardName = nameField.value
 
-        if (cardName.trim() === '' || (cardName.startsWith('New ') && cardName.endsWith(' Card'))) {
+        if (cardName.trim() === '' || cardName === $(nameField).data('autoName')) {
           const selectedCard = $(this).parent().parent().find('label').text()
 
-          cardName = 'New ' + selectedCard + ' Card'
+          cardName = interpolate(gettext('New %(card)s Card'), { card: selectedCard }, true)
 
           nameField.value = cardName
+          $(nameField).data('autoName', cardName)
         }
       })
 

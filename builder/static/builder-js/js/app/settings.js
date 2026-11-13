@@ -87,7 +87,7 @@ requirejs(['material', 'cookie', 'jquery'], function (mdc, Cookies) {
       enctype: 'multipart/form-data',
       success: function (response) {
         $('#banner_image').attr('src', response.url)
-        alert('Settings updated.')
+        alert(gettext('Settings updated.'))
       }
     })
 

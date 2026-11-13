@@ -1,6 +1,7 @@
+{% load i18n %}
 {% load static %}
 <!doctype html>
-<html lang="en">
+{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
     <head>
         <meta charset="utf-8">
 		<link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
@@ -17,7 +18,7 @@
 
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
-        <title>{% block 'page_title' %}Hive Mechanic{% endblock %}</title>
+        <title>{% block 'page_title' %}{% trans "Hive Mechanic" %}{% endblock %}</title>
 
         <style>
             body {
@@ -58,18 +59,21 @@
 
             {% block 'additional_css' %}{% endblock %}
         </style>
+    {% include "builder_i18n_head.html" %}
     </head>
     <body class="mdc-typography">
         <header class="mdc-top-app-bar app-bar mdc-top-app-bar--fixed" id="app-bar">
             <div class="mdc-top-app-bar__row">
                 <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
                     <a href="#" class="demo-menu material-icons mdc-top-app-bar__navigation-icon">menu</a>
-                    <span class="mdc-top-app-bar__title">Hive Mechanic</span>
+                    <span class="mdc-top-app-bar__title">{% trans "Hive Mechanic" %}</span>
                 </section>
                 <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
 					{% block 'page_help' %}
-						<a href="#" class="material-icons mdc-top-app-bar__action-item" aria-label="Help" id="action_help">help</a>
+						<a href="#" class="material-icons mdc-top-app-bar__action-item" aria-label="{% trans 'Help' %}" id="action_help">help</a>
 					{% endblock %}
+
+					{% include "builder_language_switch.html" %}
 
 					<form method="post" action="{% url 'logout' %}">
 						{% csrf_token %}
@@ -88,49 +92,49 @@
 						<i class="mdc-list-item__start material-icons" aria-hidden="true">
 							dashboard
 						</i>
-	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">Dashboard</span>
+	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">{% trans "Dashboard" %}</span>
 					</li>
 					<li class="mdc-list-item mdc-list-item--with-one-line" data-href="{% url 'builder_activities' %}">
    						<span class="mdc-list-item__ripple"></span>
 						<i class="mdc-list-item__start material-icons" aria-hidden="true">
 							emoji_people
 						</i>
-	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">Activities</span>
+	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">{% trans "Activities" %}</span>
 					</li>
                     <li class="mdc-list-item mdc-list-item--with-one-line" data-href="{% url 'builder_media' %}">
    						<span class="mdc-list-item__ripple"></span>
 						<i class="mdc-list-item__start material-icons" aria-hidden="true">
 							upload_file
 						</i>
-	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">Media</span>
+	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">{% trans "Media" %}</span>
 					</li>
                     <li class="mdc-list-item mdc-list-item--with-one-line" data-href="{% url 'builder_integrations' %}">
    						<span class="mdc-list-item__ripple"></span>
 						<i class="mdc-list-item__start material-icons" aria-hidden="true">
 							alt_route
 						</i>
-	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">Integrations</span>
+	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">{% trans "Integrations" %}</span>
 					</li>
 					<li class="mdc-list-item mdc-list-item--with-one-line" data-href="{% url 'builder_players' %}">
    						<span class="mdc-list-item__ripple"></span>
 						<i class="mdc-list-item__start material-icons" aria-hidden="true">
 							people
 						</i>
-	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">Participants</span>
+	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">{% trans "Participants" %}</span>
 					</li>
 					<li class="mdc-list-item mdc-list-item--with-one-line" data-href="{% url 'builder_sessions' %}">
    						<span class="mdc-list-item__ripple"></span>
 						<i class="mdc-list-item__start material-icons" aria-hidden="true">
 							phonelink_ring
 						</i>
-	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">Sessions</span>
+	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">{% trans "Sessions" %}</span>
 					</li>
 					<li class="mdc-list-item mdc-list-item--with-one-line" data-href="{% url 'builder_activity_logger' %}?tag=messaging">
    						<span class="mdc-list-item__ripple"></span>
 						<i class="mdc-list-item__start material-icons" aria-hidden="true">
 							format_list_bulleted
 						</i>
-	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">Activity Log</span>
+	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">{% trans "Activity Log" %}</span>
 					</li>
 					{% if perms.builder.builder_moderate or perms.builder.builder_moderate_activity %}
 						<li class="mdc-list-item mdc-list-item--with-one-line" data-href="{% url 'builder_moderate' %}">
@@ -138,7 +142,7 @@
 							<i class="mdc-list-item__start material-icons" aria-hidden="true">
 								assignment_turned_in
 							</i>
-							<span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">Moderate</span>
+							<span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">{% trans "Moderate" %}</span>
 						</li>
 					{% endif %}
 					<li class="mdc-list-item mdc-list-item--with-one-line" data-href="{% url 'builder_authors' %}">
@@ -146,21 +150,21 @@
 						<i class="mdc-list-item__start material-icons" aria-hidden="true">
 							supervisor_account
 						</i>
-	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">Authors</span>
+	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">{% trans "Authors" %}</span>
 					</li>
 					<li class="mdc-list-item mdc-list-item--with-one-line" data-href="{% url 'user_account' %}">
    						<span class="mdc-list-item__ripple"></span>
 						<i class="mdc-list-item__start material-icons" aria-hidden="true">
 							account_box
 						</i>
-	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">My Account</span>
+	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">{% trans "My Account" %}</span>
 					</li>
 					<li class="mdc-list-item mdc-list-item--with-one-line" data-href="{% url 'builder_settings' %}">
    						<span class="mdc-list-item__ripple"></span>
 						<i class="mdc-list-item__start material-icons" aria-hidden="true">
 							settings
 						</i>
-	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">Site Settings</span>
+	                    <span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">{% trans "Site Settings" %}</span>
 					</li>
 				</ul>
             </div>
@@ -172,7 +176,7 @@
 					<div class="mdc-layout-grid">
 						<div class="mdc-layout-grid__inner">
 							<div class="mdc-layout-grid__cell" style="padding-bottom: 16px;">
-								<span class="mdc-typography--subtitle2">Content Goes Here</span>
+								<span class="mdc-typography--subtitle2">{% trans "Content Goes Here" %}</span>
 							</div>
 						</div>
 					</div>
@@ -183,13 +187,13 @@
 		<div class="mdc-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-content" id="base-dialog">
 			<div class="mdc-dialog__container">
 				<div class="mdc-dialog__surface">
-					<h2 class="mdc-dialog__title" id="dialog-title">TITLE HERE</h2>
+					<h2 class="mdc-dialog__title" id="dialog-title">{% trans "TITLE HERE" %}</h2>
 					<div class="mdc-dialog__content" id="dialog-content">
-						MESSAGE HERE
+						{% trans "MESSAGE HERE" %}
 					</div>
 					<footer class="mdc-dialog__actions">
 						<button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
-							<span class="mdc-button__label">Close</span>
+							<span class="mdc-button__label">{% trans "Close" %}</span>
 						</button>
 					</footer>
 				</div>

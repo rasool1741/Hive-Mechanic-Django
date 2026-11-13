@@ -1,0 +1,9 @@
+{% extends "admin/base_site.html" %}
+{% load static i18n %}
+{% block extrastyle %}{{ block.super }}{% get_current_language_bidi as LANGUAGE_BIDI %}{% if LANGUAGE_BIDI %}
+<link rel="stylesheet" href="{% static 'builder-js/css/vazirmatn.css' %}">
+<style>
+  .hm-language-switch { display: inline; }
+  html[dir="rtl"] body, html[dir="rtl"] input, html[dir="rtl"] select, html[dir="rtl"] textarea, html[dir="rtl"] button { font-family: 'Vazirmatn', Tahoma, sans-serif; }
+</style>{% endif %}{% endblock %}
+{% block userlinks %}{{ block.super }} / {% include "builder_language_switch.html" %}{% endblock %}

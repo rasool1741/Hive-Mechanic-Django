@@ -48,11 +48,11 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
 
       // For IE and Firefox prior to version 4
       if (e) {
-        e.returnValue = 'Activity has unsaved changes. Close?'
+        e.returnValue = gettext('Activity has unsaved changes. Close?')
       }
 
       // For Safari
-      return 'Activity has unsaved changes. Close?'
+      return gettext('Activity has unsaved changes. Close?')
     }
   }
 
@@ -320,7 +320,7 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
       window.dialogBuilder.definition.sequences.push({
         type: 'sequence',
         id: 'new-sequence',
-        name: 'New Sequence',
+        name: gettext('New Sequence'),
         items: []
       })
     }
@@ -342,7 +342,7 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
     items.push('<li class="mdc-list-item mdc-list-item--with-one-line add_sequence" href="#" style="margin-top: 0em;">')
     items.push('<span class="mdc-list-item__ripple"></span>')
     items.push('<span class="material-icons mdc-list-item__start" aria-hidden="true">add_box</span>')
-    items.push('<span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">Add Sequence</span>')
+    items.push('<span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">' + gettext('Add Sequence') + '</span>')
     items.push('</li>')
 
     items.push('<div role="separator" class="mdc-list-divider"></div>')
@@ -350,7 +350,7 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
     items.push('<li class="mdc-list-item mdc-list-item--with-one-line go_home" href="#" style="margin-top: 1em;">')
     items.push('<span class="mdc-list-item__ripple"></span>')
     items.push('<span class="material-icons mdc-list-item__start" aria-hidden="true">home</span>')
-    items.push('<span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">Return to Dashboard</span>')
+    items.push('<span class="mdc-list-item__text mdc-list-item__end" style="margin-left: 16px;">' + gettext('Return to Dashboard') + '</span>')
     items.push('</li>')
 
     $('#sequences_list').html(items.join(''))
@@ -702,7 +702,7 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
             dialogIsDirty = false
 
             if (data.redirect_url !== undefined) {
-              alert('The name of this activity has changed. Reloading activity...')
+              alert(gettext('The name of this activity has changed. Reloading activity...'))
 
               window.location = data.redirect_url
             }
@@ -767,7 +767,7 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
           const nodeClass = window.dialogBuilder.cardMapping[cardIdentifier]
 
           if (nodeClass === undefined) {
-            alert('Unable to load card type "' + cardIdentifier + '". Please verify that the site is setup correctly.')
+            alert(interpolate(gettext('Unable to load card type "%(card)s". Please verify that the site is setup correctly.'), { card: cardIdentifier }, true))
           } else {
             let name = nodeClass.cardName()
 
@@ -846,7 +846,7 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
       window.dialogBuilder.definition.sequences.push({
         type: 'sequence',
         id: 'new-sequence',
-        name: 'New Sequence',
+        name: gettext('New Sequence'),
         items: []
       })
     }
@@ -864,7 +864,7 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
         warningDialog.close()
 
         if (data.redirect_url !== undefined) {
-          alert('The location of this activity has changed. Updating location...')
+          alert(gettext('The location of this activity has changed. Updating location...'))
 
           window.location = data.redirect_url
         }
@@ -1009,7 +1009,7 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
       interruptBody += '      <span class="mdc-notched-outline">'
       interruptBody += '        <span class="mdc-notched-outline__leading"></span>'
       interruptBody += '        <span class="mdc-notched-outline__notch">'
-      interruptBody += '          <span id="outlined-select-label" class="mdc-floating-label">Incoming Response&#8230;</span>'
+      interruptBody += '          <span id="outlined-select-label" class="mdc-floating-label">' + gettext('Incoming Response…') + '</span>'
       interruptBody += '        </span>'
       interruptBody += '        <span class="mdc-notched-outline__trailing"></span>'
       interruptBody += '      </span>'
@@ -1040,32 +1040,32 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
 
       interruptBody += '      <li class="mdc-list-item mdc-list-item--with-one-line" role="menuitem" data-value="begins_with">'
       interruptBody += '        <span class="mdc-list-item__ripple"></span>'
-      interruptBody += '        <span class="mdc-list-item__text mdc-list-item__start">Begins with&#8230;</span>'
+      interruptBody += '        <span class="mdc-list-item__text mdc-list-item__start">' + gettext('Begins with…') + '</span>'
       interruptBody += '      </li>'
 
       interruptBody += '      <li class="mdc-list-item mdc-list-item--with-one-line" role="menuitem" data-value="ends_with">'
       interruptBody += '        <span class="mdc-list-item__ripple"></span>'
-      interruptBody += '        <span class="mdc-list-item__text mdc-list-item__start">Ends with&#8230;</span>'
+      interruptBody += '        <span class="mdc-list-item__text mdc-list-item__start">' + gettext('Ends with…') + '</span>'
       interruptBody += '      </li>'
 
       interruptBody += '      <li class="mdc-list-item mdc-list-item--with-one-line" role="menuitem" data-value="equals">'
       interruptBody += '        <span class="mdc-list-item__ripple"></span>'
-      interruptBody += '        <span class="mdc-list-item__text mdc-list-item__start">Equals&#8230;</span>'
+      interruptBody += '        <span class="mdc-list-item__text mdc-list-item__start">' + gettext('Equals…') + '</span>'
       interruptBody += '      </li>'
 
       interruptBody += '      <li class="mdc-list-item mdc-list-item--with-one-line" role="menuitem" data-value="not_equals">'
       interruptBody += '        <span class="mdc-list-item__ripple"></span>'
-      interruptBody += '        <span class="mdc-list-item__text mdc-list-item__start">Does not equal&#8230;</span>'
+      interruptBody += '        <span class="mdc-list-item__text mdc-list-item__start">' + gettext('Does not equal…') + '</span>'
       interruptBody += '      </li>'
 
       interruptBody += '      <li class="mdc-list-item mdc-list-item--with-one-line" role="menuitem" data-value="contains">'
       interruptBody += '        <span class="mdc-list-item__ripple"></span>'
-      interruptBody += '        <span class="mdc-list-item__text mdc-list-item__start">Contains&#8230;</span>'
+      interruptBody += '        <span class="mdc-list-item__text mdc-list-item__start">' + gettext('Contains…') + '</span>'
       interruptBody += '      </li>'
 
       interruptBody += '      <li class="mdc-list-item mdc-list-item--with-one-line" role="menuitem" data-value="not_contains">'
       interruptBody += '        <span class="mdc-list-item__ripple"></span>'
-      interruptBody += '        <span class="mdc-list-item__text mdc-list-item__start">Does not contain&#8230;</span>'
+      interruptBody += '        <span class="mdc-list-item__text mdc-list-item__start">' + gettext('Does not contain…') + '</span>'
       interruptBody += '      </li>'
 
       interruptBody += '      </ul>'
@@ -1079,7 +1079,7 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
       interruptBody += '    <div class="mdc-notched-outline">'
       interruptBody += '      <div class="mdc-notched-outline__leading"></div>'
       interruptBody += '      <div class="mdc-notched-outline__notch">'
-      interruptBody += '        <label for="activity_interrupt_pattern_' + i + '_response_value" class="mdc-floating-label">Value</label>'
+      interruptBody += '        <label for="activity_interrupt_pattern_' + i + '_response_value" class="mdc-floating-label">' + gettext('Value') + '</label>'
       interruptBody += '      </div>'
       interruptBody += '      <div class="mdc-notched-outline__trailing"></div>'
       interruptBody += '    </div>'
@@ -1175,7 +1175,7 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
       itemHtml += '       <span class="mdc-notched-outline">'
       itemHtml += '           <span class="mdc-notched-outline__leading"></span>'
       itemHtml += '           <span class="mdc-notched-outline__notch">'
-      itemHtml += '               <span id="outlined-select-label" class="mdc-floating-label">Scope</span>'
+      itemHtml += '               <span id="outlined-select-label" class="mdc-floating-label">' + gettext('Scope') + '</span>'
       itemHtml += '           </span>'
       itemHtml += '           <span class="mdc-notched-outline__trailing"></span>'
       itemHtml += '       </span>'
@@ -1193,15 +1193,15 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
       itemHtml += '     <ul class="mdc-list mdc-dialog__content" role="menu" aria-hidden="true" aria-orientation="vertical" tabindex="-1">'
       itemHtml += '      <li class="mdc-list-item mdc-list-item--with-one-line prevent-menu-close" role="menuitem" data-value="session">'
       itemHtml += '        <span class="mdc-list-item__ripple"></span>'
-      itemHtml += '        <span class="mdc-list-item__text mdc-list-item__start">Session</span>'
+      itemHtml += '        <span class="mdc-list-item__text mdc-list-item__start">' + gettext('Session') + '</span>'
       itemHtml += '      </li>'
       itemHtml += '      <li class="mdc-list-item mdc-list-item--with-one-line prevent-menu-close" role="menuitem" data-value="player">'
       itemHtml += '        <span class="mdc-list-item__ripple"></span>'
-      itemHtml += '        <span class="mdc-list-item__text mdc-list-item__start">Player</span>'
+      itemHtml += '        <span class="mdc-list-item__text mdc-list-item__start">' + gettext('Player') + '</span>'
       itemHtml += '      </li>'
       itemHtml += '      <li class="mdc-list-item mdc-list-item--with-one-line prevent-menu-close" role="menuitem" data-value="game">'
       itemHtml += '        <span class="mdc-list-item__ripple"></span>'
-      itemHtml += '        <span class="mdc-list-item__text mdc-list-item__start">Game</span>'
+      itemHtml += '        <span class="mdc-list-item__text mdc-list-item__start">' + gettext('Game') + '</span>'
       itemHtml += '      </li>'
       itemHtml += '     </ul>'
       itemHtml += '  </div>'
@@ -1213,7 +1213,7 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
       itemHtml += '    <div class="mdc-notched-outline">'
       itemHtml += '      <div class="mdc-notched-outline__leading"></div>'
       itemHtml += '      <div class="mdc-notched-outline__notch">'
-      itemHtml += '        <label for="activity_variable_' + i + '_name_value" class="mdc-floating-label">Name</label>'
+      itemHtml += '        <label for="activity_variable_' + i + '_name_value" class="mdc-floating-label">' + gettext('Name') + '</label>'
       itemHtml += '      </div>'
       itemHtml += '      <div class="mdc-notched-outline__trailing"></div>'
       itemHtml += '    </div>'
@@ -1226,7 +1226,7 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
       itemHtml += '    <div class="mdc-notched-outline">'
       itemHtml += '      <div class="mdc-notched-outline__leading"></div>'
       itemHtml += '      <div class="mdc-notched-outline__notch">'
-      itemHtml += '        <label for="activity_variable_' + i + '_value_value" class="mdc-floating-label">Value</label>'
+      itemHtml += '        <label for="activity_variable_' + i + '_value_value" class="mdc-floating-label">' + gettext('Value') + '</label>'
       itemHtml += '      </div>'
       itemHtml += '      <div class="mdc-notched-outline__trailing"></div>'
       itemHtml += '    </div>'
@@ -1313,7 +1313,7 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
     initialCardList += '      <li class="mdc-list-divider" role="separator"></li>'
     initialCardList += '      <li class="mdc-list-item mdc-list-item--with-one-line" role="menuitem" id="builder-activity-setting-initial-card-list-destination-item-no-card-destination" data-node-id="no-card-destination" data-value="no-card-destination">'
     initialCardList += '        <span class="mdc-list-item__ripple"></span>'
-    initialCardList += '        <span class="mdc-list-item__text mdc-list-item__start">(None Selected)</span>'
+    initialCardList += '        <span class="mdc-list-item__text mdc-list-item__start">' + gettext('(None Selected)') + '</span>'
     initialCardList += '        <span class="mdc-layout-grid--align-right mdc-list-item__end"></span>'
     initialCardList += '      </li>'
 
@@ -1547,7 +1547,7 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
       e.preventDefault()
 
       if (e) {
-        e.returnValue = 'You have unsaved changes. Are you sure you want to exit now?'
+        e.returnValue = gettext('You have unsaved changes. Are you sure you want to exit now?')
       }
 
       return e.returnValue
@@ -1561,7 +1561,7 @@ requirejs(['material', 'app/sequence', 'cookie', 'slugify', 'cards/node', 'jquer
   $('#action_list_variables').click(function (eventObj) {
     eventObj.preventDefault()
 
-    $('#builder-game-variables-dialog-content').html('<div class="mdc-typography--body1 mdc-layout-grid__cell mdc-layout-grid__cell--span-12 mdc-layout-grid__cell--align-top"><em>Fetching variables&#8230;</em></div>')
+    $('#builder-game-variables-dialog-content').html('<div class="mdc-typography--body1 mdc-layout-grid__cell mdc-layout-grid__cell--span-12 mdc-layout-grid__cell--align-top"><em>' + gettext('Fetching variables…') + '</em></div>')
 
     window.dialogBuilder.gameVariablesDialog.open()
 

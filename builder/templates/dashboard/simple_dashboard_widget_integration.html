@@ -1,9 +1,10 @@
+{% load i18n %}
 {% load humanize %}
 {% load simple_dashboard %}
 {% with signal.latest_value as latest_value %}
 	{% if latest_value %}
 		{% with latest_value.fetch_value as value %}
-			<div class="mdc-typography mdc-typography--subtitle1">Activity: {{ value.activity }}</div>
+			<div class="mdc-typography mdc-typography--subtitle1">{% blocktrans trimmed with activity=value.activity %}Activity: {{ activity }}{% endblocktrans %}</div>
 
 			{% for detail in value.details %}
 				<div class="mdc-typography mdc-typography--body1">
@@ -15,10 +16,10 @@
 					{% endif %}
 				</div>
 			{% endfor %}
-			<div class="mdc-typography mdc-typography--body1">Integration: {{ value.type }}</div>
+			<div class="mdc-typography mdc-typography--body1">{% blocktrans trimmed with type=value.type %}Integration: {{ type }}{% endblocktrans %}</div>
 		{% endwith %}
 		<div class="mdc-typography mdc-typography--caption" style="margin-top: 8px;">
-			Last updated: <strong>{{ latest_value.recorded }}</strong>
+			{% trans "Last updated:" %} <strong>{{ latest_value.recorded }}</strong>
 		</div>
 	{% endif %}
 {% endwith %}

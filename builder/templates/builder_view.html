@@ -1,6 +1,7 @@
+{% load i18n %}
 {% load static %}
 <!doctype html>
-<html lang="en">
+{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
     <body style="padding: 0px; margin: 0px; background-color: rgba(0, 0, 0, 0);">
 		<div id="cytoscape_canvas" style="padding: 0px; margin: 0px; background-color: rgba(0, 0, 0, 0);">
     </body>
@@ -13,5 +14,6 @@
         };
     </script>
 
+    <script src="{% url 'javascript-catalog' %}"></script>
     <script data-main="{% static 'builder-js/js/app/view.js' %}" src="{% static 'builder-js/vendor/require.js' %}"></script>
 </html>

@@ -1,11 +1,12 @@
 {% extends 'builder_base.html' %}
+{% load i18n %}
 {% load static %}
 {% load builder_tags %}
 
-{% block 'page_title' %}Sessions | Hive Mechanic{% endblock %}
+{% block 'page_title' %}{% trans "Sessions | Hive Mechanic" %}{% endblock %}
 
 {% block 'page_help' %}
-	<a href="#" class="material-icons mdc-top-app-bar__action-item" aria-label="Help" id="action_help">help</a>
+	<a href="#" class="material-icons mdc-top-app-bar__action-item" aria-label="{% trans 'Help' %}" id="action_help">help</a>
 {% endblock %}
 
 {% block 'main_content' %}
@@ -15,17 +16,17 @@
 				<div class="mdc-card">
 					<div class="mdc-layout-grid__inner">
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
-							<h1 class="mdc-typography--headline5" style="margin: 16px 16px 0px 16px;">Participant Sessions</h1>
+							<h1 class="mdc-typography--headline5" style="margin: 16px 16px 0px 16px;">{% trans "Participant Sessions" %}</h1>
 						</div>
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
 							<div class="mdc-data-table" style="border: none;">
-								<table class="mdc-data-table__table" aria-label="All Sessions" id="table_sessions" style="width: 100%;">
+								<table class="mdc-data-table__table" aria-label="{% trans 'All Sessions' %}" id="table_sessions" style="width: 100%;">
 									<thead>
 										<tr class="mdc-data-table__header-row">
-											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">Player</th>
-											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">Game</th>
-											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">Started</th>
-											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">Completed</th>
+											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">{% trans "Player" %}</th>
+											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">{% trans "Game" %}</th>
+											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">{% trans "Started" %}</th>
+											<th class="mdc-data-table__header-cell" role="columnheader" scope="col">{% trans "Completed" %}</th>
 											<th class="mdc-data-table__header-cell" role="columnheader" scope="col" style="width: 48px;"></th>
 										</tr>
 									</thead>
@@ -42,7 +43,7 @@
 													{% else %}
 														<a href="#" class="material-icons session-action" data-session-id="{{ session.pk }}" data-action="cancel" aria-hidden="true"  title="Cancel session">cancel</a>
 													{% endif %} -->
-													<a href="#" class="material-icons session-action" data-session-id="{{ session.pk }}" data-action="delete" aria-hidden="true" title="Delete session">delete_forever</a>
+													<a href="#" class="material-icons session-action" data-session-id="{{ session.pk }}" data-action="delete" aria-hidden="true" title="{% trans 'Delete session' %}">delete_forever</a>
 												</td>
 											</tr>
 										{% endfor %}

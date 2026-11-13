@@ -1,13 +1,14 @@
 {% extends 'builder_base.html' %}
+{% load i18n %}
 {% load static %}
 
-{% block 'page_title' %}Site Settings | Hive Mechanic{% endblock %}
+{% block 'page_title' %}{% trans "Site Settings | Hive Mechanic" %}{% endblock %}
 
 {% block 'page_help' %}
-	<a href="#" class="material-icons mdc-top-app-bar__action-item" aria-label="Help" id="action_help">help</a>
+	<a href="#" class="material-icons mdc-top-app-bar__action-item" aria-label="{% trans 'Help' %}" id="action_help">help</a>
 {% endblock %}
 
-{% block 'navigation_title' %}Hive Mechanic{% endblock %}
+{% block 'navigation_title' %}{% trans "Hive Mechanic" %}{% endblock %}
 
 {% block 'main_content' %}
 	<div class="mdc-layout-grid">
@@ -16,14 +17,14 @@
 				<div class="mdc-card" style="padding: 16px;">
 					<div class="mdc-layout-grid__inner">
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
-							<h1 class="mdc-typography--headline5">Site Settings</h1>
+							<h1 class="mdc-typography--headline5">{% trans "Site Settings" %}</h1>
 						</div>
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
 							<label class="mdc-text-field mdc-text-field--outlined" style="width: 100%;"  id="name_field">
 								<span class="mdc-notched-outline">
 									<span class="mdc-notched-outline__leading"></span>
 									<span class="mdc-notched-outline__notch">
-										<span class="mdc-floating-label" id="site_name_id">Site Name</span>
+										<span class="mdc-floating-label" id="site_name_id">{% trans "Site Name" %}</span>
 									</span>
 									<span class="mdc-notched-outline__trailing"></span>
 								</span>
@@ -34,18 +35,18 @@
 								<span class="mdc-notched-outline">
 									<span class="mdc-notched-outline__leading"></span>
 									<span class="mdc-notched-outline__notch">
-										<span class="mdc-floating-label" id="motd_id">Message of the Day</span>
+										<span class="mdc-floating-label" id="motd_id">{% trans "Message of the Day" %}</span>
 									</span>
 									<span class="mdc-notched-outline__trailing"></span>
 								</span>
-								<textarea class="mdc-text-field__input" rows="4" aria-labelledby="motd_id" aria-label="Message of the Day">{% if settings %}{{ settings.message_of_the_day }}{% endif %}</textarea>
+								<textarea class="mdc-text-field__input" rows="4" aria-labelledby="motd_id" aria-label="{% trans 'Message of the Day' %}">{% if settings %}{{ settings.message_of_the_day }}{% endif %}</textarea>
 							</label>
 						</div>
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
 							<a href="#" id="icon_activity_click">
 								<center><img id="banner_image" style="background-color: #808080; max-height: 120px; margin-left: auto; margin-right: auto; max-width: 100%;"" src="{% if settings.banner %}{{ settings.banner.url }}{% else %}https://via.placeholder.com/468x60?text=Upload+Image{% endif %}"></center>
 								<br>
-								<center class="mdc-typography--caption">Tap to update site banner</center>
+								<center class="mdc-typography--caption">{% trans "Tap to update site banner" %}</center>
 							</a>
 							<form enctype="multipart/form-data" style="display: none;" id="site_settings_form" method="post" action="{% url 'builder_settings' %}">
 								{% csrf_token %}
@@ -57,17 +58,17 @@
 								<span class="mdc-notched-outline">
 									<span class="mdc-notched-outline__leading"></span>
 									<span class="mdc-notched-outline__notch">
-										<span class="mdc-floating-label" id="new_player_msg_id">New Player Outgoing Introduction</span>
+										<span class="mdc-floating-label" id="new_player_msg_id">{% trans "New Player Outgoing Introduction" %}</span>
 									</span>
 									<span class="mdc-notched-outline__trailing"></span>
 								</span>
-								<textarea class="mdc-text-field__input" rows="4" aria-labelledby="motd_id" aria-label="New Player Outgoing Introduction">{% if settings %}{{ settings.new_player_message }}{% endif %}</textarea>
+								<textarea class="mdc-text-field__input" rows="4" aria-labelledby="motd_id" aria-label="{% trans 'New Player Outgoing Introduction' %}">{% if settings %}{{ settings.new_player_message }}{% endif %}</textarea>
 							</label>
 						</div>
 						<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
 							<button class="mdc-button mdc-button--raised" id="update_button">
 								<span class="mdc-button__ripple"></span>
-								<span class="mdc-button__label">Update Site Settings</span>
+								<span class="mdc-button__label">{% trans "Update Site Settings" %}</span>
 							</button>
 						</div>
 					</div>

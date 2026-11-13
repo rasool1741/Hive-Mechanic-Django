@@ -62,6 +62,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'builder.middleware.SiteLanguageMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -151,7 +152,23 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+# Persian (fa) is the default interface language; set DJANGO_LANGUAGE_CODE=en
+# to switch the default back to English. Users can also pick a language with
+# the switcher in the builder (stored in the django_language cookie).
+LANGUAGE_CODE = os.getenv('DJANGO_LANGUAGE_CODE', 'fa')
+
+LANGUAGES = [
+    ('fa', 'فارسی'),
+    ('en', 'English'),
+]
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+]
+
+# When True, the browser's Accept-Language header is ignored so everyone sees
+# LANGUAGE_CODE unless they picked another language themselves.
+LANGUAGE_IGNORE_ACCEPT_HEADER = True
 
 TIME_ZONE = 'America/New_York'
 

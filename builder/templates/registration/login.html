@@ -1,7 +1,8 @@
+{% load i18n %}
 {% load static %}
 {% load builder_tags %}
 <!doctype html>
-<html lang="en">
+{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
     <head>
         <meta charset="utf-8">
 		<link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
@@ -15,7 +16,7 @@
         <link rel="stylesheet" href="{% static 'builder-js/vendor/material-components-web-11.0.0.css' %}" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
-        <title>Login | Hive Mechanic</title>
+        <title>{% trans "Login | Hive Mechanic" %}</title>
 
         <style>
             body {
@@ -48,6 +49,7 @@
             	right: 16px;
             }
         </style>
+    {% include "builder_i18n_head.html" %}
     </head>
     <body class="mdc-typography" style="background-color: #BDBDBD;">
 		<div class="mdc-layout-grid" style="width: 100%;">
@@ -65,7 +67,7 @@
 											<span class="mdc-notched-outline">
 												<span class="mdc-notched-outline__leading"></span>
 												<span class="mdc-notched-outline__notch">
-													<span class="mdc-floating-label" id="my-label-id">Username</span>
+													<span class="mdc-floating-label" id="my-label-id">{% trans "Username" %}</span>
 												</span>
 												<span class="mdc-notched-outline__trailing"></span>
 											</span>
@@ -79,7 +81,7 @@
 											<span class="mdc-notched-outline">
 												<span class="mdc-notched-outline__leading"></span>
 												<span class="mdc-notched-outline__notch">
-													<span class="mdc-floating-label" id="my-password-id">Password</span>
+													<span class="mdc-floating-label" id="my-password-id">{% trans "Password" %}</span>
 												</span>
 												<span class="mdc-notched-outline__trailing"></span>
 											</span>
@@ -90,7 +92,7 @@
 								{% if form.errors %}
 									<div class="mdc-layout-grid__inner">
 										<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
-											<p>Your username and password didn't match. Please try again.</p>
+											<p>{% trans "Your username and password didn't match. Please try again." %}</p>
 										</div>
 									</div>
 								{% endif %}									
@@ -98,16 +100,16 @@
 									<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
 										<button class="mdc-button mdc-card__action mdc-card__action--button mdc-button--raised" type="submit">
 											<div class="mdc-button__ripple"></div>
-											<span class="mdc-button__label">Continue</span>
+											<span class="mdc-button__label">{% trans "Continue" %}</span>
 										</button>
 									</div>
 									<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
 										<a href="{% url 'user_request_access' %}" class="mdc-button mdc-card__action mdc-card__action--button" id="button_request_access" type="button" style="float: right;">
-											Request Access
+											{% trans "Request Access" %}
 										</a>
 									</div>
 									<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
-										<center><a href="{% url 'password_reset' %}" class="mdc-typography mdc-typography--caption">Forgot Password?</a></center>
+										<center><a href="{% url 'password_reset' %}" class="mdc-typography mdc-typography--caption">{% trans "Forgot Password?" %}</a></center>
 									</div>
 								</div>
 							</div>

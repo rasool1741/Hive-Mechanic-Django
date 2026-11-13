@@ -1,0 +1,2079 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-13 05:16-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: fa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: builder/admin.py:41
+msgid "Version"
+msgstr "نسخه"
+
+#: builder/admin.py:42
+msgid "Versions"
+msgstr "نسخه‌ها"
+
+#: builder/admin.py:79
+msgid "Export selected activities"
+msgstr "برون‌بری بازی‌های انتخاب‌شده"
+
+#: builder/admin.py:85
+msgid "1 activity archived."
+msgstr "۱ بازی بایگانی شد."
+
+#: builder/admin.py:87
+#, python-format
+msgid "%(count)s activities archived."
+msgstr "%(count)s بازی بایگانی شدند."
+
+#: builder/admin.py:89
+msgid "Archive activities"
+msgstr "بایگانی بازی‌ها"
+
+#: builder/admin.py:95
+msgid "1 activity restored."
+msgstr "۱ بازی بازیابی شد."
+
+#: builder/admin.py:97
+#, python-format
+msgid "%(count)s activities restored."
+msgstr "%(count)s بازی بازیابی شدند."
+
+#: builder/admin.py:99
+msgid "Restore activities"
+msgstr "بازیابی بازی‌ها"
+
+#: builder/admin.py:169 builder/admin.py:270
+msgid "Install updated versions"
+msgstr "نصب نسخه‌های به‌روزرسانی‌شده"
+
+#: builder/admin.py:183
+msgid "Refresh selected cards"
+msgstr "تازه‌سازی کارت‌های انتخاب‌شده"
+
+#: builder/admin.py:190
+msgid "Enable selected cards"
+msgstr "فعال‌سازی کارت‌های انتخاب‌شده"
+
+#: builder/admin.py:197
+msgid "Disable selected cards"
+msgstr "غیرفعال‌سازی کارت‌های انتخاب‌شده"
+
+#: builder/admin.py:210
+msgid "Export selected players"
+msgstr "برون‌بری بازیکنان انتخاب‌شده"
+
+#: builder/admin.py:256
+msgid "Export selected data processors"
+msgstr "برون‌بری پردازشگرهای داده انتخاب‌شده"
+
+#: builder/admin.py:277
+msgid "Enable selected data processors"
+msgstr "فعال‌سازی پردازشگرهای داده انتخاب‌شده"
+
+#: builder/admin.py:284
+msgid "Disable selected data processors"
+msgstr "غیرفعال‌سازی پردازشگرهای داده انتخاب‌شده"
+
+#: builder/apps.py:9
+msgid "Hive Mechanic Game Builder"
+msgstr "Hive Mechanic Game Builder"
+
+#: builder/models.py:327
+msgid "remote repository"
+msgstr "مخزن راه دور"
+
+#: builder/models.py:328
+msgid "Remote repositories"
+msgstr "مخزن‌های راه دور"
+
+#: builder/models.py:330 builder/models.py:349 builder/models.py:359
+#: builder/models.py:385 builder/models.py:578 builder/models.py:2120
+#: builder/models.py:2154 builder/models.py:2329
+msgid "name"
+msgstr "نام"
+
+#: builder/models.py:331 builder/models.py:2273
+msgid "url"
+msgstr "url"
+
+#: builder/models.py:333 builder/models.py:350
+msgid "priority"
+msgstr "اولویت"
+
+#: builder/models.py:335 builder/models.py:399 builder/models.py:2165
+msgid "repository definition"
+msgstr "تعریف مخزن"
+
+#: builder/models.py:337
+msgid "http auth headers"
+msgstr "هدرهای احراز هویت http"
+
+#: builder/models.py:339 builder/models.py:2333
+msgid "last updated"
+msgstr "آخرین به‌روزرسانی"
+
+#: builder/models.py:341 builder/models.py:391 builder/models.py:2093
+#: builder/models.py:2159
+msgid "enabled"
+msgstr "فعال"
+
+#: builder/models.py:346
+msgid "interaction card category"
+msgstr "دسته‌بندی کارت تعامل"
+
+#: builder/models.py:347
+msgid "interaction card categories"
+msgstr "دسته‌بندی‌های کارت تعامل"
+
+#: builder/models.py:358 builder/models.py:579
+msgid "slug"
+msgstr "نامک"
+
+#: builder/models.py:360
+msgid "country"
+msgstr "کشور"
+
+#: builder/models.py:361
+msgid "region"
+msgstr "منطقه"
+
+#: builder/models.py:362 builder/models.py:389 builder/models.py:582
+#: builder/models.py:2157
+msgid "description"
+msgstr "توضیحات"
+
+#: builder/models.py:363
+msgid "center latitude"
+msgstr "عرض جغرافیایی مرکز"
+
+#: builder/models.py:364
+msgid "center longitude"
+msgstr "طول جغرافیایی مرکز"
+
+#: builder/models.py:365
+msgid "timezone"
+msgstr "منطقه زمانی"
+
+#: builder/models.py:366
+msgid "language"
+msgstr "زبان"
+
+#: builder/models.py:367
+msgid "is active"
+msgstr "فعال است"
+
+#: builder/models.py:368 builder/models.py:1006 builder/models.py:2026
+#: builder/models.py:2067 builder/models.py:2106 builder/models.py:2123
+#: builder/models.py:2146 builder/models.py:2332
+msgid "created"
+msgstr "ایجادشده"
+
+#: builder/models.py:369
+msgid "updated"
+msgstr "به‌روزرسانی‌شده"
+
+#: builder/models.py:372 builder/models.py:580
+msgid "city"
+msgstr "شهر"
+
+#: builder/models.py:373
+msgid "cities"
+msgstr "شهرها"
+
+#: builder/models.py:382
+msgid "interaction card"
+msgstr "کارت تعامل"
+
+#: builder/models.py:383
+msgid "interaction cards"
+msgstr "کارت‌های تعامل"
+
+#: builder/models.py:386 builder/models.py:1591 builder/models.py:2155
+msgid "identifier"
+msgstr "شناسه"
+
+#: builder/models.py:387
+msgid "category"
+msgstr "دسته‌بندی"
+
+#: builder/models.py:393
+msgid "evaluate function"
+msgstr "تابع ارزیابی"
+
+#: builder/models.py:394
+msgid "entry actions"
+msgstr "اقدامات ورودی"
+
+#: builder/models.py:396
+msgid "client implementation"
+msgstr "پیاده‌سازی کلاینت"
+
+#: builder/models.py:398 builder/models.py:2164
+msgid "metadata"
+msgstr "فراماده"
+
+#: builder/models.py:401 builder/models.py:2167
+msgid "version"
+msgstr "نسخه"
+
+#: builder/models.py:574 builder/models.py:1005 builder/models.py:2119
+#: builder/models.py:2285
+msgid "game"
+msgstr "بازی"
+
+#: builder/models.py:575
+msgid "games"
+msgstr "بازی‌ها"
+
+#: builder/models.py:581 builder/models.py:1010 builder/models.py:2066
+msgid "status"
+msgstr "وضعیت"
+
+#: builder/models.py:583
+msgid "difficulty"
+msgstr "دشواری"
+
+#: builder/models.py:584
+msgid "estimated minutes"
+msgstr "دقیقه تخمینی"
+
+#: builder/models.py:585
+msgid "is team game"
+msgstr "بازی تیمی است"
+
+#: builder/models.py:587
+msgid "cards"
+msgstr "کارت‌ها"
+
+#: builder/models.py:591
+msgid "editors"
+msgstr "ویرایشگرها"
+
+#: builder/models.py:592
+msgid "viewers"
+msgstr "بینندگان"
+
+#: builder/models.py:594
+msgid "icon"
+msgstr "آیکون"
+
+#: builder/models.py:595
+msgid "is template"
+msgstr "است قالب"
+
+#: builder/models.py:598
+msgid "metadata updated"
+msgstr "متا‌دیتای به‌روز‌شده"
+
+#: builder/models.py:600
+msgid "archived"
+msgstr "بایگانی‌شده"
+
+#: builder/models.py:1002 builder/models.py:1680 builder/models.py:2085
+msgid "game version"
+msgstr "نسخهٔ بازی"
+
+#: builder/models.py:1003
+msgid "game versions"
+msgstr "نسخه‌های بازی"
+
+#: builder/models.py:1008
+msgid "definition"
+msgstr "تعریف"
+
+#: builder/models.py:1009
+msgid "cached cytoscape"
+msgstr "سایت‌اسکیپ کش‌شده"
+
+#: builder/models.py:1011
+msgid "definition checksum"
+msgstr "مجموع کنترل تعریف"
+
+#: builder/models.py:1012
+msgid "published"
+msgstr "منتشر‌شده"
+
+#: builder/models.py:1015
+msgid "creator"
+msgstr "سازنده"
+
+#: builder/models.py:1588 builder/models.py:1679 builder/models.py:2058
+#: builder/models.py:2129 builder/models.py:2286 builder/models.py:2355
+msgid "player"
+msgstr "بازیکن"
+
+#: builder/models.py:1589
+msgid "players"
+msgstr "بازیکنان"
+
+#: builder/models.py:1592
+msgid "user"
+msgstr "کاربر"
+
+#: builder/models.py:1676 builder/models.py:2020 builder/models.py:2057
+#: builder/models.py:2102 builder/models.py:2145 builder/models.py:2284
+#: builder/models.py:2357
+msgid "session"
+msgstr "نشست"
+
+#: builder/models.py:1677
+msgid "sessions"
+msgstr "نشست‌ها"
+
+#: builder/models.py:1682
+msgid "started"
+msgstr "شروع‌شده"
+
+#: builder/models.py:1683
+msgid "completed"
+msgstr "تکمیل‌شده"
+
+#: builder/models.py:2021 builder/models.py:2060
+msgid "event id"
+msgstr "شناسهٔ رویداد"
+
+#: builder/models.py:2022
+msgid "event type"
+msgstr "نوع رویداد"
+
+#: builder/models.py:2025 builder/models.py:2131
+msgid "accepted"
+msgstr "پذیرفته‌شده"
+
+#: builder/models.py:2029
+msgid "session event"
+msgstr "رویداد نشست"
+
+#: builder/models.py:2030
+msgid "session events"
+msgstr "رویدادهای نشست"
+
+#: builder/models.py:2059
+msgid "node id"
+msgstr "شناسهٔ مرحله"
+
+#: builder/models.py:2061
+msgid "media type"
+msgstr "نوع رسانه"
+
+#: builder/models.py:2062
+msgid "file"
+msgstr "پرونده"
+
+#: builder/models.py:2063
+msgid "detected mime"
+msgstr "نوع MIME شناسایی‌شده"
+
+#: builder/models.py:2064
+msgid "size"
+msgstr "اندازه"
+
+#: builder/models.py:2065
+msgid "sha256"
+msgstr "sha256"
+
+#: builder/models.py:2070
+msgid "session media submission"
+msgstr "ارسال رسانهٔ نشست"
+
+#: builder/models.py:2071
+msgid "session media submissions"
+msgstr "ارسال‌های رسانه‌ای نشست"
+
+#: builder/models.py:2086
+msgid "stage id"
+msgstr "شناسه مرحله"
+
+#: builder/models.py:2087
+msgid "title"
+msgstr "عنوان"
+
+#: builder/models.py:2088
+msgid "content"
+msgstr "محتوا"
+
+#: builder/models.py:2089
+msgid "unlock after seconds"
+msgstr "باز شدن پس از چند ثانیه"
+
+#: builder/models.py:2090
+msgid "unlock after attempts"
+msgstr "باز شدن پس از چند تلاش"
+
+#: builder/models.py:2091
+msgid "score cost"
+msgstr "هزینه امتیاز"
+
+#: builder/models.py:2092
+msgid "position"
+msgstr "موقعیت"
+
+#: builder/models.py:2096
+msgid "hint"
+msgstr "راهنمایی"
+
+#: builder/models.py:2097
+msgid "hints"
+msgstr "راهنمایی‌ها"
+
+#: builder/models.py:2103
+msgid "event"
+msgstr "رویداد"
+
+#: builder/models.py:2104
+msgid "reason"
+msgstr "دلیل"
+
+#: builder/models.py:2105
+msgid "amount"
+msgstr "مقدار"
+
+#: builder/models.py:2109
+msgid "score ledger"
+msgstr "دفتر کل امتیاز"
+
+#: builder/models.py:2110
+msgid "score ledgers"
+msgstr "دفترهای کل امتیاز"
+
+#: builder/models.py:2116 builder/models.py:2128 builder/models.py:2144
+msgid "team"
+msgstr "تیم"
+
+#: builder/models.py:2117
+msgid "teams"
+msgstr "تیم‌ها"
+
+#: builder/models.py:2121
+msgid "invite code"
+msgstr "کد دعوت"
+
+#: builder/models.py:2122
+msgid "leader"
+msgstr "سرگروه"
+
+#: builder/models.py:2124 builder/models.py:2362
+msgid "active"
+msgstr "فعال"
+
+#: builder/models.py:2130
+msgid "joined"
+msgstr "پیوسته"
+
+#: builder/models.py:2134
+msgid "team membership"
+msgstr "عضویت تیم"
+
+#: builder/models.py:2135
+msgid "team memberships"
+msgstr "عضویت‌های تیم"
+
+#: builder/models.py:2141
+msgid "team session"
+msgstr "نشست تیم"
+
+#: builder/models.py:2142
+msgid "team sessions"
+msgstr "نشست‌های تیم"
+
+#: builder/models.py:2151 builder/models.py:2272
+msgid "data processor"
+msgstr "پردازشگر داده"
+
+#: builder/models.py:2152
+msgid "data processors"
+msgstr "پردازشگرهای داده"
+
+#: builder/models.py:2161
+msgid "processor function"
+msgstr "تابع پردازشگر"
+
+#: builder/models.py:2162
+msgid "log summary function"
+msgstr "تابع خلاصه گزارش"
+
+#: builder/models.py:2269
+msgid "data processor log"
+msgstr "گزارش پردازشگر داده"
+
+#: builder/models.py:2270
+msgid "data processor logs"
+msgstr "گزارش‌های پردازشگر داده"
+
+#: builder/models.py:2274
+msgid "method"
+msgstr "روش"
+
+#: builder/models.py:2275
+msgid "requested"
+msgstr "درخواست‌شده"
+
+#: builder/models.py:2277
+msgid "request payload"
+msgstr "محتوای درخواست"
+
+#: builder/models.py:2279
+msgid "response status"
+msgstr "وضعیت پاسخ"
+
+#: builder/models.py:2280
+msgid "response payload"
+msgstr "محتوای پاسخ"
+
+#: builder/models.py:2282
+msgid "context"
+msgstr "زمینه"
+
+#: builder/models.py:2326
+msgid "site settings"
+msgstr "تنظیمات سایت"
+
+#: builder/models.py:2327
+msgid "Site settings"
+msgstr "تنظیمات سایت"
+
+#: builder/models.py:2330
+msgid "message of the day"
+msgstr "پیام روز"
+
+#: builder/models.py:2331
+msgid "banner"
+msgstr "بنر"
+
+#: builder/models.py:2335
+msgid "new player message"
+msgstr "پیام بازیکن جدید"
+
+#: builder/models.py:2337
+msgid "total message limit"
+msgstr "محدودیت کل پیام‌ها"
+
+#: builder/models.py:2338
+msgid "count messages since"
+msgstr "شمارش پیام‌ها از تاریخ"
+
+#: builder/models.py:2340
+msgid "maximum session duration"
+msgstr "حداکثر مدت زمان نشست"
+
+#: builder/models.py:2344
+msgid "cached file"
+msgstr "پرونده ذخیره‌شده"
+
+#: builder/models.py:2345
+msgid "cached files"
+msgstr "پرونده‌های ذخیره‌شده"
+
+#: builder/models.py:2347
+msgid "original url"
+msgstr "نشانی وب اصلی"
+
+#: builder/models.py:2352
+msgid "state variable"
+msgstr "متغیر حالت"
+
+#: builder/models.py:2353
+msgid "state variables"
+msgstr "متغیرهای حالت"
+
+#: builder/models.py:2356
+msgid "activity"
+msgstr "بازی"
+
+#: builder/models.py:2359
+msgid "key"
+msgstr "کلید"
+
+#: builder/models.py:2364
+msgid "added"
+msgstr "افزوده شد"
+
+#: builder/templates/admin/index.html:30
+#, python-format
+msgid "Models in the %(name)s application"
+msgstr "مدل‌ها در برنامه %(name)s"
+
+#: builder/templates/admin/index.html:41
+msgid "Add"
+msgstr "افزودن"
+
+#: builder/templates/admin/index.html:48
+msgid "View"
+msgstr "مشاهده"
+
+#: builder/templates/admin/index.html:50
+msgid "Change"
+msgstr "تغییر"
+
+#: builder/templates/admin/index.html:62
+msgid "You don't have permission to view or edit anything."
+msgstr "شما مجوز مشاهده یا ویرایش هیچ چیزی را ندارید."
+
+#: builder/templates/admin/index.html:70
+msgid "Recent actions"
+msgstr "کنش‌های اخیر"
+
+#: builder/templates/admin/index.html:71
+msgid "My actions"
+msgstr "کنش‌های من"
+
+#: builder/templates/admin/index.html:75
+msgid "None available"
+msgstr "موجودی نیست"
+
+#: builder/templates/admin/index.html:89
+msgid "Unknown content"
+msgstr "محتوای ناشناخته"
+
+#: builder/templates/builder_activities.html:7
+msgid "All Activities | Hive Mechanic"
+msgstr "تمام بازی‌ها | Hive Mechanic"
+
+#: builder/templates/builder_activities.html:10
+#: builder/templates/builder_activity_log_table.html:10
+#: builder/templates/builder_activity_logger.html:9
+#: builder/templates/builder_authors.html:9
+#: builder/templates/builder_base.html:73
+#: builder/templates/builder_home.html:10
+#: builder/templates/builder_moderate.html:10
+#: builder/templates/builder_players.html:9
+#: builder/templates/builder_sessions.html:9
+#: builder/templates/builder_settings.html:8
+msgid "Help"
+msgstr "راهنما"
+
+#: builder/templates/builder_activities.html:13
+#: builder/templates/builder_base.html:21
+#: builder/templates/builder_base.html:69
+#: builder/templates/builder_integration.html:6
+#: builder/templates/builder_integration.html:7
+#: builder/templates/builder_js.html:19 builder/templates/builder_js.html:82
+#: builder/templates/builder_media.html:9
+#: builder/templates/builder_settings.html:11
+msgid "Hive Mechanic"
+msgstr "Hive Mechanic"
+
+#: builder/templates/builder_activities.html:23
+#: builder/templates/builder_base.html:102
+msgid "Activities"
+msgstr "بازی‌ها"
+
+#: builder/templates/builder_activities.html:33
+#: builder/templates/builder_activity_log_table.html:235
+#: builder/templates/builder_integration.html:26
+#: builder/templates/builder_media.html:28
+#: builder/templates/builder_moderate.html:103
+msgid "Search"
+msgstr "جستجو"
+
+#: builder/templates/builder_activities.html:33
+#: builder/templates/builder_integration.html:26
+#: builder/templates/builder_media.html:28
+msgid "Search…"
+msgstr "جستجو…"
+
+#: builder/templates/builder_activities.html:42
+#: builder/templates/builder_activities.html:230
+msgid "Add Activity"
+msgstr "افزودن بازی"
+
+#: builder/templates/builder_activities.html:47
+#, python-format
+msgid "%(activities)s activity"
+msgstr "%(activities)s بازی"
+
+#: builder/templates/builder_activities.html:49
+#, python-format
+msgid "%(activities)s activities"
+msgstr "%(activities)s بازی"
+
+#: builder/templates/builder_activities.html:91
+msgid "Clone Activity…"
+msgstr "شبیه‌سازی بازی…"
+
+#: builder/templates/builder_activities.html:95
+msgid "Archive Activity…"
+msgstr "بایگانی بازی…"
+
+#: builder/templates/builder_activities.html:104
+msgid "Disabled Integrations (INT.001)"
+msgstr "اتصالات غیرفعال (INT.001)"
+
+#: builder/templates/builder_activities.html:114
+#, python-format
+msgid "Creator: %(creator)s"
+msgstr "سازنده: %(creator)s"
+
+#: builder/templates/builder_activities.html:118
+#, python-format
+msgid "Last saved by %(creator)s (%(last_saved)s)."
+msgstr "آخرین ذخیره توسط %(creator)s (%(last_saved)s)."
+
+#: builder/templates/builder_activities.html:120
+#, python-format
+msgid "Last saved %(last_saved)s."
+msgstr "آخرین ذخیره در %(last_saved)s."
+
+#: builder/templates/builder_activities.html:125
+msgid "Participants &amp; Sessions"
+msgstr "بازیکنان و نشست‌ها"
+
+#: builder/templates/builder_activities.html:126
+#, python-format
+msgid "Total Unique Participants: %(all_players)s (%(active_players)s active)"
+msgstr "کل بازیکنان یکتا: %(all_players)s (%(active_players)s فعال)"
+
+#: builder/templates/builder_activities.html:127
+#, python-format
+msgid "Active Sessions: %(active_sessions)s"
+msgstr "نشست‌های فعال: %(active_sessions)s"
+
+#: builder/templates/builder_activities.html:128
+#, python-format
+msgid "Inactive Sessions: %(inactive_sessions)s"
+msgstr "نشست‌های غیرفعال: %(inactive_sessions)s"
+
+#: builder/templates/builder_activities.html:131
+msgid "Latest Session:"
+msgstr "آخرین نشست:"
+
+#: builder/templates/builder_activities.html:131
+msgid "None started yet"
+msgstr "هنوز چیزی شروع نشده است"
+
+#: builder/templates/builder_activities.html:135
+msgid "Activity Details"
+msgstr "جزئیات بازی"
+
+#: builder/templates/builder_activities.html:136
+#, python-format
+msgid "Identifier: %(slug)s"
+msgstr "شناسه: %(slug)s"
+
+#: builder/templates/builder_activities.html:137
+#, python-format
+msgid "Last Updated: %(last_saved)s"
+msgstr "آخرین به‌روزرسانی: %(last_saved)s"
+
+#: builder/templates/builder_activities.html:138
+#, python-format
+msgid "Versions: %(versions_count)s"
+msgstr "نسخه‌ها: %(versions_count)s"
+
+#: builder/templates/builder_activities.html:142
+#: builder/templates/builder_base.html:116
+#: builder/templates/builder_integration.html:16
+msgid "Integrations"
+msgstr "اتصالات"
+
+#: builder/templates/builder_activities.html:175
+msgid "Add New Activity"
+msgstr "افزودن بازی جدید"
+
+#: builder/templates/builder_activities.html:180
+msgid "Please select an existing template to begin:"
+msgstr "لطفاً برای شروع یک قالب موجود را انتخاب کنید:"
+
+#: builder/templates/builder_activities.html:208
+#: builder/templates/builder_integration.html:53
+msgid "None"
+msgstr "هیچ‌کدام"
+
+#: builder/templates/builder_activities.html:216
+#: builder/templates/builder_js.html:193
+msgid "Activity Name"
+msgstr "نام بازی"
+
+#: builder/templates/builder_activities.html:227
+#: builder/templates/builder_activities.html:263
+#: builder/templates/builder_activities.html:294
+#: builder/templates/builder_integration.html:134
+#: builder/templates/builder_js.html:394 builder/templates/builder_js.html:423
+#: builder/templates/builder_js.html:452 builder/templates/builder_js.html:574
+#: builder/templates/builder_media.html:149
+#: builder/templates/builder_players.html:118
+msgid "Cancel"
+msgstr "لغو"
+
+#: builder/templates/builder_activities.html:241
+msgid "Clone Activity?"
+msgstr "کپی از بازی؟"
+
+#: builder/templates/builder_activities.html:251
+msgid "Cloned Activity Name"
+msgstr "نام بازی کپی‌شده"
+
+#: builder/templates/builder_activities.html:266
+msgid "Clone Activity"
+msgstr "کپی بازی"
+
+#: builder/templates/builder_activities.html:277
+msgid "Archive Activity?"
+msgstr "بایگانی بازی؟"
+
+#: builder/templates/builder_activities.html:284
+msgid "Are you sure you want to archive"
+msgstr "آیا مطمئن هستید که می‌خواهید بایگانی کنید"
+
+#: builder/templates/builder_activities.html:286
+msgid ""
+"It will no longer become accessible unless restored by a site administrator."
+msgstr ""
+"این مورد دیگر در دسترس نخواهد بود مگر اینکه توسط مدیر سایت بازیابی شود."
+
+#: builder/templates/builder_activities.html:297
+msgid "Archive Activity"
+msgstr "بایگانی بازی"
+
+#: builder/templates/builder_activities.html:310
+#: builder/templates/builder_activities.html:314
+#: builder/templates/builder_js.html:659
+msgid "Structure View"
+msgstr "نمای ساختار"
+
+#: builder/templates/builder_activity_log_table.html:7
+#: builder/templates/builder_activity_logger.html:6
+msgid "Activity Log | Hive Mechanic"
+msgstr "گزارش‌های بازی | Hive Mechanic"
+
+#: builder/templates/builder_activity_log_table.html:24
+msgid "Event Log"
+msgstr "گزارش رویدادها"
+
+#: builder/templates/builder_activity_log_table.html:28
+msgid "Source"
+msgstr "منبع"
+
+#: builder/templates/builder_activity_log_table.html:37
+#: builder/templates/builder_moderate.html:145
+#: builder/templates/builder_sessions.html:26
+msgid "Player"
+msgstr "بازیکن"
+
+#: builder/templates/builder_activity_log_table.html:46
+msgid "Event"
+msgstr "رویداد"
+
+#: builder/templates/builder_activity_log_table.html:55
+#: builder/templates/builder_moderate.html:136
+msgid "Date"
+msgstr "تاریخ"
+
+#: builder/templates/builder_activity_log_table.html:106
+msgid "Events per page"
+msgstr "رویداد در هر صفحه"
+
+#: builder/templates/builder_activity_log_table.html:152
+#: builder/templates/builder_moderate.html:248
+#, python-format
+msgid "%(start_item)s to %(end_item)s of %(total_count)s"
+msgstr "%(start_item)s تا %(end_item)s از %(total_count)s"
+
+#: builder/templates/builder_activity_log_table.html:200
+msgid "Select one or more events from the left…"
+msgstr "یک یا چند رویداد را از سمت چپ انتخاب کنید…"
+
+#: builder/templates/builder_activity_log_table.html:208
+msgid "No preview for"
+msgstr "پیش‌نمایشی وجود ندارد برای"
+
+#: builder/templates/builder_activity_log_table.html:208
+msgid "FILENAME"
+msgstr "FILENAME"
+
+#: builder/templates/builder_activity_log_table.html:208
+msgid "file."
+msgstr "فایل."
+
+#: builder/templates/builder_activity_log_table.html:218
+msgid "Details"
+msgstr "جزئیات"
+
+#: builder/templates/builder_activity_log_table.html:224
+msgid "Save Attachment"
+msgstr "ذخیره پیوست"
+
+#: builder/templates/builder_activity_log_table.html:243
+msgid "Date Range"
+msgstr "بازه زمانی"
+
+#: builder/templates/builder_activity_log_table.html:248
+msgid "Start"
+msgstr "شروع"
+
+#: builder/templates/builder_activity_log_table.html:258
+msgid "End"
+msgstr "پایان"
+
+#: builder/templates/builder_activity_log_table.html:267
+msgid "Filter by date"
+msgstr "فیلتر بر اساس تاریخ"
+
+#: builder/templates/builder_activity_log_table.html:271
+msgid "Tags"
+msgstr "برچسب‌ها"
+
+#: builder/templates/builder_activity_log_table.html:271
+#: builder/templates/builder_players.html:82
+#: builder/templates/builder_players.html:94
+#: builder/templates/builder_players.html:107
+msgid "Clear"
+msgstr "پاک کردن"
+
+#: builder/templates/builder_activity_log_table.html:273
+#: builder/templates/builder_activity_logger.html:39
+msgid "•"
+msgstr "•"
+
+#: builder/templates/builder_activity_log_table.html:287
+#: builder/templates/builder_activity_log_table.html:303
+#: builder/templates/builder_moderate.html:69
+msgid "Select activity…"
+msgstr "انتخاب بازی…"
+
+#: builder/templates/builder_activity_logger.html:20
+#: builder/templates/builder_base.html:137
+msgid "Activity Log"
+msgstr "گزارش فعالیت‌ها"
+
+#: builder/templates/builder_activity_logger.html:26
+#, python-format
+msgid "%(total_count)s entries • Page %(page_index)s of %(page_count)s • ("
+msgstr "%(total_count)s مورد • صفحه %(page_index)s از %(page_count)s • ("
+
+#: builder/templates/builder_activity_logger.html:26
+msgid "Reset View"
+msgstr "بازنشانی نما"
+
+#: builder/templates/builder_activity_logger.html:34
+msgid "Previous Page"
+msgstr "صفحه قبل"
+
+#: builder/templates/builder_activity_logger.html:46
+msgid "Next Page"
+msgstr "صفحه بعد"
+
+#: builder/templates/builder_activity_logger.html:59
+msgid "Tags:"
+msgstr "برچسب‌ها:"
+
+#: builder/templates/builder_activity_logger.html:71
+msgid "Player:"
+msgstr "بازیکن:"
+
+#: builder/templates/builder_activity_logger.html:75
+msgid "Activity:"
+msgstr "بازی:"
+
+#: builder/templates/builder_activity_logger.html:79
+msgid "Session:"
+msgstr "نشست:"
+
+#: builder/templates/builder_activity_logger.html:83
+msgid "Metadata:"
+msgstr "فراداده:"
+
+#: builder/templates/builder_authors.html:6
+msgid "Authors | Interaction Builder"
+msgstr "سازندگان | تعاملی‌ساز"
+
+#: builder/templates/builder_authors.html:12
+#: builder/templates/builder_base.html:153
+msgid "Authors"
+msgstr "سازندگان"
+
+#: builder/templates/builder_authors.html:21
+msgid "Authors: Pending or Inactive"
+msgstr "سازندگان: در انتظار یا غیرفعال"
+
+#: builder/templates/builder_authors.html:25
+#: builder/templates/builder_authors.html:70
+#: builder/templates/builder_players.html:23
+msgid "All Games"
+msgstr "همه بازی‌ها"
+
+#: builder/templates/builder_authors.html:28
+#: builder/templates/builder_authors.html:73
+msgid "E-Mail"
+msgstr "ایمیل"
+
+#: builder/templates/builder_authors.html:29
+#: builder/templates/builder_authors.html:74
+msgid "Name"
+msgstr "نام"
+
+#: builder/templates/builder_authors.html:30
+#: builder/templates/builder_authors.html:77
+#: builder/templates/builder_players.html:31
+msgid "Actions"
+msgstr "اقدامات"
+
+#: builder/templates/builder_authors.html:41
+#: builder/templates/builder_authors.html:94
+msgid "No name provided…"
+msgstr "نامی وارد نشده است…"
+
+#: builder/templates/builder_authors.html:66
+msgid "Authors: Active"
+msgstr "سازندگان: فعال"
+
+#: builder/templates/builder_authors.html:75
+msgid "Last Login"
+msgstr "آخرین ورود"
+
+#: builder/templates/builder_authors.html:76
+msgid "Role"
+msgstr "نقش"
+
+#: builder/templates/builder_base.html:95
+#: builder/templates/builder_home.html:13
+msgid "Dashboard"
+msgstr "پیشخوان"
+
+#: builder/templates/builder_base.html:109
+msgid "Media"
+msgstr "رسانه"
+
+#: builder/templates/builder_base.html:123
+#: builder/templates/builder_players.html:19
+msgid "Participants"
+msgstr "بازیکنان"
+
+#: builder/templates/builder_base.html:130
+msgid "Sessions"
+msgstr "نشست‌ها"
+
+#: builder/templates/builder_base.html:145
+msgid "Moderate"
+msgstr "بازبینی"
+
+#: builder/templates/builder_base.html:160
+msgid "My Account"
+msgstr "حساب کاربری من"
+
+#: builder/templates/builder_base.html:167
+#: builder/templates/builder_settings.html:20
+msgid "Site Settings"
+msgstr "تنظیمات سایت"
+
+#: builder/templates/builder_base.html:179
+msgid "Content Goes Here"
+msgstr "محتوا اینجا قرار می‌گیرد"
+
+#: builder/templates/builder_base.html:190
+msgid "TITLE HERE"
+msgstr "عنوان اینجا"
+
+#: builder/templates/builder_base.html:192
+msgid "MESSAGE HERE"
+msgstr "پیام اینجا"
+
+#: builder/templates/builder_base.html:196
+#: builder/templates/builder_js.html:613
+msgid "Close"
+msgstr "بستن"
+
+#: builder/templates/builder_home.html:7
+msgid "Dashboard | Interaction Builder"
+msgstr "پیشخوان | سازنده تعامل"
+
+#: builder/templates/builder_integration.html:31
+#, python-format
+msgid "%(integrations)s integrations"
+msgstr "%(integrations)s اتصال"
+
+#: builder/templates/builder_integration.html:36
+#: builder/templates/builder_players.html:29
+msgid "Active Sessions"
+msgstr "نشست‌های فعال"
+
+#: builder/templates/builder_integration.html:39
+msgid "Integration"
+msgstr "اتصال"
+
+#: builder/templates/builder_integration.html:40
+msgid "Activity"
+msgstr "بازی"
+
+#: builder/templates/builder_integration.html:41
+msgid "Type"
+msgstr "نوع"
+
+#: builder/templates/builder_integration.html:64
+#, python-format
+msgid "No matches for \"%(query)s\" found."
+msgstr "نتیجه‌ای برای \"%(query)s\" یافت نشد."
+
+#: builder/templates/builder_integration.html:66
+msgid "No available integrations. Contact your Hive Mechanic administrator."
+msgstr ""
+"هیچ اتصال در دسترسی وجود ندارد. با مدیر Hive Mechanic خود تماس بگیرید."
+
+#: builder/templates/builder_integration.html:84
+msgid "Update Integration"
+msgstr "به‌روزرسانی اتصال"
+
+#: builder/templates/builder_integration.html:94
+msgid "Integration Name"
+msgstr "نام اتصال"
+
+#: builder/templates/builder_integration.html:100
+msgid "Connected Activity"
+msgstr "بازی متصل"
+
+#: builder/templates/builder_integration.html:114
+msgid "Already linked to this kind of integration."
+msgstr "قبلاً به این نوع اتصال پیوند داده شده است."
+
+#: builder/templates/builder_integration.html:127
+msgid "None (Detach)"
+msgstr "هیچ‌کدام (لغو اتصال)"
+
+#: builder/templates/builder_integration.html:137
+#: builder/templates/builder_js.html:458
+msgid "Update"
+msgstr "به‌روزرسانی"
+
+#: builder/templates/builder_js.html:85
+msgid "Basic:"
+msgstr "پایه:"
+
+#: builder/templates/builder_js.html:94
+msgid "Toggle interface mode (basic or advanced)"
+msgstr "تغییر حالت رابط کاربری (پایه یا پیشرفته)"
+
+#: builder/templates/builder_js.html:97
+msgid "Annotated Help"
+msgstr "راهنمای شرح‌دار"
+
+#: builder/templates/builder_js.html:99
+msgid "View annotated help"
+msgstr "مشاهده راهنمای شرح‌دار"
+
+#: builder/templates/builder_js.html:106
+msgid "Reset Game"
+msgstr "بازنشانی بازی"
+
+#: builder/templates/builder_js.html:108
+msgid "Reset activity"
+msgstr "بازنشانی بازی"
+
+#: builder/templates/builder_js.html:110
+msgid "List Game Variables"
+msgstr "فهرست متغیرهای بازی"
+
+#: builder/templates/builder_js.html:112
+msgid "List activity variables"
+msgstr "فهرست متغیرهای بازی"
+
+#: builder/templates/builder_js.html:114 builder/templates/builder_js.html:512
+msgid "Select Card"
+msgstr "انتخاب کارت"
+
+#: builder/templates/builder_js.html:116
+msgid "Advance to selected card"
+msgstr "پیشروی به کارت انتخاب‌شده"
+
+#: builder/templates/builder_js.html:119
+msgid "Save"
+msgstr "ذخیره"
+
+#: builder/templates/builder_js.html:121
+msgid "Save activity"
+msgstr "ذخیره بازی"
+
+#: builder/templates/builder_js.html:124
+msgid "Locked"
+msgstr "قفل‌شده"
+
+#: builder/templates/builder_js.html:126
+msgid "Locked activity"
+msgstr "بازی قفل‌شده"
+
+#: builder/templates/builder_js.html:138 builder/templates/builder_js.html:181
+msgid "Activity Settings"
+msgstr "تنظیمات بازی"
+
+#: builder/templates/builder_js.html:158
+msgid "Sources"
+msgstr "مبدأها"
+
+#: builder/templates/builder_js.html:161
+msgid "Current"
+msgstr "فعلی"
+
+#: builder/templates/builder_js.html:164
+msgid "Destinations"
+msgstr "مقصدها"
+
+#: builder/templates/builder_js.html:169
+msgid "(Sources Here)"
+msgstr "(مبدأها در اینجا)"
+
+#: builder/templates/builder_js.html:173
+msgid "(Destinations Here)"
+msgstr "(مقصدها در اینجا)"
+
+#: builder/templates/builder_js.html:185
+msgid "Basic Settings"
+msgstr "تنظیمات پایه"
+
+#: builder/templates/builder_js.html:218
+msgid "General Start Card"
+msgstr "کارت شروع عمومی"
+
+#: builder/templates/builder_js.html:241
+msgid "Voice Call Start Card"
+msgstr "کارت شروع تماس صوتی"
+
+#: builder/templates/builder_js.html:264
+msgid "Terms &amp; Conditions Start Card"
+msgstr "کارت شروع شرایط و ضوابط"
+
+#: builder/templates/builder_js.html:284
+msgid "Icon"
+msgstr "آیکون"
+
+#: builder/templates/builder_js.html:288
+msgid "Tap to update activity icon"
+msgstr "برای به‌روزرسانی آیکون بازی ضربه بزنید"
+
+#: builder/templates/builder_js.html:300
+msgid "Activity & Session Variables"
+msgstr "متغیرهای بازی و نشست"
+
+#: builder/templates/builder_js.html:302
+msgid "None set."
+msgstr "تنظیم نشده است."
+
+#: builder/templates/builder_js.html:309
+msgid "Add Variable"
+msgstr "افزودن متغیر"
+
+#: builder/templates/builder_js.html:313
+msgid "(Clear both Name and Value to remove a variable.)"
+msgstr "(برای حذف یک متغیر، هم نام و هم مقدار را پاک کنید.)"
+
+#: builder/templates/builder_js.html:321
+msgid "Interrupt Keywords"
+msgstr "کلیدواژه‌های وقفه"
+
+#: builder/templates/builder_js.html:323
+msgid "None specified."
+msgstr "مشخص نشده است."
+
+#: builder/templates/builder_js.html:331
+msgid "Add Keyword"
+msgstr "افزودن کلیدواژه"
+
+#: builder/templates/builder_js.html:335
+msgid "(To delete a keyword, push backspace on an empty value.)"
+msgstr "(برای حذف کلیدواژه، روی یک مقدار خالی دکمهٔ Backspace را بزنید.)"
+
+#: builder/templates/builder_js.html:353 builder/templates/builder_js.html:397
+msgid "Add Card"
+msgstr "افزودن کارت"
+
+#: builder/templates/builder_js.html:362
+msgid "Action Name"
+msgstr "نام اقدام"
+
+#: builder/templates/builder_js.html:370
+msgid "Existing Links"
+msgstr "پیوندهای موجود"
+
+#: builder/templates/builder_js.html:384
+msgid "Connect existing source cards to the new card"
+msgstr "کارت‌های مبدأ موجود را به کارت جدید متصل کنید"
+
+#: builder/templates/builder_js.html:408 builder/templates/builder_js.html:426
+msgid "Add Sequence"
+msgstr "افزودن توالی"
+
+#: builder/templates/builder_js.html:415 builder/templates/builder_js.html:444
+msgid "Sequence Name"
+msgstr "نام توالی"
+
+#: builder/templates/builder_js.html:437
+msgid "Edit Sequence"
+msgstr "ویرایش توالی"
+
+#: builder/templates/builder_js.html:469
+msgid "Remove Sequence?"
+msgstr "توالی حذف شود؟"
+
+#: builder/templates/builder_js.html:471
+msgid "Are you sure that you want to remove the \""
+msgstr "آیا مطمئن هستید که می‌خواهید توالی «"
+
+#: builder/templates/builder_js.html:471
+msgid "SEQUENCE"
+msgstr "توالی"
+
+#: builder/templates/builder_js.html:471
+msgid "\" sequence?"
+msgstr "» را حذف کنید؟"
+
+#: builder/templates/builder_js.html:475
+msgid "No"
+msgstr "خیر"
+
+#: builder/templates/builder_js.html:478
+msgid "Yes"
+msgstr "بله"
+
+#: builder/templates/builder_js.html:489
+msgid "Outstanding Issues"
+msgstr "مسائل حل‌نشده"
+
+#: builder/templates/builder_js.html:496
+msgid "Save With Issues"
+msgstr "ذخیره با وجود مسائل"
+
+#: builder/templates/builder_js.html:497
+msgid "May exhibit unexpected behavior!"
+msgstr "ممکن است رفتار پیش‌بینی‌نشده‌ای بروز دهد!"
+
+#: builder/templates/builder_js.html:523 builder/templates/builder_js.html:532
+msgid "Choose Destination"
+msgstr "انتخاب مقصد"
+
+#: builder/templates/builder_js.html:541 builder/templates/builder_js.html:553
+msgid "Reset Activity"
+msgstr "بازنشانی بازی"
+
+#: builder/templates/builder_js.html:554
+msgid "Close Active Sessions"
+msgstr "بستن نشست‌های فعال"
+
+#: builder/templates/builder_js.html:567
+msgid "Reset Variables For This Activity"
+msgstr "بازنشانی متغیرها برای این بازی"
+
+#: builder/templates/builder_js.html:568
+msgid "Examples: High Score, Current Location"
+msgstr "نمونه‌ها: بالاترین امتیاز، موقعیت فعلی"
+
+#: builder/templates/builder_js.html:577
+msgid "OK"
+msgstr "تأیید"
+
+#: builder/templates/builder_js.html:589
+msgid "Move Up"
+msgstr "حركت به بالا"
+
+#: builder/templates/builder_js.html:593
+msgid "Move Down"
+msgstr "حركت به پایین"
+
+#: builder/templates/builder_js.html:597
+msgid "Rename"
+msgstr "تغییر نام"
+
+#: builder/templates/builder_js.html:601
+msgid "Delete"
+msgstr "حذف"
+
+#: builder/templates/builder_js.html:609
+msgid "Game Variables"
+msgstr "متغیرهای بازی"
+
+#: builder/templates/builder_js.html:628
+msgid "For more tutorials on Hive Mechanic, see"
+msgstr "برای آموزش‌های بیشتر در مورد Hive Mechanic، ببینید"
+
+#: builder/templates/builder_js.html:628
+msgid "our guides and tutorials"
+msgstr "راهنماها و آموزش‌های ما"
+
+#: builder/templates/builder_js.html:639
+msgid "Preserve Links?"
+msgstr "حفظ پیوندها؟"
+
+#: builder/templates/builder_js.html:642
+msgid "Would you like this card's source links transferred to the new card?"
+msgstr "آیا می‌خواهید پیوندهای مبدأ این کارت به کارت جدید منتقل شوند؟"
+
+#: builder/templates/builder_js.html:647
+msgid "Ignore"
+msgstr "چشم‌پوشی"
+
+#: builder/templates/builder_js.html:650
+msgid "Transfer"
+msgstr "انتقال"
+
+#: builder/templates/builder_js.html:682
+msgid "Stage graph editor"
+msgstr "ویرایشگر گراف مرحله"
+
+#: builder/templates/builder_js.html:684
+msgid ""
+"Use the controls below to add stages, connections, start/end and tools. This"
+" panel only saves a draft version."
+msgstr ""
+"از ابزارهای زیر برای افزودن مراحل، اتصالات، شروع/پایان و ابزارها استفاده "
+"کنید. این پنل فقط نسخه پیش‌نویس را ذخیره می‌کند."
+
+#: builder/templates/builder_js.html:685
+msgid "Add stage"
+msgstr "افزودن مرحله"
+
+#: builder/templates/builder_js.html:686
+msgid "Edit stage"
+msgstr "ویرایش مرحله"
+
+#: builder/templates/builder_js.html:687
+msgid "Delete selection"
+msgstr "حذف انتخاب"
+
+#: builder/templates/builder_js.html:688
+msgid "Connect two stages"
+msgstr "اتصال دو مرحله"
+
+#: builder/templates/builder_js.html:689
+msgctxt "graph"
+msgid "Start"
+msgstr "شروع"
+
+#: builder/templates/builder_js.html:690
+msgctxt "graph"
+msgid "End"
+msgstr "پایان"
+
+#: builder/templates/builder_js.html:691
+msgid "Save draft"
+msgstr "ذخیره پیش‌نویس"
+
+#: builder/templates/builder_js.html:693
+msgid "Tool for the selected stage:"
+msgstr "ابزار برای مرحله انتخاب‌شده:"
+
+#: builder/templates/builder_js.html:695
+msgid "GPS / Geofence"
+msgstr "GPS / Geofence"
+
+#: builder/templates/builder_js.html:695
+msgid "QR"
+msgstr "QR"
+
+#: builder/templates/builder_js.html:696
+msgid "Hint"
+msgstr "راهنمایی"
+
+#: builder/templates/builder_js.html:696
+msgid "Timer"
+msgstr "زمان‌سنج"
+
+#: builder/templates/builder_js.html:697
+msgid "Quiz"
+msgstr "پرسش"
+
+#: builder/templates/builder_js.html:697
+msgid "Text Input"
+msgstr "ورودی متن"
+
+#: builder/templates/builder_js.html:698
+msgid "Camera / Image"
+msgstr "دوربین / تصویر"
+
+#: builder/templates/builder_js.html:698
+msgid "Audio / Video"
+msgstr "صوت / ویدیو"
+
+#: builder/templates/builder_js.html:700
+msgid "Add tool"
+msgstr "افزودن ابزار"
+
+#: builder/templates/builder_language_switch.html:5
+msgid "Language"
+msgstr "زبان"
+
+#: builder/templates/builder_media.html:8
+msgid "All Media | Hive Mechanic"
+msgstr "همه رسانه‌ها | Hive Mechanic"
+
+#: builder/templates/builder_media.html:18
+msgid "Media Library"
+msgstr "کتابخانه رسانه"
+
+#: builder/templates/builder_media.html:38
+#: builder/templates/builder_media.html:125
+#: builder/templates/builder_media.html:152
+msgid "Upload File"
+msgstr "بارگذاری فایل"
+
+#: builder/templates/builder_media.html:40
+msgid "Can include images, audio, video, PDF, etc."
+msgstr "می‌تواند شامل تصویر، صوت، ویدیو، PDF و غیره باشد."
+
+#: builder/templates/builder_media.html:44
+#, python-format
+msgid "%(media_files)s media file"
+msgstr "%(media_files)s فایل رسانه"
+
+#: builder/templates/builder_media.html:46
+#, python-format
+msgid "%(media_files)s media files"
+msgstr "%(media_files)s فایل رسانه"
+
+#: builder/templates/builder_media.html:65
+msgid "Your browser does not support the video tag."
+msgstr "مرورگر شما از تگ ویدیو پشتیبانی نمی‌کند."
+
+#: builder/templates/builder_media.html:73
+msgid "Filename:"
+msgstr "نام فایل:"
+
+#: builder/templates/builder_media.html:74
+#, python-format
+msgid "Identifier: %(pk)s"
+msgstr "شناسه: %(pk)s"
+
+#: builder/templates/builder_media.html:75
+#, python-format
+msgid "Uploaded By: %(owner)s"
+msgstr "بارگذاری‌شده توسط: %(owner)s"
+
+#: builder/templates/builder_media.html:76
+msgid "Description:"
+msgstr "توضیحات:"
+
+#: builder/templates/builder_media.html:77
+#, python-format
+msgid "Uploaded At: %(uploaded_at)s"
+msgstr "بارگذاری‌شده در: %(uploaded_at)s"
+
+#: builder/templates/builder_media.html:78
+#, python-format
+msgid "File Size: %(size)s"
+msgstr "حجم فایل: %(size)s"
+
+#: builder/templates/builder_media.html:80
+msgid ""
+"WARNING: file sizes above 5 mb (like this one) are often skipped by Twilio "
+"for MMS messaging"
+msgstr ""
+"هشدار: فایل‌های با حجم بالای ۵ مگابایت (مانند این مورد) اغلب توسط Twilio "
+"برای پیام‌رسانی MMS نادیده گرفته می‌شوند"
+
+#: builder/templates/builder_media.html:85
+msgid "File URL:"
+msgstr "آدرس URL فایل:"
+
+#: builder/templates/builder_media.html:92
+msgid "Copy URL to clipboard"
+msgstr "کپی کردن URL در کلیپ‌بورد"
+
+#: builder/templates/builder_media.html:106
+msgid "Copy to clipboard"
+msgstr "کپی در کلیپ‌بورد"
+
+#: builder/templates/builder_media.html:112
+msgid "Upload file"
+msgstr "آپلود فایل"
+
+#: builder/templates/builder_media.html:130
+msgid "Please add a description (optional):"
+msgstr "لطفاً توضیحی اضافه کنید (اختیاری):"
+
+#: builder/templates/builder_media.html:138
+msgid "Description"
+msgstr "توضیحات"
+
+#: builder/templates/builder_moderate.html:7
+msgid "Moderate Content | Hive Mechanic"
+msgstr "بازبینی محتوا | Hive Mechanic"
+
+#: builder/templates/builder_moderate.html:26
+msgid "Please select items to moderate."
+msgstr "لطفاً مواردی را برای بازبینی انتخاب کنید."
+
+#: builder/templates/builder_moderate.html:33
+msgid "Approve"
+msgstr "تایید"
+
+#: builder/templates/builder_moderate.html:39
+msgid "Reject"
+msgstr "رد"
+
+#: builder/templates/builder_moderate.html:44
+msgid "Reset"
+msgstr "بازنشانی"
+
+#: builder/templates/builder_moderate.html:54
+msgid "Show…"
+msgstr "نمایش…"
+
+#: builder/templates/builder_moderate.html:73
+msgid "Pending Moderation"
+msgstr "در انتظار بازبینی"
+
+#: builder/templates/builder_moderate.html:79
+msgid "All Items"
+msgstr "همه موارد"
+
+#: builder/templates/builder_moderate.html:85
+#: builder/templates/builder_moderate.html:185
+msgid "Approved"
+msgstr "تاییدشده"
+
+#: builder/templates/builder_moderate.html:91
+#: builder/templates/builder_moderate.html:188
+msgid "Rejected"
+msgstr "ردشده"
+
+#: builder/templates/builder_moderate.html:120
+msgid "Moderation Items"
+msgstr "موارد بازبینی"
+
+#: builder/templates/builder_moderate.html:125
+msgid "Toggle all rows"
+msgstr "انتخاب/لغو انتخاب همه سطرها"
+
+#: builder/templates/builder_moderate.html:154
+msgid "Context"
+msgstr "زمینه"
+
+#: builder/templates/builder_moderate.html:157
+msgid "Content"
+msgstr "محتوا"
+
+#: builder/templates/builder_moderate.html:160
+msgid "Status"
+msgstr "وضعیت"
+
+#: builder/templates/builder_moderate.html:190
+msgid "Pending"
+msgstr "در انتظار"
+
+#: builder/templates/builder_moderate.html:203
+msgid "Items per page"
+msgstr "موارد در هر صفحه"
+
+#: builder/templates/builder_players.html:6
+msgid "All Participants | Interaction Builder"
+msgstr "همه بازیکنان | Interaction Builder"
+
+#: builder/templates/builder_players.html:26
+msgid "Identifier"
+msgstr "شناسه"
+
+#: builder/templates/builder_players.html:27
+msgid "Most Recent Game"
+msgstr "آخرین بازی"
+
+#: builder/templates/builder_players.html:28
+msgid "Joined"
+msgstr "عضویت"
+
+#: builder/templates/builder_players.html:30
+msgid "Inactive Sessions"
+msgstr "نشست‌های غیرفعال"
+
+#: builder/templates/builder_players.html:44
+msgid "Review transcript"
+msgstr "بررسی متن گفتگو"
+
+#: builder/templates/builder_players.html:46
+#: builder/templates/builder_players.html:121
+msgid "Clear variables"
+msgstr "پاکسازی متغیرها"
+
+#: builder/templates/builder_players.html:47
+msgid "Delete participant"
+msgstr "حذف بازیکن"
+
+#: builder/templates/builder_players.html:64
+msgid "Clear Player Variables?"
+msgstr "پاک‌سازی متغیرهای بازیکن؟"
+
+#: builder/templates/builder_players.html:69
+msgid "Please select which variables to clear:"
+msgstr "لطفاً متغیرهایی را که می‌خواهید پاک شوند انتخاب کنید:"
+
+#: builder/templates/builder_players.html:82
+msgid "all variables"
+msgstr "تمام متغیرها"
+
+#: builder/templates/builder_players.html:94
+msgid "only site variables"
+msgstr "فقط متغیرهای سایت"
+
+#: builder/templates/builder_players.html:107
+msgid "only activity variables"
+msgstr "فقط متغیرهای بازی"
+
+#: builder/templates/builder_players.html:110
+msgid "Site variables"
+msgstr "متغیرهای سایت"
+
+#: builder/templates/builder_players.html:110
+msgid ""
+"include terms &amp; conditions acceptances and other variables set by Hive "
+"Mechanic internally."
+msgstr ""
+"شامل پذیرش شرایط و ضوابط و سایر متغیرهایی که Hive Mechanic به‌طور داخلی "
+"تنظیم می‌کند."
+
+#: builder/templates/builder_players.html:111
+msgid "Activity variables"
+msgstr "متغیرهای بازی"
+
+#: builder/templates/builder_players.html:111
+msgid ""
+"include variables set by the activities themselves for internal activity "
+"usage."
+msgstr "شامل متغیرهای تنظیم‌شده توسط خود بازی‌ها برای استفاده داخلی بازی."
+
+#: builder/templates/builder_sessions.html:6
+msgid "Sessions | Hive Mechanic"
+msgstr "نشست‌ها | Hive Mechanic"
+
+#: builder/templates/builder_sessions.html:19
+msgid "Participant Sessions"
+msgstr "نشست‌های بازیکن"
+
+#: builder/templates/builder_sessions.html:23
+msgid "All Sessions"
+msgstr "تمام نشست‌ها"
+
+#: builder/templates/builder_sessions.html:27
+msgid "Game"
+msgstr "بازی"
+
+#: builder/templates/builder_sessions.html:28
+msgid "Started"
+msgstr "شروع‌شده"
+
+#: builder/templates/builder_sessions.html:29
+msgid "Completed"
+msgstr "تکمیل‌شده"
+
+#: builder/templates/builder_sessions.html:46
+msgid "Delete session"
+msgstr "حذف نشست"
+
+#: builder/templates/builder_settings.html:5
+msgid "Site Settings | Hive Mechanic"
+msgstr "تنظیمات سایت | Hive Mechanic"
+
+#: builder/templates/builder_settings.html:27
+msgid "Site Name"
+msgstr "نام سایت"
+
+#: builder/templates/builder_settings.html:38
+#: builder/templates/builder_settings.html:42
+msgid "Message of the Day"
+msgstr "پیام روز"
+
+#: builder/templates/builder_settings.html:49
+msgid "Tap to update site banner"
+msgstr "برای به‌روزرسانی بنر سایت ضربه بزنید"
+
+#: builder/templates/builder_settings.html:61
+#: builder/templates/builder_settings.html:65
+msgid "New Player Outgoing Introduction"
+msgstr "معرفی خروجی بازیکن جدید"
+
+#: builder/templates/builder_settings.html:71
+msgid "Update Site Settings"
+msgstr "به‌روزرسانی تنظیمات سایت"
+
+#: builder/templates/dashboard/simple_dashboard_widget_activity_sessions.html:6
+msgid "Active:"
+msgstr "فعال:"
+
+#: builder/templates/dashboard/simple_dashboard_widget_activity_sessions.html:7
+msgid "Completed:"
+msgstr "تکمیل‌شده:"
+
+#: builder/templates/dashboard/simple_dashboard_widget_activity_sessions.html:10
+msgid "Oldest:"
+msgstr "قدیمی‌ترین:"
+
+#: builder/templates/dashboard/simple_dashboard_widget_activity_sessions.html:14
+msgid "Most Recent:"
+msgstr "جدیدترین:"
+
+#: builder/templates/dashboard/simple_dashboard_widget_activity_sessions.html:18
+msgid "Average Duration:"
+msgstr "میانگین مدت‌زمان:"
+
+#: builder/templates/dashboard/simple_dashboard_widget_activity_sessions.html:22
+#: builder/templates/dashboard/simple_dashboard_widget_integration.html:22
+#: builder/templates/dashboard/simple_dashboard_widget_message_traffic.html:25
+#: builder/templates/dashboard/simple_dashboard_widget_voice_calls.html:10
+msgid "Last updated:"
+msgstr "آخرین به‌روزرسانی:"
+
+#: builder/templates/dashboard/simple_dashboard_widget_integration.html:7
+#, python-format
+msgid "Activity: %(activity)s"
+msgstr "بازی: %(activity)s"
+
+#: builder/templates/dashboard/simple_dashboard_widget_integration.html:19
+#, python-format
+msgid "Integration: %(type)s"
+msgstr "اتصال: %(type)s"
+
+#: builder/templates/dashboard/simple_dashboard_widget_message_traffic.html:6
+msgid "Messages Received:"
+msgstr "پیام‌های دریافت‌شده:"
+
+#: builder/templates/dashboard/simple_dashboard_widget_message_traffic.html:7
+msgid "Messages Sent:"
+msgstr "پیام‌های ارسالی:"
+
+#: builder/templates/dashboard/simple_dashboard_widget_message_traffic.html:10
+msgid "Messages Sent Errors:"
+msgstr "خطاهای پیام‌های ارسالی:"
+
+#: builder/templates/dashboard/simple_dashboard_widget_message_traffic.html:12
+msgid "Scheduled Messages:"
+msgstr "پیام‌های زمان‌بندی‌شده:"
+
+#: builder/templates/dashboard/simple_dashboard_widget_message_traffic.html:15
+msgid "Limit Remaining:"
+msgstr "حد باقیمانده:"
+
+#: builder/templates/dashboard/simple_dashboard_widget_message_traffic.html:15
+#, python-format
+msgid "%(messages_remaining)s (of %(message_limit)s)*"
+msgstr "%(messages_remaining)s (از %(message_limit)s)*"
+
+#: builder/templates/dashboard/simple_dashboard_widget_message_traffic.html:18
+#, python-format
+msgid "Since %(message_limit_reset)s"
+msgstr "از %(message_limit_reset)s"
+
+#: builder/templates/dashboard/simple_dashboard_widget_message_traffic.html:21
+msgid ""
+"* (Messages will cease when the limit reaches 0 – contact an administrator "
+"to reset the limit.)"
+msgstr ""
+"* (با رسیدن حد نصاب به 0، ارسال پیام‌ها متوقف خواهد شد – برای بازنشانی حد "
+"نصاب با یک مدیر تماس بگیرید.)"
+
+#: builder/templates/dashboard/simple_dashboard_widget_voice_calls.html:6
+msgid "Outgoing Turns:"
+msgstr "نوبت‌های خروجی:"
+
+#: builder/templates/dashboard/simple_dashboard_widget_voice_calls.html:7
+msgid "Incoming Turns:"
+msgstr "نوبت‌های ورودی:"
+
+#: builder/templates/registration/login.html:19
+msgid "Login | Hive Mechanic"
+msgstr "ورود | Hive Mechanic"
+
+#: builder/templates/registration/login.html:70
+msgid "Username"
+msgstr "نام کاربری"
+
+#: builder/templates/registration/login.html:84
+msgid "Password"
+msgstr "گذرواژه"
+
+#: builder/templates/registration/login.html:95
+msgid "Your username and password didn't match. Please try again."
+msgstr "نام کاربری و گذرواژه شما مطابقت نداشتند. لطفاً دوباره تلاش کنید."
+
+#: builder/templates/registration/login.html:103
+msgid "Continue"
+msgstr "ادامه"
+
+#: builder/templates/registration/login.html:108
+msgid "Request Access"
+msgstr "درخواست دسترسی"
+
+#: builder/templates/registration/login.html:112
+msgid "Forgot Password?"
+msgstr "گذرواژه خود را فراموش کرده‌اید؟"
+
+#: builder/templates/registration/password_reset_complete.html:19
+msgid "Password Reset Complete | Hive Mechanic"
+msgstr "بازنشانی گذرواژه کامل شد | Hive Mechanic"
+
+#: builder/templates/registration/password_reset_complete.html:65
+msgid "Password Complete"
+msgstr "گذرواژه کامل شد"
+
+#: builder/templates/registration/password_reset_complete.html:68
+msgid "Your password has been reset successfully."
+msgstr "گذرواژه شما با موفقیت بازنشانی شد."
+
+#: builder/templates/registration/password_reset_complete.html:68
+msgid "Click here"
+msgstr "اینجا کلیک کنید"
+
+#: builder/templates/registration/password_reset_complete.html:68
+msgid "to sign in."
+msgstr "برای ورود."
+
+#: builder/templates/registration/password_reset_confirm.html:19
+#: builder/templates/registration/password_reset_form.html:19
+msgid "Reset Password | Hive Mechanic"
+msgstr "بازنشانی گذرواژه | Hive Mechanic"
+
+#: builder/templates/registration/password_reset_confirm.html:67
+#: builder/templates/registration/password_reset_confirm.html:106
+#: builder/templates/registration/password_reset_form.html:67
+msgid "Reset Password"
+msgstr "بازنشانی گذرواژه"
+
+#: builder/templates/registration/password_reset_confirm.html:70
+msgid "Please enter the new password below."
+msgstr "لطفاً گذرواژه جدید را در زیر وارد کنید."
+
+#: builder/templates/registration/password_reset_confirm.html:80
+msgid "New Password"
+msgstr "گذرواژه جدید"
+
+#: builder/templates/registration/password_reset_confirm.html:94
+msgid "Confirm Password"
+msgstr "تایید گذرواژه"
+
+#: ⁨builder/templates/registration/password_reset_done copy.html⁩:19
+#: builder/templates/registration/password_reset_done.html:19
+msgid "Password Reset E-Mail Sent | Hive Mechanic"
+msgstr "ایمیل بازنشانی گذرواژه ارسال شد | Hive Mechanic"
+
+#: ⁨builder/templates/registration/password_reset_done copy.html⁩:65
+#: builder/templates/registration/password_reset_done.html:65
+msgid "Password Reset E-Mail Sent"
+msgstr "ایمیل بازنشانی گذرواژه ارسال شد"
+
+#: ⁨builder/templates/registration/password_reset_done copy.html⁩:68
+#: builder/templates/registration/password_reset_done.html:68
+msgid ""
+"We've emailed you instructions for resetting your password. You should "
+"receive the email soon."
+msgstr ""
+"دستورالعمل‌های بازنشانی رمز عبور را به ایمیل شما ارسال کرده‌ایم. به‌زودی "
+"ایمیل را دریافت خواهید کرد."
+
+#: builder/templates/registration/password_reset_form.html:70
+msgid ""
+"Enter your email address below, and we'll email instructions for setting a "
+"new one."
+msgstr ""
+"نشانی ایمیل خود را در ادامه وارد کنید تا دستورالعمل‌های تعیین رمز جدید را "
+"برایتان ایمیل کنیم."
+
+#: builder/templates/registration/password_reset_form.html:77
+msgid "E-Mail Address"
+msgstr "نشانی ایمیل"
+
+#: builder/templates/registration/password_reset_form.html:89
+msgid "Send Password Reset E-Mail"
+msgstr "ارسال ایمیل بازنشانی رمز عبور"
+
+#: builder/views.py:829
+msgid "No matching author located."
+msgstr "سازنده‌ای با این مشخصات یافت نشد."
+
+#: builder/views.py:841
+#, python-format
+msgid "%s removed from the system."
+msgstr "%s از سیستم حذف شد."
+
+#: builder/views.py:846
+#, python-format
+msgid "%s activated."
+msgstr "%s فعال شد."
+
+#: builder/views.py:851
+#, python-format
+msgid "%s deactivated."
+msgstr "%s غیرفعال شد."
+
+#: builder/views.py:871
+#, python-format
+msgid "%s promoted."
+msgstr "%s ارتقا یافت."
+
+#: builder/views.py:891
+#, python-format
+msgid "%s demoted."
+msgstr "%s تنزل یافت."
+
+#: builder/views.py:893
+#, python-format
+msgid "Unknown action: %s"
+msgstr "کنش ناشناخته: %s"
+
+#: builder/views.py:1290
+msgid "Game added."
+msgstr "بازی افزوده شد."
+
+#: builder/views.py:1568
+msgid "Integration updated."
+msgstr "اتصال به‌روزرسانی شد."
+
+#: builder/views.py:1572
+msgid "Unable to located specified integration."
+msgstr "اتصال مشخص‌شده یافت نشد."
+
+#: builder/views.py:1597
+msgid "No action specified"
+msgstr "هیچ کنشی مشخص نشده است"
+
+#: builder/views.py:1608
+msgid "Game variables have been cleared."
+msgstr "متغیرهای بازی پاکسازی شده‌اند."
+
+#: builder/views.py:1613
+msgid "Game session variables have been cleared."
+msgstr "متغیرهای نشست بازی پاکسازی شده‌اند."
+
+#: builder/views.py:1618
+msgid "Active sessions have been closed."
+msgstr "نشست‌های فعال بسته شده‌اند."
+
+#: builder/views.py:1620
+#, python-format
+msgid "Undefined action: %s"
+msgstr "کنش تعریف‌نشده: %s"
+
+#: builder/views.py:1622
+msgid "No action provided."
+msgstr "هیچ کنشی ارائه‌ نشده است."
+
+#: builder/views.py:1640
+msgid "Unable to clear variables."
+msgstr "امکان پاکسازی متغیرها وجود ندارد."
+
+#: builder/views.py:1687
+msgid "Variables cleared."
+msgstr "متغیرها پاکسازی شدند."
+
+#: builder/views.py:1690
+msgid "Unable to locate participant."
+msgstr "بازیکن یافت نشد."
+
+#: builder/views.py:1901
+msgid "1 item moderated."
+msgstr "۱ مورد بازبینی شد."
+
+#: builder/views.py:1903
+#, python-format
+msgid "%s items moderated."
+msgstr "%s مورد بازبینی شدند."
+
+#: player_web/apps.py:8
+msgid "Player web app"
+msgstr "وب‌اپلیکیشن بازیکن"

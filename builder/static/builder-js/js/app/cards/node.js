@@ -22,7 +22,7 @@ define(['material', 'slugify', 'marked', 'purify', 'jquery'], function (mdc, slu
     }
 
     cardCategory () {
-      return 'Uncategorized'
+      return gettext('Uncategorized')
     }
 
     cardTypeSlug () {
@@ -41,7 +41,7 @@ define(['material', 'slugify', 'marked', 'purify', 'jquery'], function (mdc, slu
     }
 
     destinationDescription (nodeId) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      return 'Go to...'
+      return gettext('Go to...')
     }
 
     editHtml () {
@@ -58,11 +58,11 @@ define(['material', 'slugify', 'marked', 'purify', 'jquery'], function (mdc, slu
       htmlString += '              <ul class="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical" tabindex="-1">'
       htmlString += '                <li class="mdc-list-item mdc-list-item mdc-list-item--with-one-line" role="menuitem" data-action="insert_before">'
       htmlString += '                  <span class="mdc-list-item__ripple"></span>'
-      htmlString += '                  <span class="mdc-list-item__text mdc-list-item__start">Insert Card Before&#8230;</span>'
+      htmlString += '                  <span class="mdc-list-item__text mdc-list-item__start">' + gettext('Insert Card Before…') + '</span>'
       htmlString += '                </li>'
       htmlString += '                <li class="mdc-list-item mdc-list-item mdc-list-item--with-one-line" role="menuitem" data-action="advanced">'
       htmlString += '                  <span class="mdc-list-item__ripple"></span>'
-      htmlString += '                  <span class="mdc-list-item__text mdc-list-item__start">Advanced Settings&#8230;</span>'
+      htmlString += '                  <span class="mdc-list-item__text mdc-list-item__start">' + gettext('Advanced Settings…') + '</span>'
       htmlString += '                </li>'
       htmlString += '              </ul>'
       htmlString += '            </div>'
@@ -75,7 +75,7 @@ define(['material', 'slugify', 'marked', 'purify', 'jquery'], function (mdc, slu
       htmlString += '          <div class="mdc-notched-outline">'
       htmlString += '            <div class="mdc-notched-outline__leading"></div>'
       htmlString += '            <div class="mdc-notched-outline__notch">'
-      htmlString += '              <label for="' + this.cardId + '_name_value" class="mdc-floating-label">Card Name</label>'
+      htmlString += '              <label for="' + this.cardId + '_name_value" class="mdc-floating-label">' + gettext('Card Name') + '</label>'
       htmlString += '            </div>'
       htmlString += '            <div class="mdc-notched-outline__trailing"></div>'
       htmlString += '          </div>'
@@ -104,10 +104,10 @@ define(['material', 'slugify', 'marked', 'purify', 'jquery'], function (mdc, slu
       htmlString += '      </div>'
       htmlString += '      <footer class="mdc-dialog__actions">'
       htmlString += '        <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="delete" style="margin-right: auto;">'
-      htmlString += '          <span class="mdc-button__label">Remove Card</span>'
+      htmlString += '          <span class="mdc-button__label">' + gettext('Remove Card') + '</span>'
       htmlString += '        </button>'
       htmlString += '        <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">'
-      htmlString += '          <span class="mdc-button__label">Close</span>'
+      htmlString += '          <span class="mdc-button__label">' + gettext('Close') + '</span>'
       htmlString += '        </button>'
       htmlString += '      </footer>'
       htmlString += '    </div>'
@@ -123,11 +123,11 @@ define(['material', 'slugify', 'marked', 'purify', 'jquery'], function (mdc, slu
       const issues = []
 
       if (this.definition.name === undefined || this.definition.name.trim().length === 0) {
-        issues.push(['Please provide a node name.', 'node', this.definition.id, this.cardName()])
+        issues.push([gettext('Please provide a node name.'), 'node', this.definition.id, this.cardName()])
       }
 
       if (this.definition.id === undefined || this.definition.id.trim().length === 0) {
-        issues.push(['Please provide a node ID.', 'node', this.definition.id], this.cardName())
+        issues.push([gettext('Please provide a node ID.'), 'node', this.definition.id], this.cardName())
       }
 
       const destinations = this.destinationNodes(sequence)
@@ -136,9 +136,9 @@ define(['material', 'slugify', 'marked', 'purify', 'jquery'], function (mdc, slu
         const destination = destinations[i]
 
         if (destination === null || destination === undefined) {
-          issues.push(['Empty destination node.', 'node', this.definition.id, this.cardName()])
+          issues.push([gettext('Empty destination node.'), 'node', this.definition.id, this.cardName()])
         } else if (this.sequence.definition.id === destination.sequence.definition.id && this.id === destination.id) {
-          issues.push(['Node references self in destination.', 'node', this.definition.id, this.cardName()])
+          issues.push([gettext('Node references self in destination.'), 'node', this.definition.id, this.cardName()])
         }
       }
 
@@ -326,25 +326,25 @@ define(['material', 'slugify', 'marked', 'purify', 'jquery'], function (mdc, slu
     fetchLocalizedConstant (term) {
       const constants = {
         begins_with: {
-          en: 'Begins with...'
+          en: gettext('Begins with...')
         },
         ends_with: {
-          en: 'Ends with...'
+          en: gettext('Ends with...')
         },
         equals: {
-          en: 'Equals/is...'
+          en: gettext('Equals/is...')
         },
         not_equals: {
-          en: 'Does not equal / is not...'
+          en: gettext('Does not equal / is not...')
         },
         contains: {
-          en: 'Contains...'
+          en: gettext('Contains...')
         },
         not_contains: {
-          en: 'Does not contain...'
+          en: gettext('Does not contain...')
         },
         no_action_defined: {
-          en: 'No action defined...'
+          en: gettext('No action defined...')
         }
       }
 
@@ -529,7 +529,7 @@ define(['material', 'slugify', 'marked', 'purify', 'jquery'], function (mdc, slu
       }
 
       if (field.width !== 12 && helpClass !== '') {
-        fieldLines.push('<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-' + field.width + ' mdc-typography--' + style + ' hive_mechanic_help_filler">&nbsp;&nbsp;</div>')
+        fieldLines.push('<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-' + field.width + ' mdc-typography--' + style + ' hive_mechanic_help_filler">' + gettext('  ') + '</div>')
       }
 
       return fieldLines.join('\n')
@@ -1194,25 +1194,25 @@ define(['material', 'slugify', 'marked', 'purify', 'jquery'], function (mdc, slu
         for (let i = 0; i < matches.length; i++) {
           if (humanized.length > 0) {
             if (i < matches.length - 1) {
-              humanized += ', '
+              humanized += gettext(', ')
             } else if (matches.length > 2) {
-              humanized += ', or '
+              humanized += gettext(', or ')
             } else {
-              humanized += ' or '
+              humanized += gettext(' or ')
             }
           }
 
           humanized += '"' + matches[i] + '"'
         }
 
-        return '[TRANSLATE] If response starts with ' + humanized + ', go to <em>' + action + '</em>.'
+        return interpolate(gettext('If response starts with %(match)s, go to <em>%(action)s</em>.'), { match: humanized, action: action }, true)
       } else if (pattern === '.*') {
-        return '[TRANSLATE] If response is anything, go to <em>' + action + '</em>.'
+        return interpolate(gettext('If response is anything, go to <em>%(action)s</em>.'), { action: action }, true)
       } else if (pattern.startsWith('^') && pattern.endsWith('$')) {
-        return '[TRANSLATE] If response is "' + pattern + '", go to <em>' + action + '</em>.'
+        return interpolate(gettext('If response is "%(pattern)s", go to <em>%(action)s</em>.'), { pattern: pattern, action: action }, true)
       }
 
-      return '[TRANSLATE] If responses matches "' + pattern + '", go to <em>' + action + '</em>.'
+      return interpolate(gettext('If response matches "%(pattern)s", go to <em>%(action)s</em>.'), { pattern: pattern, action: action }, true)
     }
 
     editFields () {
@@ -1338,12 +1338,12 @@ define(['material', 'slugify', 'marked', 'purify', 'jquery'], function (mdc, slu
       htmlString += '        <div class="mdc-notched-outline">'
       htmlString += '          <div class="mdc-notched-outline__leading"></div>'
       htmlString += '          <div class="mdc-notched-outline__notch">'
-      htmlString += '            <label for="' + this.cardId + '_advanced_identifier_value" class="mdc-floating-label">Card Identifier</label>'
+      htmlString += '            <label for="' + this.cardId + '_advanced_identifier_value" class="mdc-floating-label">' + gettext('Card Identifier') + '</label>'
       htmlString += '          </div>'
       htmlString += '          <div class="mdc-notched-outline__trailing"></div>'
       htmlString += '        </div>'
       htmlString += '      </div>'
-      htmlString += '      <div class="mdc-typography--caption" id="' + this.cardId + '_activity-identifier-warning" style="color: #B71C1C;">Invalid characters or format detected. Please use only alphanumeric characters and dashes.</div>'
+      htmlString += '      <div class="mdc-typography--caption" id="' + this.cardId + '_activity-identifier-warning" style="color: #B71C1C;">' + gettext('Invalid characters or format detected. Please use only alphanumeric characters and dashes.') + '</div>'
       htmlString += '    </div>'
 
       htmlString += this.advancedEditFields()
@@ -1353,7 +1353,7 @@ define(['material', 'slugify', 'marked', 'purify', 'jquery'], function (mdc, slu
       htmlString += '        <div class="mdc-notched-outline">'
       htmlString += '          <div class="mdc-notched-outline__leading"></div>'
       htmlString += '          <div class="mdc-notched-outline__notch">'
-      htmlString += '            <label for="' + this.cardId + '_advanced_comment_value" class="mdc-floating-label">Comment</label>'
+      htmlString += '            <label for="' + this.cardId + '_advanced_comment_value" class="mdc-floating-label">' + gettext('Comment') + '</label>'
       htmlString += '          </div>'
       htmlString += '          <div class="mdc-notched-outline__trailing"></div>'
       htmlString += '        </div>'
@@ -1361,7 +1361,7 @@ define(['material', 'slugify', 'marked', 'purify', 'jquery'], function (mdc, slu
       htmlString += '      </div>'
       htmlString += '    </div>'
       htmlString += '    <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12 mdc-typography--caption">'
-      htmlString += '      (<a href="https://www.markdownguide.org/cheat-sheet/" target="_blank">Markdown Cheat Sheet</a>)'
+      htmlString += '      (<a href="https://www.markdownguide.org/cheat-sheet/" target="_blank">' + gettext('Markdown Cheat Sheet') + '</a>)'
       htmlString += '    </div>'
 
       htmlString += '  </div>'

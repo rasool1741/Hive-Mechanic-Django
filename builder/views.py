@@ -32,6 +32,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
 from django.views import defaults
+from django.utils.translation import gettext as _
 
 from filer.admin.clipboardadmin import ajax_upload
 from filer.models import filemodels
@@ -825,7 +826,7 @@ def builder_authors(request): # pylint: disable=unused-argument, too-many-branch
 
     if request.method == 'POST':
         response_payload = {
-            'message': 'No matching author located.'
+            'message': _('No matching author located.')
         }
 
         action = request.POST.get('action', None)
@@ -837,17 +838,17 @@ def builder_authors(request): # pylint: disable=unused-argument, too-many-branch
             if action == 'delete_user':
                 user.delete()
 
-                response_payload['message'] = '%s removed from the system.' % email
+                response_payload['message'] = _('%s removed from the system.') % email
             elif action == 'activate_user':
                 user.is_active = True
                 user.save()
 
-                response_payload['message'] = '%s activated.' % email
+                response_payload['message'] = _('%s activated.') % email
             elif action == 'deactivate_user':
                 user.is_active = False
                 user.save()
 
-                response_payload['message'] = '%s deactivated.' % email
+                response_payload['message'] = _('%s deactivated.') % email
             elif action == 'promote_user':
                 current_group = user.groups.all().first()
 
@@ -867,7 +868,7 @@ def builder_authors(request): # pylint: disable=unused-argument, too-many-branch
                     user.groups.add(manager_group)
                     user.save()
 
-                response_payload['message'] = '%s promoted.' % email
+                response_payload['message'] = _('%s promoted.') % email
             elif action == 'demote_user':
                 current_group = user.groups.all().first()
 
@@ -887,9 +888,9 @@ def builder_authors(request): # pylint: disable=unused-argument, too-many-branch
                     user.groups.clear()
                     user.save()
 
-                response_payload['message'] = '%s demoted.' % email
+                response_payload['message'] = _('%s demoted.') % email
             else:
-                response_payload['message'] = 'Unknown action: %s' % action
+                response_payload['message'] = _('Unknown action: %s') % action
 
         return HttpResponse(json.dumps(response_payload, indent=2), content_type='application/json', status=200)
 
@@ -1286,7 +1287,7 @@ def builder_add_game(request): # pylint: disable=unused-argument
 
                 new_game.save()
             response['success'] = True
-            response['message'] = 'Game added.'
+            response['message'] = _('Game added.')
             response['redirect'] = reverse('builder_game', args=[new_game.slug])
 
     return HttpResponse(json.dumps(response, indent=2), content_type='application/json', status=200)
@@ -1564,11 +1565,11 @@ def builder_integrations_update(request):
             integration.save()
 
             response_payload['result'] = 'success'
-            response_payload['message'] = 'Integration updated.'
+            response_payload['message'] = _('Integration updated.')
             response_payload['redirect'] = reverse('builder_integrations')
         else:
             response_payload['result'] = 'error'
-            response_payload['message'] = 'Unable to located specified integration.'
+            response_payload['message'] = _('Unable to located specified integration.')
 
         response = HttpResponse(json.dumps(response_payload, indent=2), content_type='application/json', status=200)
 
@@ -1593,7 +1594,7 @@ def builder_activity_actions_json(request, activity): # pylint: disable=unused-a
 
         response_payload = {
             'result': 'error',
-            'message': 'No action specified'
+            'message': _('No action specified')
         }
 
         if request.method == 'POST':
@@ -1604,21 +1605,21 @@ def builder_activity_actions_json(request, activity): # pylint: disable=unused-a
                     matched_game.reset_variables()
 
                     response_payload['result'] = 'success'
-                    response_payload['message'] = 'Game variables have been cleared.'
+                    response_payload['message'] = _('Game variables have been cleared.')
                 elif action == 'reset-active-session-variables':
                     matched_game.reset_active_session_variables()
 
                     response_payload['result'] = 'success'
-                    response_payload['message'] = 'Game session variables have been cleared.'
+                    response_payload['message'] = _('Game session variables have been cleared.')
                 elif action == 'close-active-sessions':
                     matched_game.close_active_sessions()
 
                     response_payload['result'] = 'success'
-                    response_payload['message'] = 'Active sessions have been closed.'
+                    response_payload['message'] = _('Active sessions have been closed.')
                 else:
-                    response_payload['message'] = 'Undefined action: %s' % action
+                    response_payload['message'] = _('Undefined action: %s') % action
             else:
-                response_payload['message'] = 'No action provided.'
+                response_payload['message'] = _('No action provided.')
 
         response = HttpResponse(json.dumps(response_payload, indent=2), content_type='application/json', status=200)
 
@@ -1636,7 +1637,7 @@ def builder_clear_variables(request): # pylint: disable=too-many-branches
 
     response_payload = {
         'success': False,
-        'message': 'Unable to clear variables.'
+        'message': _('Unable to clear variables.')
     }
 
     safe_keys = ('twilio_player',)
@@ -1683,10 +1684,10 @@ def builder_clear_variables(request): # pylint: disable=too-many-branches
 
                 session.save()
 
-            response_payload['message'] = 'Variables cleared.'
+            response_payload['message'] = _('Variables cleared.')
             response_payload['success'] = True
         else:
-            response_payload['message'] = 'Unable to locate participant.'
+            response_payload['message'] = _('Unable to locate participant.')
 
     return HttpResponse(json.dumps(response_payload, indent=2), content_type='application/json', status=200)
 
@@ -1897,9 +1898,9 @@ def builder_moderate(request): # pylint: disable=unused-argument, too-many-branc
         response_payload = {}
 
         if moderated == 1:
-            response_payload['message'] = '1 item moderated.'
+            response_payload['message'] = _('1 item moderated.')
         else:
-            response_payload['message'] = '%s items moderated.' % moderated
+            response_payload['message'] = _('%s items moderated.') % moderated
 
         return HttpResponse(json.dumps(response_payload, indent=2), content_type='application/json', status=200)
 

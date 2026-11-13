@@ -67,7 +67,7 @@ requirejs(['material', 'cookie', 'jquery'], function (mdc, Cookies) {
       email: $(eventObj.target).attr('data-id')
     }
 
-    if (confirm('Are you sure you wish to activate this author?')) {
+    if (confirm(gettext('Are you sure you wish to activate this author?'))) {
       $.post('/builder/authors', data, function (data) {
         if (data.message) {
           alert(data.message)
@@ -86,7 +86,7 @@ requirejs(['material', 'cookie', 'jquery'], function (mdc, Cookies) {
       email: $(eventObj.target).attr('data-id')
     }
 
-    if (confirm('Are you sure you wish to delete this author?')) {
+    if (confirm(gettext('Are you sure you wish to delete this author?'))) {
       $.post('/builder/authors', data, function (data) {
         if (data.message) {
           alert(data.message)
@@ -105,7 +105,7 @@ requirejs(['material', 'cookie', 'jquery'], function (mdc, Cookies) {
       email: $(eventObj.target).attr('data-id')
     }
 
-    if (confirm('Are you sure you wish to deactivate this author?')) {
+    if (confirm(gettext('Are you sure you wish to deactivate this author?'))) {
       $.post('/builder/authors', data, function (data) {
         if (data.message) {
           alert(data.message)
@@ -124,7 +124,7 @@ requirejs(['material', 'cookie', 'jquery'], function (mdc, Cookies) {
       email: $(eventObj.target).attr('data-id')
     }
 
-    if (confirm('Are you sure you wish to demote this author?')) {
+    if (confirm(gettext('Are you sure you wish to demote this author?'))) {
       $.post('/builder/authors', data, function (data) {
         if (data.message) {
           alert(data.message)
@@ -143,7 +143,7 @@ requirejs(['material', 'cookie', 'jquery'], function (mdc, Cookies) {
       email: $(eventObj.target).attr('data-id')
     }
 
-    if (confirm('Are you sure you wish to promote this author?')) {
+    if (confirm(gettext('Are you sure you wish to promote this author?'))) {
       $.post('/builder/authors', data, function (data) {
         if (data.message) {
           alert(data.message)

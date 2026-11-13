@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.gis import admin
 from django.utils import timezone
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _
 
 try:
     from django.db.models import JSONField
@@ -37,8 +38,8 @@ class DataProcessorLogAdmin(admin.GISModelAdmin):
 class GameVersionInline(admin.TabularInline):
     model = GameVersion
 
-    verbose_name = 'Version'
-    verbose_name_plural = 'Versions'
+    verbose_name = _('Version')
+    verbose_name_plural = _('Versions')
     template = 'admin_inlines/versions_tabular.html'
 
     show_change_link = True
@@ -75,27 +76,27 @@ class GameAdmin(ModelAdmin):
     def export_objects(self, request, queryset):
         return self.portable_model_export_items(request, queryset)
 
-    export_objects.short_description = 'Export selected activities'
+    export_objects.short_description = _('Export selected activities')
 
     def archive_activity(self, request, queryset):
         updated = queryset.filter(archived=None).update(archived=timezone.now())
 
         if updated == 1:
-            self.message_user(request, '1 activity archived.', messages.SUCCESS)
+            self.message_user(request, _('1 activity archived.'), messages.SUCCESS)
         else:
-            self.message_user(request, '%s activities archived.' % updated, messages.SUCCESS)
+            self.message_user(request, _('%(count)s activities archived.') % {'count': updated}, messages.SUCCESS)
 
-    archive_activity.short_description = "Archive activities"
+    archive_activity.short_description = _('Archive activities')
 
     def restore_activity(self, request, queryset):
         updated = queryset.update(archived=None)
 
         if updated == 1:
-            self.message_user(request, '1 activity restored.', messages.SUCCESS)
+            self.message_user(request, _('1 activity restored.'), messages.SUCCESS)
         else:
-            self.message_user(request, '%s activities restored.' % updated, messages.SUCCESS)
+            self.message_user(request, _('%(count)s activities restored.') % {'count': updated}, messages.SUCCESS)
 
-    restore_activity.short_description = "Restore activities"
+    restore_activity.short_description = _('Restore activities')
 
 
 @admin.register(City)
@@ -165,7 +166,7 @@ class InteractionCardAdmin(admin.GISModelAdmin):
             else:
                 self.message_user(request, message, messages.ERROR)
 
-    update_interaction_card.short_description = "Install updated versions"
+    update_interaction_card.short_description = _('Install updated versions')
 
     def refresh_interaction_card(self, request, queryset):
         add_messages = []
@@ -179,21 +180,21 @@ class InteractionCardAdmin(admin.GISModelAdmin):
             else:
                 self.message_user(request, message, messages.ERROR)
 
-    refresh_interaction_card.short_description = "Refresh selected cards"
+    refresh_interaction_card.short_description = _('Refresh selected cards')
 
     def enable_interaction_card(self, request, queryset):
         queryset.update(enabled=True)
 
         self.message_user(request, str(queryset.count()) + ' card(s) enabled.')
 
-    enable_interaction_card.short_description = "Enable selected cards"
+    enable_interaction_card.short_description = _('Enable selected cards')
 
     def disable_interaction_card(self, request, queryset):
         queryset.update(enabled=False)
 
         self.message_user(request, str(queryset.count()) + ' card(s) disabled.')
 
-    disable_interaction_card.short_description = "Disable selected cards"
+    disable_interaction_card.short_description = _('Disable selected cards')
 
 @admin.register(Player)
 class PlayerAdmin(ModelAdmin):
@@ -206,7 +207,7 @@ class PlayerAdmin(ModelAdmin):
     def export_objects(self, request, queryset):
         return self.portable_model_export_items(request, queryset)
 
-    export_objects.short_description = 'Export selected players'
+    export_objects.short_description = _('Export selected players')
 
     actions = ['export_objects']
 
@@ -252,7 +253,7 @@ class DataProcessorAdmin(ModelAdmin):
     def export_objects(self, request, queryset):
         return self.portable_model_export_items(request, queryset)
 
-    export_objects.short_description = 'Export selected data processors'
+    export_objects.short_description = _('Export selected data processors')
 
     def update_data_processor(self, request, queryset): # pylint: disable=unused-argument
         add_messages = []
@@ -266,21 +267,21 @@ class DataProcessorAdmin(ModelAdmin):
             else:
                 self.message_user(request, message, messages.ERROR)
 
-    update_data_processor.short_description = "Install updated versions"
+    update_data_processor.short_description = _('Install updated versions')
 
     def enable_data_processor(self, request, queryset):
         queryset.update(enabled=True)
 
         self.message_user(request, str(queryset.count()) + ' data processor(s) enabled.')
 
-    enable_data_processor.short_description = "Enable selected data processors"
+    enable_data_processor.short_description = _('Enable selected data processors')
 
     def disable_data_processor(self, request, queryset):
         queryset.update(enabled=False)
 
         self.message_user(request, str(queryset.count()) + ' data processor(s) disabled.')
 
-    disable_data_processor.short_description = "Disable selected data processors"
+    disable_data_processor.short_description = _('Disable selected data processors')
 
 @admin.register(CachedFile)
 class CachedFileAdmin(FileAdmin):

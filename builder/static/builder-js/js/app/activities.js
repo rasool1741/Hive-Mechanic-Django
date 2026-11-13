@@ -77,12 +77,14 @@ requirejs(['material', 'cookie', 'cytoscape', 'cytoscape-dagre'], function (mdc,
 
     const existingName = $('#field_add_game').val()
 
-    if (existingName === '' || (existingName.startsWith('New ') && existingName.endsWith(' Activity'))) {
+    if (existingName === '' || existingName === $('#field_add_game').data('autoName')) {
       if (name !== undefined) {
-        nameField.value = 'New ' + name + ' Activity'
+        nameField.value = interpolate(gettext('New %(name)s Activity'), { name: name }, true)
       } else {
-        nameField.value = 'New Blank Activity'
+        nameField.value = gettext('New Blank Activity')
       }
+
+      $('#field_add_game').data('autoName', nameField.value)
     }
   })
 
@@ -99,9 +101,9 @@ requirejs(['material', 'cookie', 'cytoscape', 'cytoscape-dagre'], function (mdc,
 
       $.post('/builder/add-game.json', payload, function (response) {
         if (response.success) {
-          $('#dialog-title').html('Success')
+          $('#dialog-title').html(gettext('Success'))
         } else {
-          $('#dialog-title').html('Failure')
+          $('#dialog-title').html(gettext('Failure'))
         }
 
         $('#dialog-content').html(response.message)
@@ -133,9 +135,9 @@ requirejs(['material', 'cookie', 'cytoscape', 'cytoscape-dagre'], function (mdc,
 
       $.post('/builder/add-game.json', payload, function (response) {
         if (response.success) {
-          $('#dialog-title').html('Success')
+          $('#dialog-title').html(gettext('Success'))
         } else {
-          $('#dialog-title').html('Failure')
+          $('#dialog-title').html(gettext('Failure'))
         }
 
         $('#dialog-content').html(response.message)
@@ -193,7 +195,7 @@ requirejs(['material', 'cookie', 'cytoscape', 'cytoscape-dagre'], function (mdc,
 
         archiveDialog.open()
       } else if (data.action === 'clone') {
-        cloneNameField.value = 'Clone of ' + data.name
+        cloneNameField.value = interpolate(gettext('Clone of %(name)s'), { name: data.name }, true)
         $('#original_clone_id').val(data.id)
 
         cloneDialog.open()

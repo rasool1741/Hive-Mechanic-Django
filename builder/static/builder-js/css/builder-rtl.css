@@ -1,0 +1,56 @@
+/* Right-to-left layout for the game builder. Only applies when <html dir="rtl">. */
+html[dir="rtl"] body,
+html[dir="rtl"] .mdc-typography,
+html[dir="rtl"] [class*="mdc-typography--"],
+html[dir="rtl"] .mdc-button,
+html[dir="rtl"] .mdc-list-item,
+html[dir="rtl"] .mdc-floating-label,
+html[dir="rtl"] .mdc-text-field__input,
+html[dir="rtl"] .mdc-data-table,
+html[dir="rtl"] .mdc-dialog,
+html[dir="rtl"] input,
+html[dir="rtl"] textarea,
+html[dir="rtl"] select,
+html[dir="rtl"] button {
+    font-family: 'Vazirmatn', 'Roboto', Tahoma, sans-serif;
+}
+
+html[dir="rtl"] .material-icons,
+html[dir="rtl"] .mdc-button .material-icons {
+    font-family: 'Material Icons' !important;
+}
+
+/* Inline left/right spacing used throughout the templates and JS. */
+html[dir="rtl"] [style*="margin-left: 16px"] { margin-left: 0 !important; margin-right: 16px !important; }
+html[dir="rtl"] [style*="margin-left: 11px"] { margin-left: 0 !important; margin-right: 11px !important; }
+html[dir="rtl"] [style*="margin-left: 22px"] { margin-left: 0 !important; margin-right: 22px !important; }
+html[dir="rtl"] [style*="text-align: right"] { text-align: left !important; }
+html[dir="rtl"] [style*="float: right"] { float: left !important; }
+html[dir="rtl"] [style*="justify-content: right"] { justify-content: left !important; }
+html[dir="rtl"] [style*="padding-left: 0"] { padding-left: initial !important; padding-right: 0 !important; }
+
+html[dir="rtl"] .floating-action-button { right: auto; left: 16px; }
+
+html[dir="rtl"] th,
+html[dir="rtl"] td { text-align: right; }
+
+/* Code, identifiers, URLs and JSON stay left-to-right. */
+html[dir="rtl"] pre,
+html[dir="rtl"] code,
+html[dir="rtl"] input[type="url"],
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] #urban-graph-preview,
+html[dir="rtl"] [id$="_advanced_identifier_value"] {
+    direction: ltr;
+    text-align: left;
+}
+
+.hm-language-switch select {
+    background: transparent;
+    color: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin: 0 8px;
+}
+.hm-language-switch option { color: #000; }

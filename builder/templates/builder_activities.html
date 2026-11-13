@@ -1,15 +1,16 @@
 {% extends 'builder_base.html' %}
+{% load i18n %}
 {% load humanize %}
 {% load static %}
 {% load builder_tags %}
 
-{% block 'page_title' %}All Activities | Hive Mechanic{% endblock %}
+{% block 'page_title' %}{% trans "All Activities | Hive Mechanic" %}{% endblock %}
 
 {% block 'page_help' %}
-    <a href="#" class="material-icons mdc-top-app-bar__action-item" aria-label="Help" id="action_help">help</a>
+    <a href="#" class="material-icons mdc-top-app-bar__action-item" aria-label="{% trans 'Help' %}" id="action_help">help</a>
 {% endblock %}
 
-{% block 'navigation_title' %}Hive Mechanic{% endblock %}
+{% block 'navigation_title' %}{% trans "Hive Mechanic" %}{% endblock %}
 
 {% block 'main_content' %}
     <div class="mdc-layout-grid">
@@ -19,7 +20,7 @@
                     <div class="mdc-layout-grid__inner" style="grid-gap: 0px !important;">
                         <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-8">
                             <h1 class="mdc-typography--headline5" style="margin-top: 8px;">
-                                Activities
+                                {% trans "Activities" %}
                             </h1>
                         </div>
                         <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-4">
@@ -29,7 +30,7 @@
                                         <span class="mdc-notched-outline__leading"></span>
                                         <span class="mdc-notched-outline__trailing"></span>
                                     </span>
-                                    <input class="mdc-text-field__input" type="text" aria-label="Search" placeholder="Search&#8230;" style="width: 100%;" name="q" value="{% if query %}{{ query }}{% endif %}">
+                                    <input class="mdc-text-field__input" type="text" aria-label="{% trans 'Search' %}" placeholder="{% trans 'Search…' %}" style="width: 100%;" name="q" value="{% if query %}{{ query }}{% endif %}">
                                 </label>
                             </form>
                         </div>
@@ -38,14 +39,14 @@
                                 <span class="mdc-button__ripple"></span>
                                 <span class="mdc-button__focus-ring"></span>
                                 <i class="material-icons mdc-button__icon" aria-hidden="true">library_add</i>
-                                <span class="mdc-button__label">Add Activity</span>
+                                <span class="mdc-button__label">{% trans "Add Activity" %}</span>
                             </button>
                         </div>
                         <div class=" mdc-layout-grid__cell--span-6" style="text-align: right;">
                             {% if activities|length == 1 %}
-                                <div class="mdc-typography--subtitle1" style="margin-top: 8px;">{{ activities|length }} activity</div>
+                                <div class="mdc-typography--subtitle1" style="margin-top: 8px;">{% blocktrans trimmed with activities=activities|length %}{{ activities }} activity{% endblocktrans %}</div>
                             {% else %}
-                                <div class="mdc-typography--subtitle1" style="margin-top: 8px;">{{ activities|length }} activities</div>
+                                <div class="mdc-typography--subtitle1" style="margin-top: 8px;">{% blocktrans trimmed with activities=activities|length %}{{ activities }} activities{% endblocktrans %}</div>
                             {% endif %}
                         </div>
 
@@ -87,11 +88,11 @@
 																<ul class="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical" tabindex="-1">
 																	<li class="mdc-list-item mdc-list-item mdc-list-item--with-one-line" role="menuitem" data-id="{{ activity.pk }}" data-name="{{ activity.name }}" data-action="clone">
 																		<span class="mdc-list-item__ripple"></span>
-																		<span class="mdc-list-item__text mdc-list-item__start">Clone Activity&#8230;</span>
+																		<span class="mdc-list-item__text mdc-list-item__start">{% trans "Clone Activity…" %}</span>
 																	</li>
 																	<li class="mdc-list-item mdc-list-item mdc-list-item--with-one-line" role="menuitem"  data-id="{{ activity.slug }}" data-name="{{ activity.name }}" data-action="archive">
 																		<span class="mdc-list-item__ripple"></span>
-																		<span class="mdc-list-item__text mdc-list-item__start">Archive Activity&#8230;</span>
+																		<span class="mdc-list-item__text mdc-list-item__start">{% trans "Archive Activity…" %}</span>
 																	</li>
 																</ul>
 															</div>
@@ -100,7 +101,7 @@
 														{% if disabled_integrations %}
 															<div style="display: inline-block" class="material-icons mdc-typography--headline1">error</div>
 															<div style="display: inline-block" class="mdc-typography mdc-typography--body2">
-																<strong>Disabled Integrations (INT.001)</strong>
+																<strong>{% trans "Disabled Integrations (INT.001)" %}</strong>
 																{% for integration in disabled_integrations %}
 																	<br />{{ integration.name }}
 																{% endfor %}
@@ -110,35 +111,35 @@
 
 													<div class=" mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
 														<div class="mdc-typography mdc-typography--subtitle1">
-															Creator: {{ metadata.creator }}
+															{% blocktrans trimmed with creator=metadata.creator %}Creator: {{ creator }}{% endblocktrans %}
 														</div>
 														<div class="mdc-typography mdc-typography--subtitle2">
 															{% if metadata.creator %}
-																Last saved by {{ metadata.creator }} ({{ metadata.last_saved|iso_to_datetime|naturalday }}).
+																{% blocktrans trimmed with creator=metadata.creator last_saved=metadata.last_saved|iso_to_datetime|naturalday %}Last saved by {{ creator }} ({{ last_saved }}).{% endblocktrans %}
 															{% else %}
-																Last saved {{ metadata.last_saved|iso_to_datetime|naturalday }}.
+																{% blocktrans trimmed with last_saved=metadata.last_saved|iso_to_datetime|naturalday %}Last saved {{ last_saved }}.{% endblocktrans %}
 															{% endif %}
 														</div>
 													</div>
 													<div class=" mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
-														<div class="mdc-typography mdc-typography--caption"><strong>Participants &amp; Sessions</strong></div>
-														<div class="mdc-typography mdc-typography--body2">Total Unique Participants: {{ metadata.all_players }} ({{ metadata.active_players }} active)</div>
-														<div class="mdc-typography mdc-typography--body2">Active Sessions: {{ metadata.active_sessions }}</div>
-														<div class="mdc-typography mdc-typography--body2">Inactive Sessions: {{ metadata.inactive_sessions }}</div>
+														<div class="mdc-typography mdc-typography--caption"><strong>{% trans "Participants &amp; Sessions" %}</strong></div>
+														<div class="mdc-typography mdc-typography--body2">{% blocktrans trimmed with all_players=metadata.all_players active_players=metadata.active_players %}Total Unique Participants: {{ all_players }} ({{ active_players }} active){% endblocktrans %}</div>
+														<div class="mdc-typography mdc-typography--body2">{% blocktrans trimmed with active_sessions=metadata.active_sessions %}Active Sessions: {{ active_sessions }}{% endblocktrans %}</div>
+														<div class="mdc-typography mdc-typography--body2">{% blocktrans trimmed with inactive_sessions=metadata.inactive_sessions %}Inactive Sessions: {{ inactive_sessions }}{% endblocktrans %}</div>
 
 														{% with metadata.last_session_started as last_session %}
-															<div class="mdc-typography mdc-typography--body2">Latest Session: {% if last_session_started %}{{ last_session_started }}{% else %}None started yet{% endif %}</div>
+															<div class="mdc-typography mdc-typography--body2">{% trans "Latest Session:" %} {% if last_session_started %}{{ last_session_started }}{% else %}{% trans "None started yet" %}{% endif %}</div>
 														{% endwith %}
 													</div>
 													<div class=" mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
-														<div class="mdc-typography mdc-typography--caption"><strong>Activity Details</strong></div>
-														<div class="mdc-typography mdc-typography--body2">Identifier: {{ metadata.slug }}</div>
-														<div class="mdc-typography mdc-typography--body2">Last Updated: {{ metadata.last_saved|iso_to_datetime|naturalday }}</div>
-														<div class="mdc-typography mdc-typography--body2">Versions: {{ metadata.versions_count }}</div>
+														<div class="mdc-typography mdc-typography--caption"><strong>{% trans "Activity Details" %}</strong></div>
+														<div class="mdc-typography mdc-typography--body2">{% blocktrans trimmed with slug=metadata.slug %}Identifier: {{ slug }}{% endblocktrans %}</div>
+														<div class="mdc-typography mdc-typography--body2">{% blocktrans trimmed with last_saved=metadata.last_saved|iso_to_datetime|naturalday %}Last Updated: {{ last_saved }}{% endblocktrans %}</div>
+														<div class="mdc-typography mdc-typography--body2">{% blocktrans trimmed with versions_count=metadata.versions_count %}Versions: {{ versions_count }}{% endblocktrans %}</div>
 													</div>
 													{% if metadata.integrations|length > 0 %}
 														<div class=" mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
-															<div class="mdc-typography mdc-typography--caption"><strong>Integrations</strong></div>
+															<div class="mdc-typography mdc-typography--caption"><strong>{% trans "Integrations" %}</strong></div>
 															{% for integration in metadata.integrations %}
 																<div>
 																	<div class="mdc-typography mdc-typography--body2 toggle_integration" style="position: relative; height: 32px;">
@@ -171,12 +172,12 @@
     <div class="mdc-dialog" role="alertdialog" aria-modal="true" aria-labelledby="my-dialog-title" aria-describedby="my-dialog-content" id="dialog_add_game">
         <div class="mdc-dialog__container">
             <div class="mdc-dialog__surface">
-                <h2 class="mdc-dialog__title" id="my-dialog-title">Add New Activity</h2>
+                <h2 class="mdc-dialog__title" id="my-dialog-title">{% trans "Add New Activity" %}</h2>
                 <div class="mdc-dialog__content">
                     <div class="mdc-layout-grid mdc-typography" style="padding: 0px;">
                         <div class="mdc-layout-grid__inner" style="grid-gap: 8px;">
                             <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12 mdc-typography--body1">
-                                Please select an existing template to begin:
+                                {% trans "Please select an existing template to begin:" %}
                             </div>
 
                             {% for template in templates %}
@@ -204,7 +205,7 @@
                                     <div class="mdc-radio__ripple"></div>
                                     <div class="mdc-radio__focus-ring"></div>
                                 </div>
-                                <label for="activity-template-no-template">None</label>
+                                <label for="activity-template-no-template">{% trans "None" %}</label>
                             </div>
                             <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
                                 <div class="mdc-text-field mdc-text-field--outlined" id="textfield_add_game" style="margin-top: 8px; width: 100%;">
@@ -212,7 +213,7 @@
                                     <div class="mdc-notched-outline">
                                         <div class="mdc-notched-outline__leading"></div>
                                             <div class="mdc-notched-outline__notch">
-                                            <label for="tf-outlined" class="mdc-floating-label">Activity Name</label>
+                                            <label for="tf-outlined" class="mdc-floating-label">{% trans "Activity Name" %}</label>
                                         </div>
                                         <div class="mdc-notched-outline__trailing"></div>
                                     </div>
@@ -223,10 +224,10 @@
                 </div>
                 <footer class="mdc-dialog__actions">
                     <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
-                        <span class="mdc-button__label">Cancel</span>
+                        <span class="mdc-button__label">{% trans "Cancel" %}</span>
                     </button>
                     <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="add">
-                        <span class="mdc-button__label">Add Activity</span>
+                        <span class="mdc-button__label">{% trans "Add Activity" %}</span>
                     </button>
                 </footer>
             </div>
@@ -237,7 +238,7 @@
     <div class="mdc-dialog" role="alertdialog" aria-modal="true" aria-labelledby="clone-dialog-title" aria-describedby="clone-dialog-content" id="dialog_clone_game">
         <div class="mdc-dialog__container">
             <div class="mdc-dialog__surface">
-                <h2 class="mdc-dialog__title" id="clone-dialog-title">Clone Activity?</h2>
+                <h2 class="mdc-dialog__title" id="clone-dialog-title">{% trans "Clone Activity?" %}</h2>
                 <div class="mdc-dialog__content">
                     <div class="mdc-layout-grid mdc-typography" style="padding: 0px;">
                         <div class="mdc-layout-grid__inner" style="grid-gap: 8px;">
@@ -247,7 +248,7 @@
                                     <div class="mdc-notched-outline">
                                         <div class="mdc-notched-outline__leading"></div>
                                             <div class="mdc-notched-outline__notch">
-                                            <label for="tf-outlined" class="mdc-floating-label">Cloned Activity Name</label>
+                                            <label for="tf-outlined" class="mdc-floating-label">{% trans "Cloned Activity Name" %}</label>
                                         </div>
                                         <div class="mdc-notched-outline__trailing"></div>
                                     </div>
@@ -259,10 +260,10 @@
                 </div>
                 <footer class="mdc-dialog__actions">
                     <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
-                        <span class="mdc-button__label">Cancel</span>
+                        <span class="mdc-button__label">{% trans "Cancel" %}</span>
                     </button>
                     <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="add">
-                        <span class="mdc-button__label">Clone Activity</span>
+                        <span class="mdc-button__label">{% trans "Clone Activity" %}</span>
                     </button>
                 </footer>
             </div>
@@ -273,16 +274,16 @@
     <div class="mdc-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-dialog-title" aria-describedby="delete-dialog-content" id="dialog_archive_game">
         <div class="mdc-dialog__container">
             <div class="mdc-dialog__surface">
-                <h2 class="mdc-dialog__title" id="delete-dialog-title">Archive Activity?</h2>
+                <h2 class="mdc-dialog__title" id="delete-dialog-title">{% trans "Archive Activity?" %}</h2>
                 <div class="mdc-dialog__content">
                     <div class="mdc-layout-grid mdc-typography" style="padding: 0px;">
                         <div class="mdc-layout-grid__inner" style="grid-gap: 8px;">
                             <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
                                 <input type="hidden" id="game_archive_id">
                                 <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12 mdc-typography--body1">
-                                    Are you sure you want to archive <strong id="archive_game_name">???</strong>?<br />
+                                    {% trans "Are you sure you want to archive" %} <strong id="archive_game_name">???</strong>?<br />
                                     <br />
-                                    It will no longer become accessible unless restored by a site administrator.
+                                    {% trans "It will no longer become accessible unless restored by a site administrator." %}
                                 </div>
                             </div>
                         </div>
@@ -290,10 +291,10 @@
                 </div>
                 <footer class="mdc-dialog__actions">
                     <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
-                        <span class="mdc-button__label">Cancel</span>
+                        <span class="mdc-button__label">{% trans "Cancel" %}</span>
                     </button>
                     <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="archive">
-                        <span class="mdc-button__label">Archive Activity</span>
+                        <span class="mdc-button__label">{% trans "Archive Activity" %}</span>
                     </button>
                 </footer>
             </div>
@@ -306,11 +307,11 @@
         <div class="mdc-dialog__container">
             <div class="mdc-dialog__surface" style="max-width: none;">
                 <div class="mdc-dialog__header">
-                    <h2 class="mdc-dialog__title" id="preview-dialog-title" style="display: inline-block;">Structure View</h2>
+                    <h2 class="mdc-dialog__title" id="preview-dialog-title" style="display: inline-block;">{% trans "Structure View" %}</h2>
                     <button class="mdc-button material-icons" style="float: right; margin-top: 12px;" data-mdc-dialog-action="close">close</button>
                 </div>
                 <div class="mdc-dialog__content" id="preview-dialog-content" style="padding: 0px;">
-                    <iframe title="Structure View" id="preview-dialog-canvas" style="border-top: thin solid gray; border-bottom: thin solid gray; border-left: none; border-right: none; background-color: #eeeeee;" scrolling="no"></iframe>
+                    <iframe title="{% trans 'Structure View' %}" id="preview-dialog-canvas" style="border-top: thin solid gray; border-bottom: thin solid gray; border-left: none; border-right: none; background-color: #eeeeee;" scrolling="no"></iframe>
                 </div>
             </div>
         </div>

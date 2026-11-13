@@ -49,6 +49,7 @@ coverage.xml
 
 # Translations
 *.mo
+!locale/*/LC_MESSAGES/*.mo
 *.pot
 
 # Django stuff:
@@ -112,3 +113,6 @@ local_settings.py
 integrations/.DS_Store
 .DS_Store
 node_modules
+
+# Player uploads written by tests/dev runs
+private_player_media/
