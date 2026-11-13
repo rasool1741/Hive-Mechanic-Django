@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+{% include 'player_web/_head.html' %}
+<title>{% if mode == 'signup' %}ثبت‌نام{% else %}ورود{% endif %} | بازی شهری</title>
+</head>
+<body>
+<header class="bar"><a class="brand" href="{% url 'player_app' %}">بازی شهری</a></header>
+<main class="narrow">
+  <h1>{% if mode == 'signup' %}ساخت حساب بازیکن{% else %}ورود بازیکن{% endif %}</h1>
+  <form method="post" class="card">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="error">{{ form.non_field_errors|join:' ' }}</div>{% endif %}
+    <label>نام کاربری
+      <input name="username" autocomplete="username" required value="{{ form.username.value|default:'' }}" dir="ltr">
+    </label>
+    {% if form.username.errors %}<div class="error">{{ form.username.errors|join:' ' }}</div>{% endif %}
+    {% if mode == 'signup' %}
+      <label>رمز عبور
+        <input type="password" name="password1" autocomplete="new-password" required dir="ltr">
+      </label>
+      {% if form.password1.errors %}<div class="error">{{ form.password1.errors|join:' ' }}</div>{% endif %}
+      <label>تکرار رمز عبور
+        <input type="password" name="password2" autocomplete="new-password" required dir="ltr">
+      </label>
+      {% if form.password2.errors %}<div class="error">{{ form.password2.errors|join:' ' }}</div>{% endif %}
+      <button type="submit" class="primary">ثبت‌نام و شروع</button>
+      <p class="muted">حساب دارید؟ <a href="{% url 'player_login' %}">ورود</a></p>
+    {% else %}
+      <label>رمز عبور
+        <input type="password" name="password" autocomplete="current-password" required dir="ltr">
+      </label>
+      <button type="submit" class="primary">ورود</button>
+      {% if signup_enabled %}<p class="muted">حساب ندارید؟ <a href="{% url 'player_signup' %}">ثبت‌نام</a></p>{% endif %}
+    {% endif %}
+  </form>
+</main>
+</body>
+</html>

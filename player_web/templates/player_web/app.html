@@ -1,0 +1,27 @@
+{% load static %}<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+{% include 'player_web/_head.html' %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+<title>بازی شهری</title>
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="#/">بازی شهری</a>
+  <nav>
+    {% if signed_in %}
+      <a href="#/me">بازی‌های من</a>
+      <form method="post" action="{% url 'player_logout' %}" class="inline">{% csrf_token %}<button class="link" type="submit">خروج</button></form>
+    {% else %}
+      <a href="{% url 'player_login' %}">ورود</a>
+      {% if signup_enabled %}<a href="{% url 'player_signup' %}">ثبت‌نام</a>{% endif %}
+    {% endif %}
+  </nav>
+</header>
+<main id="app" data-signed-in="{{ signed_in|yesno:'1,0' }}" data-login-url="{% url 'player_login' %}" data-api="/builder/api/v1" data-sw="{% url 'player_service_worker' %}" data-scope="{% url 'player_app' %}">
+  <p class="muted">در حال بارگذاری…</p>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="{% static 'player_web/app.js' %}"></script>
+</body>
+</html>

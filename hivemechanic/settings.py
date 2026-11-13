@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'docker_utils',
     'user_creation',
     'builder',
+    'player_web',
     'activity_logger',
     'integrations',
     'twilio_support',
