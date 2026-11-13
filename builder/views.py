@@ -22,7 +22,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db import transaction
+from django.db import models, transaction
 from django.db.models import Q
 from django.db.models.functions import Lower
 from django.http import HttpResponse, Http404, FileResponse, JsonResponse
@@ -106,6 +106,135 @@ def public_game_detail(request, game_slug):
         'is_team_game': game.is_team_game,
         'city': game.city.slug if game.city else None,
     })
+
+
+PUBLIC_TOOL_SETTING_KEYS = (
+    'question', 'prompt', 'instructions', 'label', 'options', 'choices', 'max_length',
+    'minimum_seconds', 'score_cost', 'media_type', 'allow_upload', 'required',
+)
+
+
+def _player_for_user(user):
+    """Return the Player linked to a signed-in user, creating it on first use."""
+    player = Player.objects.filter(user=user).first()
+    if player is None:
+        player = Player.objects.create(identifier='user:%d' % user.pk, user=user)
+    return player
+
+
+def _public_tool(tool):
+    """A tool as the player may see it: never answers, accepted values, hint text or file ids."""
+    settings_data = tool.get('settings') if isinstance(tool.get('settings'), dict) else {}
+    public = {key: settings_data[key] for key in PUBLIC_TOOL_SETTING_KEYS if key in settings_data}
+    return {'type': tool.get('type'), 'settings': public}
+
+
+def _session_stage(session):
+    """The current stage of a session as the server sees it, or None when finished."""
+    definition = json.loads(session.game_version.definition or '{}')
+    graph = definition.get('graph') if isinstance(definition, dict) else None
+    if isinstance(graph, dict) and graph.get('nodes'):
+        nodes = {node.get('id'): node for node in graph.get('nodes', []) if isinstance(node, dict) and node.get('id')}
+        state = session.session_state or {}
+        node_id = state['graph_node_id'] if 'graph_node_id' in state else graph.get('start')
+        node = nodes.get(node_id)
+        if node is None:
+            return 'graph', None
+        tools = [tool for tool in node.get('tools', []) if isinstance(tool, dict) and tool.get('type')]
+        return 'graph', {
+            'stage_id': node_id,
+            'title': node.get('title'),
+            'description': node.get('description'),
+            'is_end': node_id == graph.get('end'),
+            'tools': [_public_tool(tool) for tool in tools],
+        }
+
+    sequences = definition if isinstance(definition, list) else definition.get('sequences', [])
+    stages = [
+        '%s#%s' % (sequence.get('id'), item.get('id'))
+        for sequence in sequences
+        for item in sequence.get('items', [])
+        if sequence.get('id') and item.get('id')
+    ]
+    index = (session.session_state or {}).get('stage_index', 0)
+    if index >= len(stages):
+        return 'sequence', None
+    return 'sequence', {'stage_id': stages[index], 'position': index + 1, 'total': len(stages), 'tools': []}
+
+
+def _session_payload(session):
+    runtime, stage = _session_stage(session)
+    score = ScoreLedger.objects.filter(session=session).aggregate(total=models.Sum('amount'))['total'] or 0
+    game = session.game_version.game
+    return {
+        'session_id': session.pk,
+        'game': game.slug,
+        'game_name': game.name,
+        'runtime': runtime,
+        'started': session.started.isoformat() if session.started else None,
+        'completed': session.completed.isoformat() if session.completed else None,
+        'score': score,
+        'current_stage': None if session.completed is not None else stage,
+    }
+
+
+@login_required
+@user_accepted_all_terms
+def player_start_session(request, game_slug):
+    """Start (or resume) the signed-in player's session on a public game."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required.'}, status=405)
+
+    game = Game.objects.select_related('city').filter(slug=game_slug, status=Game.STATUS_PUBLISHED, archived=None).first()
+    if game is None or (game.city is not None and not game.city.is_active):
+        return JsonResponse({'error': 'Game not found.'}, status=404)
+
+    with transaction.atomic():
+        player = _player_for_user(request.user)
+        Player.objects.select_for_update().filter(pk=player.pk).first()
+        ongoing = Session.objects.filter(
+            player=player, game_version__game=game, completed__isnull=True,
+        ).select_related('game_version', 'game_version__game').order_by('-started').first()
+        if ongoing is not None:
+            return JsonResponse(_session_payload(ongoing), status=200)
+
+        session = game.start_session(player)
+        if session is None:
+            return JsonResponse({'error': 'Game has no playable version.'}, status=409)
+        if session.game_version.status != GameVersion.STATUS_PUBLISHED:
+            transaction.set_rollback(True)
+            return JsonResponse({'error': 'Game has no published version.'}, status=409)
+
+    return JsonResponse(_session_payload(session), status=201)
+
+
+@login_required
+@user_accepted_all_terms
+def player_session_state(request, session_id):
+    """Current stage, score and result of one of the signed-in player's sessions."""
+    if request.method != 'GET':
+        return JsonResponse({'error': 'GET required.'}, status=405)
+
+    session = Session.objects.select_related('game_version', 'game_version__game').filter(
+        pk=session_id, player__user=request.user,
+    ).first()
+    if session is None:
+        return JsonResponse({'error': 'Session not found.'}, status=404)
+
+    return JsonResponse(_session_payload(session))
+
+
+@login_required
+@user_accepted_all_terms
+def player_sessions(request):
+    """The signed-in player's sessions, newest first."""
+    if request.method != 'GET':
+        return JsonResponse({'error': 'GET required.'}, status=405)
+
+    sessions = Session.objects.select_related('game_version', 'game_version__game').filter(
+        player__user=request.user,
+    ).order_by('-started')[:50]
+    return JsonResponse({'sessions': [_session_payload(session) for session in sessions]})
 
 
 @login_required
