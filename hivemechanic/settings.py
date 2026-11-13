@@ -75,7 +75,7 @@ ROOT_URLCONF = 'hivemechanic.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'builder', 'templates')],  # builder's Persian registration templates win over simple_dashboard's
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
