@@ -444,6 +444,32 @@ def _wrong_answers_exceeded(session, node_id):
     return (cache.get(_wrong_answer_key(session, node_id)) or 0) >= limit[0]
 
 
+def _gps_target(tools, city):
+    """(latitude, longitude, radius_meters) a stage's GPS tool checks against.
+
+    The stage's own GPS tool settings win; without them the game city's centre with a
+    100 m radius is used, as before."""
+    for tool in tools:
+        if tool.get('type') != 'gps':
+            continue
+        settings_data = tool.get('settings') if isinstance(tool.get('settings'), dict) else {}
+        try:
+            latitude = float(settings_data['latitude'])
+            longitude = float(settings_data['longitude'])
+        except (KeyError, TypeError, ValueError):
+            break
+        try:
+            radius = float(settings_data.get('radius_meters', settings_data.get('radius', 100)))
+        except (TypeError, ValueError):
+            radius = 100
+        if not -90 <= latitude <= 90 or not -180 <= longitude <= 180 or not 5 <= radius <= 5000:
+            break
+        return latitude, longitude, radius
+    if city is None or city.center_latitude is None or city.center_longitude is None:
+        return None
+    return city.center_latitude, city.center_longitude, 100
+
+
 def _record_wrong_answer(session, node_id):
     limit = getattr(settings, 'GAME_WRONG_ANSWER_LIMIT', WRONG_ANSWER_LIMIT)
     key = _wrong_answer_key(session, node_id)
@@ -597,9 +623,9 @@ def _graph_game_action(session, payload, event_id, stage_id, graph):
         if not isinstance(gps, dict):
             return JsonResponse({'error': 'GPS input is required.'}, status=403)
     if gps is not None:
+        target = _gps_target(tools, city)
         errors = validate_location_sample(gps.get('latitude'), gps.get('longitude'), gps.get('accuracy', 0))
-        if errors or city is None or city.center_latitude is None or not inside_radius(
-                gps['latitude'], gps['longitude'], city.center_latitude, city.center_longitude, 100):
+        if errors or target is None or not inside_radius(gps['latitude'], gps['longitude'], *target):
             return JsonResponse({'error': 'GPS validation failed.'}, status=403)
 
     qr_token = payload.get('qr_token')

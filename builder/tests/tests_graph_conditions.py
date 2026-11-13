@@ -1199,3 +1199,27 @@ def text_choice_graph(values):
     graph = palette_graph(list(values))
     graph['nodes'][0]['tools'][0]['settings']['answer'] = ['1', 'true']
     return graph
+
+
+class StageGpsTargetTests(GraphRuntimeBase):
+    """A stage's GPS tool checks its own point and radius; without one, the city centre (100 m)."""
+
+    def gps_graph(self, settings_data):
+        return {
+            'nodes': [{'id': 'here', 'tools': [{'type': 'gps', 'settings': settings_data}]}, {'id': 'finish'}],
+            'edges': [{'id': 'e', 'source': 'here', 'target': 'finish'}],
+            'start': 'here', 'end': 'finish',
+        }
+
+    def gps(self, latitude, longitude):
+        return {'latitude': latitude, 'longitude': longitude, 'accuracy': 10}
+
+    def test_stage_point_and_radius_are_used(self):
+        self.start(self.gps_graph({'latitude': 50.11, 'longitude': 8.68, 'radius_meters': 300}))
+        self.assertEqual(self.act('far', 'here', gps=self.gps(35.7, 51.4)).status_code, 403)
+        self.assertEqual(self.act('near', 'here', gps=self.gps(50.1118, 8.68)).status_code, 200)
+
+    def test_city_centre_without_stage_point(self):
+        self.start(self.gps_graph({}))
+        self.assertEqual(self.act('far', 'here', gps=self.gps(50.11, 8.68)).status_code, 403)
+        self.assertEqual(self.act('near', 'here', gps=self.gps(35.7, 51.4)).status_code, 200)
