@@ -1,0 +1,17 @@
+{
+  "appId": "com.rasool1741.urbangames",
+  "appName": "بازی شهری",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "allowNavigation": [
+      "*"
+    ],
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#0f172a"
+  },
+  "appendUserAgent": "UrbanGamesApp/1.0"
+}

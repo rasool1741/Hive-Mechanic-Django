@@ -18,7 +18,7 @@
     {% endif %}
   </nav>
 </header>
-<main id="app" data-signed-in="{{ signed_in|yesno:'1,0' }}" data-login-url="{% url 'player_login' %}" data-api="/builder/api/v1" data-sw="{% url 'player_service_worker' %}" data-scope="{% url 'player_app' %}">
+<main id="app" data-signed-in="{{ signed_in|yesno:'1,0' }}" data-login-url="{% url 'player_login' %}" data-api="/builder/api/v1" data-sw="{% url 'player_service_worker' %}" data-scope="{% url 'player_app' %}" data-jsqr="{% static 'player_web/jsQR.js' %}">
   <p class="muted">در حال بارگذاری…</p>
 </main>
 <div id="toast" role="status" aria-live="polite"></div>

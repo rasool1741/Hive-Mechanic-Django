@@ -2006,10 +2006,16 @@ class SessionEvent(models.Model):
         ordering = ['created']
 
 
-private_player_media_storage = FileSystemStorage(
-    location=os.path.join(settings.BASE_DIR, 'private_player_media'),
-    base_url=None,
-)
+def private_player_media_storage():
+    """Private storage for player uploads, never served as public media.
+
+    A callable, so migrations do not record a machine-specific absolute path.
+    Set PLAYER_MEDIA_ROOT to keep uploads outside the code directory in production.
+    """
+    return FileSystemStorage(
+        location=getattr(settings, 'PLAYER_MEDIA_ROOT', os.path.join(settings.BASE_DIR, 'private_player_media')),
+        base_url=None,
+    )
 
 
 class SessionMediaSubmission(models.Model):

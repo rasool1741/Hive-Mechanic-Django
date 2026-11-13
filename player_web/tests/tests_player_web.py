@@ -1,6 +1,7 @@
 import json
 
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -10,6 +11,9 @@ from builder.tests.tests_player_session_api import GRAPH
 
 
 class PlayerWebTests(TestCase):
+    def setUp(self):
+        cache.clear()
+
     def signup(self, client=None, username='newplayer'):
         return (client or self.client).post(reverse('player_signup'), {
             'username': username, 'password1': 'Walk-the-city-42', 'password2': 'Walk-the-city-42',
@@ -42,6 +46,7 @@ class PlayerWebTests(TestCase):
         body = response.content.decode('utf-8')
         self.assertIn("url.pathname.includes('/api/')", body)
         self.assertNotIn('&#x27;', body)
+        self.assertIn('jsQR.js', body)
 
     def test_signup_logs_in_without_builder_access(self):
         response = self.signup()
@@ -103,3 +108,37 @@ class PlayerWebTests(TestCase):
         self.assertIsNotNone(state['completed'])
         self.assertIsNone(state['current_stage'])
         self.assertEqual(1, Session.objects.filter(player__user__username='csrfplayer').count())
+
+
+    @override_settings(PLAYER_SIGNUP_LIMIT=(2, 3600))
+    def test_signup_is_rate_limited_per_address(self):
+        for index in range(2):
+            self.assertEqual(302, self.signup(Client(), 'burst%d' % index).status_code)
+        blocked = self.signup(Client(), 'burst9')
+        self.assertEqual(429, blocked.status_code)
+        self.assertFalse(get_user_model().objects.filter(username='burst9').exists())
+
+    @override_settings(PLAYER_LOGIN_FAILURE_LIMIT=(3, 900))
+    def test_failed_logins_are_rate_limited(self):
+        get_user_model().objects.create_user(username='walker', password='Walk-the-city-42')
+        for _ in range(3):
+            self.assertEqual(200, self.client.post(reverse('player_login'), {'username': 'walker', 'password': 'nope'}).status_code)
+        right = self.client.post(reverse('player_login'), {'username': 'walker', 'password': 'Walk-the-city-42'})
+        self.assertEqual(429, right.status_code)
+
+    @override_settings(GAME_WRONG_ANSWER_LIMIT=(3, 60))
+    def test_wrong_answers_are_limited_per_stage(self):
+        city = City.objects.create(slug='lim-city', name='Lim City', center_latitude=35.7, center_longitude=51.4)
+        game = Game.objects.create(name='Gate Hunt', slug='gate-hunt', city=city, status=Game.STATUS_PUBLISHED)
+        published, errors = GameVersion.objects.create(game=game, created=timezone.now(), definition=json.dumps(GRAPH)).publish()
+        self.assertTrue(published, errors)
+        get_user_model().objects.create_user(username='guesser', password='Walk-the-city-42')
+        self.client.login(username='guesser', password='Walk-the-city-42')
+        session_id = self.client.post(reverse('player_start_session', args=['gate-hunt'])).json()['session_id']
+        action = reverse('game_action', args=[session_id])
+        post = lambda event, answer: self.client.post(action, data=json.dumps({'event_id': event, 'stage_id': 'riddle', 'answer': answer}), content_type='application/json')
+        for index in range(3):
+            self.assertEqual(403, post('g%d' % index, str(index)).status_code)
+        self.assertEqual(429, post('g-right', '1921').status_code)
+        cache.clear()
+        self.assertEqual(200, post('g-later', '1921').status_code)

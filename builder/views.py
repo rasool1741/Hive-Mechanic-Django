@@ -17,6 +17,7 @@ import arrow
 import requests
 
 from django.conf import settings
+from django.core.cache import cache
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
@@ -430,6 +431,28 @@ def player_media_download(request, submission_id):
 # so an unknown operation can never skip the Quiz/Text/Timer checks that guard a transition.
 GRAPH_OPERATIONS = ('complete', 'hint', 'media')
 
+# Wrong quiz or text answers allowed per session node in a window, so answers cannot be guessed by brute force.
+WRONG_ANSWER_LIMIT = (10, 60)
+
+
+def _wrong_answer_key(session, node_id):
+    return 'builder:wrong-answers:%s:%s' % (session.pk, node_id)
+
+
+def _wrong_answers_exceeded(session, node_id):
+    limit = getattr(settings, 'GAME_WRONG_ANSWER_LIMIT', WRONG_ANSWER_LIMIT)
+    return (cache.get(_wrong_answer_key(session, node_id)) or 0) >= limit[0]
+
+
+def _record_wrong_answer(session, node_id):
+    limit = getattr(settings, 'GAME_WRONG_ANSWER_LIMIT', WRONG_ANSWER_LIMIT)
+    key = _wrong_answer_key(session, node_id)
+    if not cache.add(key, 1, limit[1]):
+        try:
+            cache.incr(key)
+        except ValueError:
+            cache.set(key, 1, limit[1])
+
 
 def _graph_condition_matches(condition, graph_vars):
     """Evaluate an edge condition under the one contract shared with publish validation.
@@ -541,6 +564,8 @@ def _graph_game_action(session, payload, event_id, stage_id, graph):
             return JsonResponse({'error': 'Timer has not elapsed.'}, status=409)
 
     answered = {}  # variables set by this action; saved only together with the node transition
+    if operation == 'complete' and tool_types & {'quiz', 'text', 'text_input'} and _wrong_answers_exceeded(session, current):
+        return JsonResponse({'error': 'Too many wrong answers. Wait a minute.'}, status=429)
     for tool in tools:
         settings_data = tool.get('settings') or {}
         if tool.get('type') == 'quiz' and operation == 'complete':
@@ -549,6 +574,7 @@ def _graph_game_action(session, payload, event_id, stage_id, graph):
                 return JsonResponse({'error': 'Quiz answer is required.'}, status=400)
             matched = match_answer('quiz', payload['answer'], accepted)
             if matched is None:
+                _record_wrong_answer(session, current)
                 return JsonResponse({'error': 'Quiz answer is incorrect.'}, status=403)
             answered[tool_variable_name(current, tool, 'quiz')] = matched
         if tool.get('type') in ('text', 'text_input') and operation == 'complete':
@@ -562,6 +588,7 @@ def _graph_game_action(session, payload, event_id, stage_id, graph):
             if accepted is not None:
                 matched = match_answer('text', value, accepted)
                 if matched is None:
+                    _record_wrong_answer(session, current)
                     return JsonResponse({'error': 'Text input is incorrect.'}, status=403)
                 answered[tool_variable_name(current, tool, 'text')] = matched
     city = session.game_version.game.city

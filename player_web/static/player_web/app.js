@@ -28,6 +28,7 @@
     'Stage is not the current graph node.': 'این مرحله دیگر جاری نیست؛ صفحه به‌روز شد.',
     'Stage is not the current server stage.': 'این مرحله دیگر جاری نیست؛ صفحه به‌روز شد.',
     'Session is already completed.': 'این بازی تمام شده است.',
+    'Too many wrong answers. Wait a minute.': 'پاسخ‌های غلط زیاد شد؛ یک دقیقه صبر کنید.',
     'File is too large.': 'حجم فایل زیاد است.',
     'File content is invalid.': 'نوع فایل پذیرفته نیست.',
   };
@@ -391,31 +392,61 @@
     } catch (error) { holder.append(el('p', { class: 'muted' }, 'رسانهٔ این مرحله در دسترس نیست.')); }
   }
 
+  function loadJsQr() {
+    if (window.jsQR) return Promise.resolve(window.jsQR);
+    return new Promise((resolve, reject) => {
+      const script = el('script', { src: root.dataset.jsqr });
+      script.onload = () => resolve(window.jsQR);
+      script.onerror = () => reject(new Error('jsQR'));
+      document.head.append(script);
+    });
+  }
+
   async function scanQr(field) {
-    if (!('BarcodeDetector' in window) || !navigator.mediaDevices) {
-      toast('اسکن با دوربین در این مرورگر پشتیبانی نمی‌شود؛ کد زیر QR را وارد کنید.', 'bad');
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      toast('دوربین در دسترس نیست؛ کد زیر QR را وارد کنید.', 'bad');
       return;
     }
     let stream;
+    let decode;
     const video = el('video', { playsinline: true, muted: true });
     const close = el('button', { type: 'button', class: 'primary' }, 'بستن');
-    const overlay = el('div', { class: 'scanner' }, video, close);
+    const overlay = el('div', { class: 'scanner' }, video, el('p', {}, 'کد QR را جلوی دوربین بگیرید'), close);
     const stop = () => { if (stream) stream.getTracks().forEach((track) => track.stop()); overlay.remove(); };
     close.addEventListener('click', stop);
+    try {
+      if ('BarcodeDetector' in window && (await window.BarcodeDetector.getSupportedFormats()).includes('qr_code')) {
+        const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
+        decode = async () => { const codes = await detector.detect(video); return codes.length ? codes[0].rawValue : null; };
+      } else {
+        const jsQR = await loadJsQr();
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+        decode = async () => {
+          if (!video.videoWidth) return null;
+          const scale = Math.min(1, 640 / video.videoWidth);
+          canvas.width = Math.round(video.videoWidth * scale);
+          canvas.height = Math.round(video.videoHeight * scale);
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const image = context.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(image.data, image.width, image.height, { inversionAttempts: 'attemptBoth' });
+          return code ? code.data : null;
+        };
+      }
+    } catch (error) { toast('اسکنر بارگذاری نشد؛ کد را دستی وارد کنید.', 'bad'); return; }
     try {
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
     } catch (error) { toast('اجازهٔ دوربین داده نشد.', 'bad'); return; }
     document.body.append(overlay);
     video.srcObject = stream;
     await video.play();
-    const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
     const look = async () => {
       if (!overlay.isConnected) return;
       try {
-        const codes = await detector.detect(video);
-        if (codes.length) { field.value = codes[0].rawValue; stop(); toast('کد خوانده شد.', 'good'); return; }
+        const value = await decode();
+        if (value) { field.value = value; stop(); toast('کد خوانده شد.', 'good'); return; }
       } catch (error) { /* keep looking */ }
-      requestAnimationFrame(look);
+      setTimeout(look, 150);
     };
     look();
   }
@@ -429,6 +460,12 @@
     if (parts[0] === 'session' && /^\d+$/.test(parts[1] || '')) return showSession(parts[1]);
     if (parts[0] === 'me') return showMine();
     return showCities();
+  }
+
+  // Inside the Android app: let the player switch to another game server.
+  if (/UrbanGamesApp\//.test(navigator.userAgent)) {
+    const nav = document.querySelector('.bar nav');
+    if (nav) nav.append(el('a', { href: 'https://localhost/?setup=1' }, 'سرور'));
   }
 
   window.addEventListener('hashchange', route);

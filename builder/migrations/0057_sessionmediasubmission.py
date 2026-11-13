@@ -2,6 +2,7 @@
 
 import django.core.files.storage
 import django.db.models.deletion
+import builder.models
 from django.db import migrations, models
 
 
@@ -19,7 +20,7 @@ class Migration(migrations.Migration):
                 ('node_id', models.CharField(max_length=255)),
                 ('event_id', models.CharField(max_length=128)),
                 ('media_type', models.CharField(choices=[('image', 'Image'), ('audio', 'Audio'), ('video', 'Video')], max_length=16)),
-                ('file', models.FileField(storage=django.core.files.storage.FileSystemStorage(base_url=None, location='D:\\github\\Hive-Mechanic-Django\\private_player_media'), upload_to='submissions/')),
+                ('file', models.FileField(storage=builder.models.private_player_media_storage, upload_to='submissions/')),
                 ('detected_mime', models.CharField(max_length=128)),
                 ('size', models.PositiveBigIntegerField()),
                 ('sha256', models.CharField(max_length=64)),

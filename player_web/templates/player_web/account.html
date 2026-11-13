@@ -8,9 +8,10 @@
 <header class="bar"><a class="brand" href="{% url 'player_app' %}">بازی شهری</a></header>
 <main class="narrow">
   <h1>{% if mode == 'signup' %}ساخت حساب بازیکن{% else %}ورود بازیکن{% endif %}</h1>
+  {% if blocked %}<div class="card error">{{ blocked }}</div>{% else %}
   <form method="post" class="card">
     {% csrf_token %}
-    {% if form.non_field_errors %}<div class="error">{{ form.non_field_errors|join:' ' }}</div>{% endif %}
+    {% if form and form.non_field_errors %}<div class="error">{{ form.non_field_errors|join:' ' }}</div>{% endif %}
     <label>نام کاربری
       <input name="username" autocomplete="username" required value="{{ form.username.value|default:'' }}" dir="ltr">
     </label>
@@ -34,6 +35,7 @@
       {% if signup_enabled %}<p class="muted">حساب ندارید؟ <a href="{% url 'player_signup' %}">ثبت‌نام</a></p>{% endif %}
     {% endif %}
   </form>
+  {% endif %}
 </main>
 </body>
 </html>
